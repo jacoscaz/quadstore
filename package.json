@@ -1,0 +1,36 @@
+{
+  "name": "quadstore",
+  "version": "0.0.1",
+  "description": "A quadstore for node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/beautifulinteractions/quadstore.git"
+  },
+  "devDependencies": {
+    "async": "^2.1.5",
+    "eslint": "^3.13.0",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.8.0",
+    "fs-extra": "^2.0.0",
+    "mocha": "^3.2.0",
+    "nyc": "^10.1.2",
+    "shortid": "^2.2.8",
+    "should": "^11.2.0"
+  },
+  "dependencies": {
+    "async": "^2.1.5",
+    "hyperid": "^1.1.0",
+    "leveldown": "^1.6.0",
+    "levelup": "^1.3.5",
+    "lodash": "^4.17.4"
+  },
+  "author": "Jacopo Scazzosi <me@jacoscaz.com>",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/beautifulinteractions/quadstore#readme"
+}

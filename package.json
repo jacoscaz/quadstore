@@ -2,13 +2,14 @@
   "name": "quadstore",
   "version": "0.0.1",
   "description": "A quadstore for node.js",
+  "keywords": ["node", "nodejs", "quadstore", "graph", "rdf", "database"],
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/beautifulinteractions/quadstore.git"
+    "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
     "async": "^2.1.5",
@@ -31,6 +32,13 @@
     "lodash": "^4.17.4"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
+  "contributors": [
+    "Matteo Murgida <teomurgi@gmail.com>"
+  ],
+  "engines": {
+    "node" : ">=6.0.x"
+  },
   "license": "MIT",
-  "homepage": "https://bitbucket.org/beautifulinteractions/quadstore#readme"
+  "homepage": "https://github.com/beautifulinteractions/node-quadstore",
+  "bugs": "https://github.com/beautifulinteractions/node-quadstore/issues"
 }

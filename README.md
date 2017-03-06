@@ -1,5 +1,5 @@
 
-# QUADSTORE #
+# QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg)](https://travis-ci.org/beautifulinteractions) #
 
 A LevelDB-backed graph database for Node.js with native support for quads.
 

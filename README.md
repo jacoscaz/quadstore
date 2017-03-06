@@ -1,6 +1,8 @@
 
 # QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg)](https://travis-ci.org/beautifulinteractions/node-quadstore) #
 
+![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
+
 A LevelDB-backed graph database for Node.js with native support for quads.
 
 ### Introduction ###

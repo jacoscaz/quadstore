@@ -25,6 +25,13 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 [Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper 
 [RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
 
+### Status ###
+
+Unstable, very much under development. The following features
+are missing and are being considered:
+
+- complex searches w/ query planning
+
 ### Usage ###
 
     const QuadStore = require('quadstore');
@@ -35,10 +42,6 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
             console.log(quads);
         });
     });
-
-### Todo ###
-
-- complex searches, query planning
 
 ## LICENSE - "MIT License"
 

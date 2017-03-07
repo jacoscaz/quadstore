@@ -164,7 +164,7 @@ class QuadStore extends events.EventEmitter {
     this._db.batch(batch, cb);
   }
 
-  putdel(oldQuads, newQuads, cb) {
+  delput(oldQuads, newQuads, cb) {
     if (!Array.isArray(oldQuads)) oldQuads = [oldQuads];
     if (!Array.isArray(newQuads)) newQuads = [newQuads];
     const batch = [].concat(
@@ -213,7 +213,7 @@ class QuadStore extends events.EventEmitter {
     }
     this.match(matchTerms, (matchErr, oldQuads) => {
       if (matchErr) { cb(matchErr); return; }
-      store.putdel(oldQuads, newQuads, cb);
+      store.delput(oldQuads, newQuads, cb);
     });
   }
 

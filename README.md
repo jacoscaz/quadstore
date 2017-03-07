@@ -27,8 +27,7 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ### Status ###
 
-Unstable, very much under development. The following features
-are missing and are being considered:
+Unstable, very much under development. The following features are missing and are being considered:
 
 - complex searches w/ query planning
 

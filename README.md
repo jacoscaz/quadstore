@@ -31,7 +31,7 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
     const store = new QuadStore({db: './path/to/db'});
     
     store.put({subject: 's', predicate: 'p', object: 'o', graph: 'g'}, function(putErr) {
-        store.match(({graph: 'g'}, function (getErr, quads) {
+        store.match({graph: 'g'}, function (getErr, quads) {
             console.log(quads);
         });
     });

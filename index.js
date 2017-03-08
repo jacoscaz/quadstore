@@ -25,32 +25,32 @@ function quadToBatch(quad, opts) {
   return [
     { /* SPOC */
       type,
-      key: 'SPOC' + separator + quad.subject + separator + quad.predicate + separator + quad.object + separator + quad[contextKey],
+      key: 'SPOC' + separator + quad.subject + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator,
       value: quad,
     },
     { /* POC  */
       type,
-      key: 'POC' + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator + quad.subject,
+      key: 'POC' + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator + quad.subject + separator,
       value: quad,
     },
     { /* OCS  */
       type,
-      key: 'OCS' + separator + quad.object + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate,
+      key: 'OCS' + separator + quad.object + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate + separator,
       value: quad,
     },
     { /* CSP  */
       type,
-      key: 'CSP' + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate + separator + quad.object,
+      key: 'CSP' + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate + separator + quad.object + separator,
       value: quad,
     },
     { /* CP   */
       type,
-      key: 'CP' + separator + quad[contextKey] + separator + quad.predicate + separator + quad.subject + separator + quad.object,
+      key: 'CP' + separator + quad[contextKey] + separator + quad.predicate + separator + quad.subject + separator + quad.object + separator,
       value: quad,
     },
     { /* OS   */
       type,
-      key: 'OS' + separator + quad.object + separator + quad.subject + separator + quad.predicate + separator + quad[contextKey],
+      key: 'OS' + separator + quad.object + separator + quad.subject + separator + quad.predicate + separator + quad[contextKey] + separator,
       value: quad,
     },
   ];

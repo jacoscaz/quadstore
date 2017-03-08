@@ -19,39 +19,38 @@ const valueEncoding = { encode: JSON.stringify, decode: JSON.parse };
  * @returns {}
  */
 function quadToBatch(quad, opts) {
-  const id = quad._id || (quad._id = process.hrtime().join(''));
   const type = opts.type;
   const separator = opts.separator;
   const contextKey = opts.contextKey;
   return [
     { /* SPOC */
       type,
-      key: 'SPOC' + separator + quad.subject + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator + id,
+      key: 'SPOC' + separator + quad.subject + separator + quad.predicate + separator + quad.object + separator + quad[contextKey],
       value: quad,
     },
     { /* POC  */
       type,
-      key: 'POC' + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator + id,
+      key: 'POC' + separator + quad.predicate + separator + quad.object + separator + quad[contextKey] + separator + quad.subject,
       value: quad,
     },
     { /* OCS  */
       type,
-      key: 'OCS' + separator + quad.object + separator + quad[contextKey] + separator + quad.subject + separator + id,
+      key: 'OCS' + separator + quad.object + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate,
       value: quad,
     },
     { /* CSP  */
       type,
-      key: 'CSP' + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate + separator + id,
+      key: 'CSP' + separator + quad[contextKey] + separator + quad.subject + separator + quad.predicate + separator + quad.object,
       value: quad,
     },
     { /* CP   */
       type,
-      key: 'CP' + separator + quad[contextKey] + separator + quad.predicate + separator + id,
+      key: 'CP' + separator + quad[contextKey] + separator + quad.predicate + separator + quad.subject + separator + quad.object,
       value: quad,
     },
     { /* OS   */
       type,
-      key: 'OS' + separator + quad.object + separator + quad.subject + separator + id,
+      key: 'OS' + separator + quad.object + separator + quad.subject + separator + quad.predicate + separator + quad[contextKey],
       value: quad,
     },
   ];

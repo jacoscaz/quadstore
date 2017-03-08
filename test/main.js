@@ -48,6 +48,19 @@ describe('QuadStore', () => {
     });
   });
 
+  it('should not duplicate quads', (done) => {
+    const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+    qs.put([quad, quad], (putErr) => {
+      if (putErr) { done(putErr); return; }
+      qs.match({}, (getErr, quads) => {
+        if (getErr) { done(getErr); return; }
+        should(quads).have.length(1);
+        should(quads[0]).deepEqual(quad);
+        done();
+      });
+    });
+  });
+
 
   it('should delete a quad correctly', (done) => {
     const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };

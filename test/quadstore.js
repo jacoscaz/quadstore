@@ -14,7 +14,7 @@ let db;
 let qs;
 
 beforeEach((done) => {
-  db = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
+  db = path.join(process.cwd(), 'node-quadstore-' + shortid.generate());
   fs.ensureDir(db, (err) => {
     if (err) { done(err); return; }
     qs = new QuadStore(db);

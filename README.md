@@ -6,7 +6,7 @@
 
 A LevelDB-backed graph database for Node.js with native support for quads.
 
-### Introduction ###
+## Introduction ##
 
 A quad is a triple with an added `context` term. 
 
@@ -25,15 +25,17 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 [Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper 
 [RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
 
-### Status ###
+## Status ##
 
 Unstable, very much under development. The following features are missing and are being considered:
 
 - complex searches w/ query planning
 
-### Usage ###
+## Usage ##
 
-    const QuadStore = require('quadstore');
+### Graph API ###
+
+    const QuadStore = require('quadstore').QuadStore;
     const store = new QuadStore({db: './path/to/db'});
     
     store.put({subject: 's', predicate: 'p', object: 'o', graph: 'g'}, function(putErr) {
@@ -42,7 +44,15 @@ Unstable, very much under development. The following features are missing and ar
         });
     });
 
-## LICENSE - "MIT License"
+### RDF API ###
+
+    const RdfStore = require('quadstore').RdfStore;
+    const store = new RdfStore({db: './path/to/db', dataFactory});
+
+    // TBD
+
+
+## LICENSE - "MIT License" ##
 
 Copyright (c) 2017 Beautiful Interactions.
 

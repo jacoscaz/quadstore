@@ -7,7 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const async = require('async');
 const shortid = require('shortid');
-const QuadStore = require('../index.js');
+const QuadStore = require('../lib/quadstore.js');
 
 const db = path.join(os.tmpdir(), 'quadstore-' + shortid.generate());
 

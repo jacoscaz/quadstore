@@ -8,7 +8,7 @@ const path = require('path');
 const utils = require('./utils');
 const should = require('should');
 const shortid = require('shortid');
-const QuadStore = require('../index.js');
+const QuadStore = require('..').QuadStore;
 
 let db;
 let qs;

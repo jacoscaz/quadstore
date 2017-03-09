@@ -2,7 +2,14 @@
   "name": "quadstore",
   "version": "0.0.2",
   "description": "A quadstore for node.js",
-  "keywords": ["node", "nodejs", "quadstore", "graph", "rdf", "database"],
+  "keywords": [
+    "node",
+    "nodejs",
+    "quadstore",
+    "graph",
+    "rdf",
+    "database"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha"
@@ -19,24 +26,26 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^2.0.0",
+    "leveldown": "^1.6.0",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
+    "rdflib": "^0.14.0",
     "shortid": "^2.2.8",
     "should": "^11.2.0"
   },
   "dependencies": {
     "async": "^2.1.5",
-    "hyperid": "^1.1.0",
-    "leveldown": "^1.6.0",
+    "asynciterator": "^1.1.0",
     "levelup": "^1.3.5",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "n3": "^0.9.1"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
   "contributors": [
     "Matteo Murgida <teomurgi@gmail.com>"
   ],
   "engines": {
-    "node" : ">=6.0.x"
+    "node": ">=6.0.x"
   },
   "license": "MIT",
   "homepage": "https://github.com/beautifulinteractions/node-quadstore",

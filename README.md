@@ -36,7 +36,7 @@ Unstable, very much under development. The following features are missing and ar
 ### Graph API ###
 
     const QuadStore = require('quadstore').QuadStore;
-    const store = new QuadStore({db: './path/to/db'});
+    const store = new QuadStore('./path/to/db');
     
     store.put({subject: 's', predicate: 'p', object: 'o', graph: 'g'}, function(putErr) {
         store.match({graph: 'g'}, function (getErr, quads) {
@@ -47,10 +47,19 @@ Unstable, very much under development. The following features are missing and ar
 ### RDF API ###
 
     const RdfStore = require('quadstore').RdfStore;
-    const store = new RdfStore({db: './path/to/db', dataFactory});
+    const store = new RdfStore('./path/to/db', {dataFactory});
 
     // TBD
 
+
+### Browser ###
+
+Both the QuadStore and the RdfStore classes can be used in browsers via browserify and level-js:
+
+    const leveljs = require('level-js');
+    const QuadStore = require('quadstore').QuadStore;
+
+    const store = new QuadStore('name', { db: leveljs });
 
 ## LICENSE - "MIT License" ##
 

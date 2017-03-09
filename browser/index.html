@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="./quadstore-bundle.js"></script>
+<script>
+    const quad = { subject: 's', predicate: 'p', object: 'o', graph: 'g' };
+    quadstore.put(quad, (putErr) => {
+      quadstore.match({}, (matchErr, quads) => {
+        console.log(quads);
+      });
+    });
+</script>
+</body>
+</html>

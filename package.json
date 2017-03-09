@@ -32,7 +32,7 @@
     "leveldown": "^1.6.0",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
-    "rdflib": "^0.14.0",
+    "rdf-data-model": "github:rdf-ext/rdf-data-model#develop",
     "shortid": "^2.2.8",
     "should": "^11.2.0"
   },

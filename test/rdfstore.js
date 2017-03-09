@@ -21,7 +21,7 @@ beforeEach((done) => {
   db = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
   fs.ensureDir(db, (err) => {
     if (err) { done(err); return; }
-    rs = new RdfStore({ db, dataFactory: factory });
+    rs = new RdfStore(db, { dataFactory: factory });
     done();
   });
 });

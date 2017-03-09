@@ -12,7 +12,8 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha"
+    "test": "nyc mocha",
+    "build-browser-test": "browserify browser/quadstore.js -s quadstore -o browser/quadstore-bundle.js"
   },
   "repository": {
     "type": "git",
@@ -20,12 +21,14 @@
   },
   "devDependencies": {
     "async": "^2.1.5",
+    "browserify": "^14.1.0",
     "eslint": "^3.13.0",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^2.0.0",
+    "level-js": "^2.2.4",
     "leveldown": "^1.6.0",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",

@@ -17,7 +17,7 @@ beforeEach((done) => {
   db = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
   fs.ensureDir(db, (err) => {
     if (err) { done(err); return; }
-    qs = new QuadStore({ db });
+    qs = new QuadStore(db);
     done();
   });
 });

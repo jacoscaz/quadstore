@@ -29,29 +29,208 @@ afterEach((done) => {
   });
 });
 
-describe('QuadStore', () => {
-
-  const quads = [
-    factory.quad(
-      factory.namedNode('http://ex.com/s'),
-      factory.namedNode('http://ex.com/p'),
-      factory.literal('o', 'en-gb'),
-      factory.blankNode('g')
-    )
-  ];
+describe('RdfStore', () => {
 
   it('should import a single quad correctly', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      )
+    ];
     const source = new AsyncIterator.ArrayIterator(quads);
     rs.import(source, (importErr) => {
       if (importErr) { done(importErr); return; }
       storeUtils.toArray(rs.match(), (arrayErr, matchedQuads) => {
         if (arrayErr) { done(arrayErr); return; }
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0].subject).deepEqual(quads[0].subject);
-        should(matchedQuads[0].predicate).deepEqual(quads[0].predicate);
-        should(matchedQuads[0].object).deepEqual(quads[0].object);
-        should(matchedQuads[0].graph.value).deepEqual(quads[0].graph.value);
-        should(matchedQuads[0].graph.termType).deepEqual(quads[0].graph.termType);
+        should(matchedQuads[0]).deepEqual(quads[0]);
+        done();
+      });
+    });
+  });
+
+  it('should match quads by subject', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s2'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      const subject = factory.namedNode('http://ex.com/s2');
+      storeUtils.toArray(rs.match(subject), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0]).deepEqual(quads[1]);
+        done();
+      });
+    });
+  });
+
+  it('should match quads by predicate', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p2'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      const predicate = factory.namedNode('http://ex.com/p2');
+      storeUtils.toArray(rs.match(null, predicate), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0]).deepEqual(quads[1]);
+        done();
+      });
+    });
+  });
+
+  it('should match quads by object', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o2', 'en-gb'),
+        factory.blankNode('g')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      const object = factory.literal('o2', 'en-gb');
+      storeUtils.toArray(rs.match(null, null, object), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0]).deepEqual(quads[1]);
+        done();
+      });
+    });
+  });
+
+  it('should match quads by graph', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g2')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      const graph = factory.blankNode('g2');
+      storeUtils.toArray(rs.match(null, null, null, graph), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0]).deepEqual(quads[1]);
+        done();
+      });
+    });
+  });
+
+  it('should match multiple quads by subject', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.blankNode('g')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p2'),
+        factory.literal('o2', 'en-gb'),
+        factory.blankNode('g2')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      const subject = factory.namedNode('http://ex.com/s');
+      storeUtils.toArray(rs.match(subject), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(2);
+        should(matchedQuads[0].subject).deepEqual(subject);
+        should(matchedQuads[1].subject).deepEqual(subject);
+        done();
+      });
+    });
+  });
+
+  it('should import and match the default graph (explicit)', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb'),
+        factory.defaultGraph()
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      storeUtils.toArray(rs.match(), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0].graph.value).be.exactly('');
+        should(matchedQuads[0]).deepEqual(quads[0]);
+        done();
+      });
+    });
+  });
+
+  it('should import and match the default graph (implicit)', (done) => {
+    const quads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s'),
+        factory.namedNode('http://ex.com/p'),
+        factory.literal('o', 'en-gb')
+      )
+    ];
+    const source = new AsyncIterator.ArrayIterator(quads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      storeUtils.toArray(rs.match(), (arrayErr, matchedQuads) => {
+        if (arrayErr) { done(arrayErr); return; }
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0].graph.value).be.exactly('');
+        should(matchedQuads[0]).deepEqual(quads[0]);
         done();
       });
     });

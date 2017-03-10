@@ -46,11 +46,18 @@ Unstable, very much under development. The following features are missing and ar
 
 ### RDF API ###
 
+`quadstore` aims to support the [RDF/JS](https://github.com/rdfjs/representation-task-force)
+interface specification through the specialized `RdfStore` class, which currently implements
+the `Source` and `Sink` interfaces (partially). Support for the `Store` interface is coming.
+
     const RdfStore = require('quadstore').RdfStore;
     const store = new RdfStore('./path/to/db', {dataFactory});
 
-    // TBD
-
+    // Returns a stream.Readable of dataFactory.Quad(s) matching the specified terms
+    const readStream = store.match(term, term, term, term);
+    
+    // Imports dataFactory.Quad(s) from the provided stream.Readable
+    store.import(readStream, (err) => {});
 
 ### Browser ###
 

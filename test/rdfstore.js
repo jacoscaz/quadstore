@@ -1,18 +1,14 @@
 
 'use strict';
 
-const _ = require('lodash');
-const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
 const should = require('should');
 const shortid = require('shortid');
-const factory = require('rdflib').DataFactory;
+const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
-const QuadStore = require('..').QuadStore;
-const storeUtils = require('../lib/utils')
+const storeUtils = require('../lib/utils');
 const AsyncIterator = require('asynciterator');
-
 
 let db;
 let rs;
@@ -27,7 +23,10 @@ beforeEach((done) => {
 });
 
 afterEach((done) => {
-  fs.remove(db, done);
+  rs.close((closeErr) => {
+    if (closeErr) { done(closeErr); return; }
+    fs.remove(db, done);
+  });
 });
 
 describe('QuadStore', () => {

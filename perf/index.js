@@ -86,7 +86,10 @@ function createRdfStore(dataFactory) {
 }
 
 function removeStore(store) {
-  return fs.removeSync(store._path);
+  store.close((closeErr) => {
+    if (closeErr) throw closeErr;
+    return fs.removeSync(store._path);
+  });
 }
 
 function time(name, fn, cb) {

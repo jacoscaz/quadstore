@@ -23,7 +23,10 @@ beforeEach((done) => {
 });
 
 afterEach((done) => {
-  fs.remove(db, done);
+  qs.close((closeErr) => {
+    if (closeErr) { done(closeErr); return; }
+    fs.remove(db, done);
+  });
 });
 
 describe('QuadStore', () => {

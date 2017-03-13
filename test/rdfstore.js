@@ -226,12 +226,55 @@ describe('RdfStore', () => {
     const source = new AsyncIterator.ArrayIterator(quads);
     rs.import(source, (importErr) => {
       if (importErr) { done(importErr); return; }
-      storeUtils.toArray(rs.match(), (arrayErr, matchedQuads) => {
+      storeUtils.toArray(rs.match(null, null, null, factory.defaultGraph()), (arrayErr, matchedQuads) => {
         if (arrayErr) { done(arrayErr); return; }
         should(matchedQuads).have.length(1);
         should(matchedQuads[0].graph.value).be.exactly('');
         should(matchedQuads[0]).deepEqual(quads[0]);
         done();
+      });
+    });
+  });
+
+  it('should match quads by subject, delete and insert', (done) => {
+    const oldQuads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s0'),
+        factory.namedNode('http://ex.com/p0'),
+        factory.literal('o0', 'en-gb'),
+        factory.blankNode('g0')
+      ),
+      factory.quad(
+        factory.namedNode('http://ex.com/s1'),
+        factory.namedNode('http://ex.com/p1'),
+        factory.literal('o1', 'en-gb'),
+        factory.blankNode('g1')
+      )
+    ];
+    const newQuads = [
+      factory.quad(
+        factory.namedNode('http://ex.com/s2'),
+        factory.namedNode('http://ex.com/p2'),
+        factory.literal('o2', 'en-gb'),
+        factory.blankNode('g2')
+      )
+    ];
+    const matchTerms = { subject: factory.namedNode('http://ex.com/s0') };
+    const source = new AsyncIterator.ArrayIterator(oldQuads);
+    rs.import(source, (importErr) => {
+      if (importErr) { done(importErr); return; }
+      rs.getdelput(matchTerms, newQuads, (getdelputErr) => {
+        if (getdelputErr) { done(getdelputErr); return; }
+        storeUtils.toArray(rs.match(), (arrayErr, matchedQuads) => {
+          if (arrayErr) {
+            done(arrayErr);
+            return;
+          }
+          should(matchedQuads).have.length(2);
+          should(matchedQuads[0]).deepEqual(oldQuads[1]);
+          should(matchedQuads[1]).deepEqual(newQuads[0]);
+          done();
+        });
       });
     });
   });

@@ -77,11 +77,11 @@ Deletes existing quads. Does *not* throw or return an error if quads do not exis
 Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* throw or return errors if
 deleting non-existing quads or updating already existing quads. 
 
-#### QuadStore.prototype.match() ####
+#### QuadStore.prototype.get() ####
 
     const query = {context: 'c'};
 
-    store.match(query, (getErr, matchingQuads) => {});
+    store.get(query, (getErr, matchingQuads) => {});
 
 Returns all quads within the store matching the terms in the specified query.
 
@@ -89,18 +89,18 @@ Returns all quads within the store matching the terms in the specified query.
 
     const query = {context: 'c'};
     
-    store.createReadStream(query, (getErr, readableStream) => {});
+    const readableStream = store.createReadStream(query, (getErr, readableStream) => {});
 
 Returns a `stream.Readable` of all quads matching the terms in the specified query. 
 
-#### QuadStore.prototype.matchDeleteAndInsert() ####
+#### QuadStore.prototype.getdelput() ####
 
     const delQuery = {context: 'co'};
     const newQuads = [
         {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
     ];
     
-    store.matchDeleteAndInsert(delQuery, newQuads, (mdiErr) => {});
+    store.getdelput(delQuery, newQuads, (mdiErr) => {});
 
 Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 
@@ -116,7 +116,11 @@ the `Source` and `Sink` interfaces (partially). Support for the `Store` interfac
     const store = new RdfStore('./path/to/db', {dataFactory});
 
 Instantiates a new store. The `dataFactory` parameter *must* be an implementation of the 
-`dataFactory` interface defined in the RDF/JS specification. 
+`dataFactory` interface defined in the RDF/JS specification.
+
+The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, the `get`, 
+`put`, `del`, `delput`, `getdelput` and `createReadStream` methods accept and return 
+arrays of `Quad()` instances.
 
 #### RdfStore.prototype.import() ####
 
@@ -133,7 +137,7 @@ Consumes the stream storing each incoming quad.
     
     const readableStream = store.match(subject, null, null, graph);
 
-Returns a `stream.Readable` of `Quad()` instances matching the provided terms.  
+Returns a `stream.Readable` of `Quad()` instances matching the provided terms.
 
 ### Browser ###
 

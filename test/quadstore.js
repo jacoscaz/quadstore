@@ -43,7 +43,7 @@ describe('QuadStore', () => {
     const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
     qs.put(quad, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({}, (getErr, quads) => {
+      qs.get({}, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         should(quads[0]).deepEqual(quad);
@@ -56,7 +56,7 @@ describe('QuadStore', () => {
     const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
     qs.put([quad, quad], (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({}, (getErr, quads) => {
+      qs.get({}, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         should(quads[0]).deepEqual(quad);
@@ -69,12 +69,12 @@ describe('QuadStore', () => {
     const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
     qs.put(quad, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({}, (getErr, quads) => {
+      qs.get({}, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         qs.del(quads[0], (delErr) => {
           if (delErr) { done(delErr); return; }
-          qs.match({}, (getErr, quadsAfterDelete) => {
+          qs.get({}, (getErr, quadsAfterDelete) => {
             if (getErr) { done(getErr); return; }
             should(quadsAfterDelete).have.length(0);
             done();
@@ -88,7 +88,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({}, (getErr, quads) => {
+      qs.get({}, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         quads.sort(utils.quadSorter);
         should(quads).have.length(5);
@@ -102,7 +102,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's' }, (getErr, quads) => {
+      qs.get({ subject: 's' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -114,7 +114,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ predicate: 'p' }, (getErr, quads) => {
+      qs.get({ predicate: 'p' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(3);
         done();
@@ -126,7 +126,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ object: 'o' }, (getErr, quads) => {
+      qs.get({ object: 'o' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -138,7 +138,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ context: 'c' }, (getErr, quads) => {
+      qs.get({ context: 'c' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(3);
         done();
@@ -150,7 +150,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's2', predicate: 'p' }, (getErr, quads) => {
+      qs.get({ subject: 's2', predicate: 'p' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -162,7 +162,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's2', object: 'o' }, (getErr, quads) => {
+      qs.get({ subject: 's2', object: 'o' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         done();
@@ -174,7 +174,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's2', context: 'c' }, (getErr, quads) => {
+      qs.get({ subject: 's2', context: 'c' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -186,7 +186,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ predicate: 'p', object: 'o' }, (getErr, quads) => {
+      qs.get({ predicate: 'p', object: 'o' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -198,7 +198,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ predicate: 'p', context: 'c' }, (getErr, quads) => {
+      qs.get({ predicate: 'p', context: 'c' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(3);
         done();
@@ -210,7 +210,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ object: 'o2', context: 'c2' }, (getErr, quads) => {
+      qs.get({ object: 'o2', context: 'c2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
 
@@ -223,7 +223,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's', predicate: 'p2', object: 'o2' }, (getErr, quads) => {
+      qs.get({ subject: 's', predicate: 'p2', object: 'o2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         done();
@@ -235,7 +235,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's', predicate: 'p2', context: 'c2' }, (getErr, quads) => {
+      qs.get({ subject: 's', predicate: 'p2', context: 'c2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         done();
@@ -247,7 +247,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's', object: 'o2', context: 'c2' }, (getErr, quads) => {
+      qs.get({ subject: 's', object: 'o2', context: 'c2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         done();
@@ -259,7 +259,7 @@ describe('QuadStore', () => {
     const quadsArray = quadsSamples;
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
+      qs.get({ predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(2);
         done();
@@ -270,7 +270,7 @@ describe('QuadStore', () => {
   it('should match quads by subject, predicate, object and context', (done) => {
     qs.put(quadsSamples, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.match({ subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
+      qs.get({ subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
         if (getErr) { done(getErr); return; }
         should(quads).have.length(1);
         should(quads[0]).deepEqual(quadsSamples[4]);
@@ -288,9 +288,9 @@ describe('QuadStore', () => {
     ];
     qs.put(quadsArray, (putErr) => {
       if (putErr) { done(putErr); return; }
-      qs.matchDeleteAndInsert({}, newQuads, (err) => {
+      qs.getdelput({}, newQuads, (err) => {
         if (err) { done(err); return; }
-        qs.match({}, (getErr, quads) => {
+        qs.get({}, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           newQuads.sort(utils.quadSorter);
           quads.sort(utils.quadSorter);

@@ -149,46 +149,19 @@ describe('RdfStore', () => {
           });
       });
 
-      it('should match quads by subject', (done) => {
-        const quads = [
-          factory.quad(
-            factory.namedNode('http://ex.com/s'),
-            factory.namedNode('http://ex.com/p'),
-            factory.literal('o', 'en-gb'),
-            factory.namedNode('http://ex.com/g')
-          ),
-          factory.quad(
-            factory.namedNode('http://ex.com/s'),
-            factory.namedNode('http://ex.com/p2'),
-            factory.literal('o2', 'en-gb'),
-            factory.namedNode('http://ex.com/g')
-          )
-        ];
-        const source = new AsyncIterator.ArrayIterator(quads);
-        rs.import(source)
-          .on('error', done)
-          .on('end', () => {
-            const subject = factory.namedNode('http://ex.com/s');
-            utils.toArray(rs.match(subject), (arrayErr, matchedQuads) => {
-              if (arrayErr) {
-                done(arrayErr);
-                return;
-              }
-              should(matchedQuads).have.length(2);
-              should(matchedQuads[0].subject).deepEqual(subject);
-              should(matchedQuads[1].subject).deepEqual(subject);
-              done();
-            });
-          });
-      });
-
       it('should match the default graph (explicit)', (done) => {
         const quads = [
           factory.quad(
-            factory.namedNode('http://ex.com/s'),
-            factory.namedNode('http://ex.com/p'),
-            factory.literal('o', 'en-gb'),
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
             factory.defaultGraph()
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s1'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
@@ -207,19 +180,25 @@ describe('RdfStore', () => {
           });
       });
 
-      it('should match the default graph (implicit)', (done) => {
+      it('should match quads by the default graph (implicit)', (done) => {
         const quads = [
           factory.quad(
-            factory.namedNode('http://ex.com/s'),
-            factory.namedNode('http://ex.com/p'),
-            factory.literal('o', 'en-gb')
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s1'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
-            const readStream = rs.match(factory.namedNode('http://ex.com/s'), null, null, factory.defaultGraph());
+            const readStream = rs.match(null, null, null, factory.defaultGraph());
             utils.toArray(readStream, (arrayErr, matchedQuads) => {
               if (arrayErr) {
                 done(arrayErr);

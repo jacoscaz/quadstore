@@ -108,7 +108,7 @@ Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a si
 
 `quadstore` aims to support the [RDF/JS](https://github.com/rdfjs/representation-task-force)
 interface specification through the specialized `RdfStore` class, which currently implements
-the `Source` and `Sink` interfaces (partially). Support for the `Store` interface is coming.
+the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no RegExp(s)).
 
 #### RdfStore class ####
 
@@ -122,22 +122,48 @@ The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, th
 `put`, `del`, `delput`, `getdelput` and `createReadStream` methods accept and return 
 arrays of `Quad()` instances.
 
-#### RdfStore.prototype.import() ####
-
-    const readableStream; // A stream.Readable of Quad() instances
-    
-    store.import(readableStream, (importErr) => {});
-
-Consumes the stream storing each incoming quad.
-
 #### RdfStore.prototype.match() ####
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
     
-    const readableStream = store.match(subject, null, null, graph);
+    store.match(subject, null, null, graph)
+      .on('error', (err) => {})
+      .on('data', (quad) => {})
+      .on('end', () => {});
 
 Returns a `stream.Readable` of `Quad()` instances matching the provided terms.
+
+#### RdfStore.prototype.import() ####
+
+    const readableStream; // A stream.Readable of Quad() instances
+    
+    store.import(readableStream)
+      .on('error', (err) => {})
+      .on('end', () => {});
+
+Consumes the stream storing each incoming quad.
+
+#### RdfStore.prototype.remove() ####
+
+    const readableStream; // A stream.Readable of Quad() instances
+    
+    store.remove(readableStream)
+      .on('error', (err) => {})
+      .on('end', () => {});
+
+Consumes the stream removing each incoming quad.
+
+#### RdfStore.prototype.removeMatches() ####
+
+    const subject = dataFactory.namedNode('http://example.com/subject');
+    const graph = dataFactory.namedNode('http://example.com/graph');
+    
+    store.removeMatches(subject, null, null, graph)    
+      .on('error', (err) => {})
+      .on('end', () => {});
+
+Removes all quad  matching the provided terms.
 
 ### Browser ###
 

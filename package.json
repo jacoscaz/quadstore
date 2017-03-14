@@ -13,6 +13,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
+    "repeat-test": "while mocha; do :; done",
     "build-browser-test": "browserify browser/quadstore.js -s quadstore -o browser/quadstore-bundle.js"
   },
   "repository": {
@@ -31,12 +32,14 @@
     "fs-extra": "^2.0.0",
     "level-js": "^2.2.4",
     "leveldown": "^1.6.0",
+    "memdown": "^1.2.4",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
     "rdf-data-model": "github:rdf-ext/rdf-data-model#develop",
     "rdflib": "^0.14.0",
     "shortid": "^2.2.8",
-    "should": "^11.2.0"
+    "should": "^11.2.0",
+    "uuid": "^3.0.1"
   },
   "dependencies": {
     "async": "^2.1.5",

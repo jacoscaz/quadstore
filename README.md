@@ -35,14 +35,74 @@ Unstable, very much under development. The following features are missing and ar
 
 ### Graph API ###
 
+#### QuadStore class ####
+
     const QuadStore = require('quadstore').QuadStore;
     const store = new QuadStore('./path/to/db');
+
+Instantiates a new store.
+
+#### QuadStore.prototype.put() ####
+
+    const quads = [
+        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+    ];
     
-    store.put({subject: 's', predicate: 'p', object: 'o', graph: 'g'}, function(putErr) {
-        store.match({graph: 'g'}, function (getErr, quads) {
-            console.log(quads);
-        });
-    });
+    store.put(quads, (putErr) => {});
+    
+Stores new quads. Does *not* throw or return an error if quads already exists.
+
+#### QuadStore.prototype.del() ####
+
+    const quads = [
+        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+    ];
+    
+    store.del(quads, (delErr) => {});
+
+Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
+
+#### QuadStore.prototype.delput() ####
+
+    const oldQuads = [
+        {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
+    ];
+    
+    const newQuads = [
+        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+    ];
+    
+    store.delput(oldQuads, newQUads, (delputErr) => {});
+    
+Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* throw or return errors if
+deleting non-existing quads or updating already existing quads. 
+
+#### QuadStore.prototype.get() ####
+
+    const query = {context: 'c'};
+
+    store.get(query, (getErr, matchingQuads) => {});
+
+Returns all quads within the store matching the terms in the specified query.
+
+#### QuadStore.prototype.createReadStream() ####
+
+    const query = {context: 'c'};
+    
+    const readableStream = store.createReadStream(query, (getErr, readableStream) => {});
+
+Returns a `stream.Readable` of all quads matching the terms in the specified query. 
+
+#### QuadStore.prototype.getdelput() ####
+
+    const delQuery = {context: 'co'};
+    const newQuads = [
+        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+    ];
+    
+    store.getdelput(delQuery, newQuads, (mdiErr) => {});
+
+Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 
 ### RDF API ###
 
@@ -50,14 +110,34 @@ Unstable, very much under development. The following features are missing and ar
 interface specification through the specialized `RdfStore` class, which currently implements
 the `Source` and `Sink` interfaces (partially). Support for the `Store` interface is coming.
 
+#### RdfStore class ####
+
     const RdfStore = require('quadstore').RdfStore;
     const store = new RdfStore('./path/to/db', {dataFactory});
 
-    // Returns a stream.Readable of dataFactory.Quad(s) matching the specified terms
-    const readStream = store.match(term, term, term, term);
+Instantiates a new store. The `dataFactory` parameter *must* be an implementation of the 
+`dataFactory` interface defined in the RDF/JS specification.
+
+The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, the `get`, 
+`put`, `del`, `delput`, `getdelput` and `createReadStream` methods accept and return 
+arrays of `Quad()` instances.
+
+#### RdfStore.prototype.import() ####
+
+    const readableStream; // A stream.Readable of Quad() instances
     
-    // Imports dataFactory.Quad(s) from the provided stream.Readable
-    store.import(readStream, (err) => {});
+    store.import(readableStream, (importErr) => {});
+
+Consumes the stream storing each incoming quad.
+
+#### RdfStore.prototype.match() ####
+
+    const subject = dataFactory.namedNode('http://example.com/subject');
+    const graph = dataFactory.namedNode('http://example.com/graph');
+    
+    const readableStream = store.match(subject, null, null, graph);
+
+Returns a `stream.Readable` of `Quad()` instances matching the provided terms.
 
 ### Browser ###
 

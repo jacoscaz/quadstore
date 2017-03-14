@@ -20,6 +20,8 @@
     "strict": ["error", "global"],
     "no-underscore-dangle": "off",
     "prefer-template": "off",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "max-len": "off",
+    "comma-dangle": "off"
   }
 }

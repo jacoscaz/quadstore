@@ -40,7 +40,7 @@ Very much under development. Planned future features:
     - [QuadStore.prototype.del](#quadstoreprototypedel)
     - [QuadStore.prototype.delput](#quadstoreprototypedelput)
     - [QuadStore.prototype.getdelput](#quadstoreprototypegetdelput)
-    - [QuadStore.prototype.createreadstream](#createreadstream)
+    - [QuadStore.prototype.createreadstream](#quadstoreprototypecreatereadstream)
 - [RDF/JS Interface](#rdfjs-interface)
     - [RdfStore class](#rdfstore-class)
     - [RdfStore.prototype.match](#rdfstoreprototypematch)

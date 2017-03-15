@@ -33,16 +33,16 @@ Very much under development. Planned future features:
 
 ## Usage ##
 
-- [Graph Interface](#graphapi)
-    - [QuadStore class](#quadstoreclass)
+- [Graph Interface](#graph-api)
+    - [QuadStore class](#quadstore-class)
     - [QuadStore.prototype.get](#quadstoreprototypeget)
     - [QuadStore.prototype.put](#quadstoreprototypeput)
     - [QuadStore.prototype.del](#quadstoreprototypedel)
     - [QuadStore.prototype.delput](#quadstoreprototypedelput)
     - [QuadStore.prototype.getdelput](#quadstoreprototypegetdelput)
     - [QuadStore.prototype.createreadstream](#createreadstream)
-- [RDF/JS Interface](#rdfjsinterface)
-    - [RdfStore class](#rdfstoreclass)
+- [RDF/JS Interface](#rdfjs-interface)
+    - [RdfStore class](#rdfstore-class)
     - [RdfStore.prototype.match](#rdfstoreprototypematch)
     - [RdfStore.prototype.import](#rdfstoreprototypeimport)
     - [RdfStore.prototype.remove](#rdfstoreprototyperemove)

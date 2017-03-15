@@ -33,26 +33,24 @@ Very much under development. Planned future features:
 
 ## Usage ##
 
-- [Graph Interface](#graph-api)
-    - [QuadStore class](#graph-class)
-    - [QuadStore.prototype.get](#graph-get)
-    - [QuadStore.prototype.put](#graph-put)
-    - [QuadStore.prototype.del](#graph-del)
-    - [QuadStore.prototype.delput](#graph-delput)
-    - [QuadStore.prototype.getdelput](#graph-getdelput)
-    - [QuadStore.prototype.createreadstream](#graph-createreadstream)
-- [RDF/JS Interface](#rdf-api)
-    - [QuadStore class](#rdf-class)
-    - [QuadStore.prototype.match](#rdf-match)
-    - [QuadStore.prototype.import](#rdf-import)
-    - [QuadStore.prototype.remove](#rdf-remove)
-    - [QuadStore.prototype.removeMatches](#rdf-removematches)
+- [Graph Interface](#graphapi)
+    - [QuadStore class](#quadstoreclass)
+    - [QuadStore.prototype.get](#quadstoreprototypeget)
+    - [QuadStore.prototype.put](#quadstoreprototypeput)
+    - [QuadStore.prototype.del](#quadstoreprototypedel)
+    - [QuadStore.prototype.delput](#quadstoreprototypedelput)
+    - [QuadStore.prototype.getdelput](#quadstoreprototypegetdelput)
+    - [QuadStore.prototype.createreadstream](#createreadstream)
+- [RDF/JS Interface](#rdfjsinterface)
+    - [RdfStore class](#rdfstoreclass)
+    - [RdfStore.prototype.match](#rdfstoreprototypematch)
+    - [RdfStore.prototype.import](#rdfstoreprototypeimport)
+    - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
+    - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
 
 ### Graph API 
-<a name="graph-api"></a>
 
 #### QuadStore class 
-<a name="graph-class"></a>
 
     const QuadStore = require('quadstore').QuadStore;
     const store = new QuadStore('./path/to/db', opts);
@@ -60,7 +58,6 @@ Very much under development. Planned future features:
 Instantiates a new store.
 
 #### QuadStore.prototype.put() 
-<a name="graph-put"></a>
 
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', context: 'c'}
@@ -71,7 +68,6 @@ Instantiates a new store.
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
 #### QuadStore.prototype.del() 
-<a name="graph-del"></a>
 
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', context: 'c'}
@@ -82,7 +78,6 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
 
 #### QuadStore.prototype.delput() 
-<a name="graph-delput"></a>
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
@@ -98,7 +93,6 @@ Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* thro
 deleting non-existing quads or updating already existing quads. 
 
 #### QuadStore.prototype.get() 
-<a name="graph-get"></a>
 
     const query = {context: 'c'};
 
@@ -107,7 +101,6 @@ deleting non-existing quads or updating already existing quads.
 Returns all quads within the store matching the terms in the specified query.
 
 #### QuadStore.prototype.createReadStream() 
-<a name="graph-createreadstrean"></a>
 
     const query = {context: 'c'};
     
@@ -116,7 +109,6 @@ Returns all quads within the store matching the terms in the specified query.
 Returns a `stream.Readable` of all quads matching the terms in the specified query. 
 
 #### QuadStore.prototype.getdelput()
-<a name="graph-getdelput"></a>
 
     const delQuery = {context: 'co'};
     const newQuads = [
@@ -127,15 +119,13 @@ Returns a `stream.Readable` of all quads matching the terms in the specified que
 
 Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 
-### RDF API 
-<a name="rdf-api"></a>
+### RDF/JS Interface 
 
 `quadstore` aims to support the [RDF/JS](https://github.com/rdfjs/representation-task-force)
 interface specification through the specialized `RdfStore` class, which currently implements
 the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no RegExp(s)).
 
 #### RdfStore class 
-<a name="rdf-class"></a>
 
     const RdfStore = require('quadstore').RdfStore;
     const store = new RdfStore('./path/to/db', {dataFactory});
@@ -148,7 +138,6 @@ The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, th
 arrays of `Quad()` instances.
 
 #### RdfStore.prototype.match() 
-<a name="rdf-match"></a>
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
@@ -161,7 +150,6 @@ arrays of `Quad()` instances.
 Returns a `stream.Readable` of `Quad()` instances matching the provided terms.
 
 #### RdfStore.prototype.import() 
-<a name="rdf-match"></a>
 
     const readableStream; // A stream.Readable of Quad() instances
     
@@ -172,7 +160,6 @@ Returns a `stream.Readable` of `Quad()` instances matching the provided terms.
 Consumes the stream storing each incoming quad.
 
 #### RdfStore.prototype.remove() 
-<a name="rdf-remove"></a>
 
     const readableStream; // A stream.Readable of Quad() instances
     
@@ -183,7 +170,6 @@ Consumes the stream storing each incoming quad.
 Consumes the stream removing each incoming quad.
 
 #### RdfStore.prototype.removeMatches() 
-<a name="rdf-removematches"></a>
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');

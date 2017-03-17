@@ -146,7 +146,7 @@ async.series(
     if (err) throw err;
     for (let r = 0, result; r < results.length; r++) {
       result = results[r];
-      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 7, 2), pad(result.secs, 2, 2));
+      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 9, 2), pad(result.secs, 2, 2));
     }
   }
 )

@@ -22,6 +22,7 @@
     "prefer-template": "off",
     "no-param-reassign": "off",
     "max-len": "off",
-    "comma-dangle": "off"
+    "comma-dangle": "off",
+    "consistent-return": "off"
   }
 }

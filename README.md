@@ -63,7 +63,8 @@ Instantiates a new store.
         {subject: 's', predicate: 'p', object: 'o', context: 'c'}
     ];
     
-    store.put(quads, (putErr) => {});
+    store.put(quads, (putErr) => {}); // callback
+    store.put(quads).then(() => {}); // promise
     
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
@@ -73,7 +74,8 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
         {subject: 's', predicate: 'p', object: 'o', context: 'c'}
     ];
     
-    store.del(quads, (delErr) => {});
+    store.del(quads, (delErr) => {}); // callback
+    store.del(quads).then(() => {}); // promise
 
 Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
 
@@ -87,7 +89,8 @@ Deletes existing quads. Does *not* throw or return an error if quads do not exis
         {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
     ];
     
-    store.delput(oldQuads, newQUads, (delputErr) => {});
+    store.delput(oldQuads, newQUads, (delputErr) => {}); // callback
+    store.delput(oldQuads, newQUads).then(() => {}); // promise
     
 Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* throw or return errors if
 deleting non-existing quads or updating already existing quads. 
@@ -96,7 +99,8 @@ deleting non-existing quads or updating already existing quads.
 
     const query = {context: 'c'};
 
-    store.get(query, (getErr, matchingQuads) => {});
+    store.get(query, (getErr, matchingQuads) => {}); // callback
+    store.get(query).then((matchingQuads) => {}); // promise
 
 Returns all quads within the store matching the terms in the specified query.
 
@@ -115,7 +119,8 @@ Returns a `stream.Readable` of all quads matching the terms in the specified que
         {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
     ];
     
-    store.getdelput(delQuery, newQuads, (mdiErr) => {});
+    store.getdelput(delQuery, newQuads, (mdiErr) => {}); // callback
+    store.getdelput(delQuery, newQuads).then(() => {}); // promise
 
 Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 

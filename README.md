@@ -108,7 +108,7 @@ Returns all quads within the store matching the terms in the specified query.
 
     const query = {context: 'c'};
     
-    const readableStream = store.createReadStream(query, (getErr, readableStream) => {});
+    const readableStream = store.createReadStream(query);
 
 Returns a `stream.Readable` of all quads matching the terms in the specified query. 
 

@@ -126,7 +126,7 @@ async.series(
       const quads = new Array(times).fill(true).map(() => generateQuad(rdflibFactory));
       time(
         'rdf   / import / rdflib',
-        (done) => { store.import(new AsyncIterator.ArrayIterator(quads), done); },
+        (done) => { store.import(new AsyncIterator.ArrayIterator(quads)).on('end', done); },
         (err, result) => { removeStore(store); cb(err, result); }
       )
     },
@@ -136,7 +136,7 @@ async.series(
       const quads = new Array(times).fill(true).map(() => generateQuad(rdfextFactory));
       time(
         'rdf   / import / rdfext',
-        (done) => { store.import(new AsyncIterator.ArrayIterator(quads), done); },
+        (done) => { store.import(new AsyncIterator.ArrayIterator(quads)).on('end', done); },
         (err, result) => { removeStore(store); cb(err, result); }
       )
     }
@@ -146,7 +146,7 @@ async.series(
     if (err) throw err;
     for (let r = 0, result; r < results.length; r++) {
       result = results[r];
-      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 7, 2), pad(result.secs, 2, 2));
+      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 9, 2), pad(result.secs, 2, 2));
     }
   }
 )

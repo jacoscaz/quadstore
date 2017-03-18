@@ -17,7 +17,7 @@ describe('QuadStore', () => {
 
   describe('QuadStore.prototype.put()', () => {
 
-    it('should store a single quad correctly (as object)', (done) => {
+    it('should store a single quad correctly (as object) (cb)', (done) => {
       const newQuad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
       qs.put(newQuad, (putErr) => {
         if (putErr) { done(putErr); return; }
@@ -30,12 +30,24 @@ describe('QuadStore', () => {
       });
     });
 
-    it('should store a single quad correctly (as array)', (done) => {
+    it('should store a single quad correctly (as object) (promise)', () => {
+      const newQuad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      return qs.put(newQuad)
+        .then(() => {
+          return qs.get({});
+        })
+        .then((foundQuads) => {
+          should(foundQuads).have.length(1);
+          should(foundQuads[0]).deepEqual(newQuad);
+        });
+    });
+
+    it('should store a single quad correctly (as array) (cb)', (done) => {
       const newQuads = [{ subject: 's', predicate: 'p', object: 'o', context: 'c' }];
       qs.put(newQuads, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({}, (err, foundQuads) => {
-          if (err) { done(err); return; }
+        qs.get({}, (getErr, foundQuads) => {
+          if (getErr) { done(getErr); return; }
           should(foundQuads).have.length(1);
           should(foundQuads[0]).deepEqual(newQuads[0]);
           done();
@@ -43,7 +55,19 @@ describe('QuadStore', () => {
       });
     });
 
-    it('should store multiple quads correctly', (done) => {
+    it('should store a single quad correctly (as array) (promise)', () => {
+      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', context: 'c' }];
+      return qs.put(newQuads)
+        .then(() => {
+          return qs.get({});
+        })
+        .then((foundQuads) => {
+          should(foundQuads).have.length(1);
+          should(foundQuads[0]).deepEqual(newQuads[0]);
+        });
+    });
+
+    it('should store multiple quads correctly (cb)', (done) => {
       const newQuads = [
         { subject: 's0', predicate: 'p0', object: 'o0', context: 'c0' },
         { subject: 's1', predicate: 'p1', object: 'o1', context: 'c1' }
@@ -60,7 +84,23 @@ describe('QuadStore', () => {
       });
     });
 
-    it('should not duplicate quads', (done) => {
+    it('should store multiple quads correctly (promise)', () => {
+      const newQuads = [
+        { subject: 's0', predicate: 'p0', object: 'o0', context: 'c0' },
+        { subject: 's1', predicate: 'p1', object: 'o1', context: 'c1' }
+      ];
+      return qs.put(newQuads)
+        .then(() => {
+          return qs.get({});
+        })
+        .then((foundQuads) => {
+          should(foundQuads).have.length(2);
+          should(foundQuads[0]).deepEqual(newQuads[0]);
+          should(foundQuads[1]).deepEqual(newQuads[1]);
+        });
+    });
+
+    it('should not duplicate quads (cb)', (done) => {
       const newQuads = [
         { subject: 's', predicate: 'p', object: 'o', context: 'c' },
         { subject: 's', predicate: 'p', object: 'o', context: 'c' }
@@ -76,11 +116,26 @@ describe('QuadStore', () => {
       });
     });
 
+    it('should not duplicate quads (promise)', () => {
+      const newQuads = [
+        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
+        { subject: 's', predicate: 'p', object: 'o', context: 'c' }
+      ];
+      return qs.put(newQuads)
+        .then(() => {
+          return qs.get({});
+        })
+        .then((foundQuads) => {
+          should(foundQuads).have.length(1);
+          should(foundQuads[0]).deepEqual(newQuads[0]);
+        });
+    });
+
   });
 
   describe('QuadStore.prototype.del()', () => {
 
-    it('should delete a quad correctly', (done) => {
+    it('should delete a quad correctly (cb)', (done) => {
       const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
       qs.put(quad, (putErr) => {
         if (putErr) { done(putErr); return; }
@@ -99,6 +154,24 @@ describe('QuadStore', () => {
       });
     });
 
+    it('should delete a quad correctly (promise)', () => {
+      const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      return qs.put(quad)
+        .then(() => {
+          return qs.get({});
+        })
+        .then((quads) => {
+          should(quads).have.length(1);
+          return qs.del(quads[0]);
+        })
+        .then(() => {
+          return qs.get({});
+        })
+        .then((quadsAfterDelete) => {
+          should(quadsAfterDelete).have.length(0);
+        });
+    });
+
   });
 
   describe('QuadStore.prototype.getputdel()', () => {
@@ -111,7 +184,7 @@ describe('QuadStore', () => {
       { subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' },
     ];
 
-    it('should delete matching quads and do an insert', (done) => {
+    it('should delete matching quads and do an insert (cb)', (done) => {
       const quadsArray = quadsSamples;
       const newQuads = [
         { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
@@ -131,6 +204,27 @@ describe('QuadStore', () => {
           });
         });
       });
+    });
+
+    it('should delete matching quads and do an insert (promise)', () => {
+      const quadsArray = quadsSamples;
+      const newQuads = [
+        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+      ];
+      return qs.put(quadsArray)
+        .then(() => {
+          return qs.getdelput({}, newQuads);
+        })
+        .then(() => {
+          return qs.get({});
+        })
+        .then((quads) => {
+          newQuads.sort(utils.quadSorter);
+          quads.sort(utils.quadSorter);
+          should(quads).have.length(2);
+          should(quads).be.deepEqual(newQuads);
+        });
     });
 
   });

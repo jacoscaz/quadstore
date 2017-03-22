@@ -388,4 +388,47 @@ describe('RdfStore', () => {
 
   });
 
+  describe('Graph Interface', () => {
+
+    describe('RdfStore.prototype.query()', () => {
+
+      it('Should query correctly.', (done) => {
+
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.namedNode('http://ex.com/g0')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o2', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+
+        rs.put(quads);
+
+        return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
+          .intersect(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
+          .toArray((err, foundQuads) => {
+            if (err) { done(err); return; }
+            should(foundQuads).have.length(1);
+            should(foundQuads[0]).deepEqual(quads[1]);
+            done();
+          });
+      });
+
+    });
+
+  });
+
 });

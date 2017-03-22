@@ -408,4 +408,30 @@ describe('QuadStore', () => {
 
   });
 
+  describe('QuadStore.prototype.query()', () => {
+
+    it('Should query correctly.', (done) => {
+      const quads = [
+        { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
+        { subject: 's1', predicate: 'p1', object: 'o1', context: 'g1' },
+        { subject: 's2', predicate: 'p2', object: 'o2', context: 'g2' },
+        { subject: 's3', predicate: 'p4', object: 'o5', context: 'g3' },
+        { subject: 's3', predicate: 'p4', object: 'o4', context: 'g4' },
+        { subject: 's3', predicate: 'p5', object: 'o3', context: 'g5' },
+        { subject: 's6', predicate: 'p6', object: 'o6', context: 'g5' },
+        { subject: 's7', predicate: 'p7', object: 'o7', context: 'g7' },
+      ];
+      qs.put(quads);
+      return qs.query({ subject: 's3' })
+        .intersect(qs.query({ context: 'g5' }), ['context'])
+        .toArray((err, foundQuads) => {
+          if (err) { done(err); return; }
+          should(foundQuads).have.length(1);
+          should(foundQuads[0]).deepEqual(quads[5]);
+          done();
+        });
+    });
+
+  });
+
 });

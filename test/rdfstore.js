@@ -418,7 +418,7 @@ describe('RdfStore', () => {
         rs.put(quads);
 
         return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
-          .intersect(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
+          .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
           .toArray((err, foundQuads) => {
             if (err) { done(err); return; }
             should(foundQuads).have.length(1);

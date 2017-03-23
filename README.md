@@ -27,9 +27,28 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Very much under development. Planned future features:
+Very much under development.
 
-- [ ] complex searches w/ query planning
+#### Current features:
+
+- API supports both Promises (native) and callbacks
+- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
+- Full CRUD of quads
+- Advanced queries (union, join, sort, filter)
+- Configurable name for context term
+
+#### Upcoming features / goals
+
+- v0.1.0
+    - API freeze for current features
+    - more unit test coverage 
+    - first official release (non alpha)
+- v0.2.0
+    - better unit tests
+    
+#### Features we're thinking about
+
+- SPARQL support
 
 ## Usage ##
 
@@ -48,7 +67,7 @@ Very much under development. Planned future features:
     - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
     - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
 - [Advanced Queries](#advanced-queries)
-    - [(Quad|Rdf)Store.prototype.query](#quadrdfstorepropertyquery)
+    - [(Quad|Rdf)Store.prototype.query](#quadrdfstoreprototypequery)
     - [AbstractQuery.prototype.toReadStream](#abstractqueryprototypetoreadstream)
     - [AbstractQuery.prototype.toReadArray](#abstractqueryprototypetoarray)
     - [AbstractQuery.prototype.join](#abstractqueryprototypejoin)

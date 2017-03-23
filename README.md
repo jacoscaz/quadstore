@@ -47,6 +47,15 @@ Very much under development. Planned future features:
     - [RdfStore.prototype.import](#rdfstoreprototypeimport)
     - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
     - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
+- [Advanced Queries](#advanced-queries)
+    - [(Quad|Rdf)Store.prototype.query](#quadrdfstorepropertyquery)
+    - [AbstractQuery.prototype.toReadStream](#abstractqueryprototypetoreadstream)
+    - [AbstractQuery.prototype.toReadArray](#abstractqueryprototypetoarray)
+    - [AbstractQuery.prototype.join](#abstractqueryprototypejoin)
+    - [AbstractQuery.prototype.sort](#abstractqueryprototypesort)
+    - [AbstractQuery.prototype.filter](#abstractqueryprototypefilter)
+    - [AbstractQuery.prototype.union](#abstractqueryprototypeunion)
+  
 
 ### Graph API 
 
@@ -102,7 +111,7 @@ deleting non-existing quads or updating already existing quads.
     store.get(query, (getErr, matchingQuads) => {}); // callback
     store.get(query).then((matchingQuads) => {}); // promise
 
-Returns all quads within the store matching the terms in the specified query.
+Returns all quads within the store matching the terms in the specified query.    
 
 #### QuadStore.prototype.createReadStream() 
 
@@ -184,6 +193,90 @@ Consumes the stream removing each incoming quad.
       .on('end', () => {});
 
 Removes all quad  matching the provided terms.
+
+### Advanced queries
+
+Both the `QuadStore` class and the `RdfStore` class support advanced queries.
+
+#### (Quad|Rdf)Store.prototype.query()
+
+    store.query({ context: 'c' });
+
+This method is the entry point from which complex queries can be built. 
+This method returns an instance of the `AbstractQuery` class, a class that
+implements a chainable, lazy-loading, stream-based querying system.  
+
+#### AbstractQuery.prototype.toReadStream()
+
+    store.query({context: 'c'}).toReadStream((err, readStream) => {}); // callback
+    store.query({context: 'c'}).toReadStream().then(readStream) => {}); // promise
+
+Creates a stream of quads matching the query.
+
+#### AbstractQuery.prototype.toArray()
+
+    store.query({context: 'c'}).toArray((err, quads) => {}); // callback
+    store.query({context: 'c'}).toArray().then(quads) => {}); // promise
+
+Returns an array of quads matching the query.
+
+#### AbstractQuery.prototype.join()
+
+    const query1 = store.query({ context: 'c' });
+    const query2 = store.query({ subject: 's' });
+    
+    store.query(query1)
+        .join(query2, ['predicate'])
+        .toReadStream((err, readStream) => {});
+        
+    store.query(query1)
+        .join(query2, ['predicate'])
+        .toReadStream().then(readStream) => {});
+
+Performs an inner join between the two queries limited to the terms
+specified in the array. 
+
+The above example queries for all quads with context `c` and with a predicate 
+shared by at least another quad having subject 's'. 
+
+Returns an instance of `AbstractQuery` and can be daisy-chained with
+other similar methods to refine queries.
+
+#### AbstractQuery.prototype.sort()
+
+    store.query(query1)
+        .sort(['context', 'predicate], false)
+        .toReadStream().then(readStream) => {}); // promise
+
+Sorts results in lexicographical order based on the values of the terms in the array.
+        
+Returns an instance of `AbstractQuery` and can be daisy-chained with other similar 
+methods to refine queries.
+        
+#### AbstractQuery.prototype.filter()
+
+    store.query(query1)
+        .filter(quad => quad.subject === 's')
+        .toReadStream().then(readStream) => {}); // promise
+
+Filters results according to the provided function.
+        
+Returns an instance of `AbstractQuery` and can be daisy-chained with other similar 
+methods to refine queries.
+
+#### AbstractQuery.prototype.union()
+
+    const query1 = store.query({ context: 'c' });
+    const query2 = store.query({ subject: 's' });
+    
+    store.query(query1)
+        .union(query2)
+        .toReadStream().then(readStream) => {}); // promise
+
+Merges the results of both queries as if they were a single query (no ordering guaranteed).
+        
+Returns an instance of `AbstractQuery` and can be daisy-chained with other similar 
+methods to refine queries.
 
 ### Browser ###
 

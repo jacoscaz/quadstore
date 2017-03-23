@@ -83,7 +83,14 @@ Very much under development.
     const QuadStore = require('quadstore').QuadStore;
     const store = new QuadStore('./path/to/db', opts);
 
-Instantiates a new store.
+Instantiates a new store. Supported options are:
+
+    opts.db = require('leveldown');   // Levelup's backend
+    opts.contextKey = 'context';      // Name of fourth term
+    
+The `contextKey` option determines which key the store will use to read and
+write the context of each quad. A value of `graph` requires all quads to be
+formatted as `{ subject, predicate, object, graph }` objects.
 
 #### QuadStore.prototype.put() 
 

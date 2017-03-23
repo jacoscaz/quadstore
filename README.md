@@ -114,7 +114,12 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 
 Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
 
-#### QuadStore.prototype.delput() 
+#### QuadStore.prototype.patch()
+ 
+This methods deletes and inserts quads in a single operation.
+
+If the first argument is an array, it is assumed to be an array of quads
+to be deleted.
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
@@ -124,11 +129,23 @@ Deletes existing quads. Does *not* throw or return an error if quads do not exis
         {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
     ];
     
-    store.delput(oldQuads, newQUads, (delputErr) => {}); // callback
-    store.delput(oldQuads, newQUads).then(() => {}); // promise
+    store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
+    store.patch(oldQuads, newQUads).then(() => {}); // promise
     
-Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* throw or return errors if
-deleting non-existing quads or updating already existing quads. 
+if the first argument is not an array, it is assumed to be a set of terms
+matching those of the quads to be deleted.
+
+    const matchTerms = {subject: 'so', context: 'co'}
+    
+    const newQuads = [
+        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+    ];
+    
+    store.patch(matchTerms, newQUads, (delputErr) => {}); // callback
+    store.patch(matchTerms, newQUads).then(() => {}); // promise
+    
+This method does *not* throw or return errors if deleting non-existing quads
+or updating pre-existing ones. 
 
 #### QuadStore.prototype.get() 
 
@@ -146,18 +163,6 @@ Returns all quads within the store matching the terms in the specified query.
     const readableStream = store.createReadStream(query);
 
 Returns a `stream.Readable` of all quads matching the terms in the specified query. 
-
-#### QuadStore.prototype.getdelput()
-
-    const delQuery = {context: 'co'};
-    const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
-    ];
-    
-    store.getdelput(delQuery, newQuads, (mdiErr) => {}); // callback
-    store.getdelput(delQuery, newQuads).then(() => {}); // promise
-
-Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 
 ### RDF/JS Interface 
 

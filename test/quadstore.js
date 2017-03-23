@@ -174,7 +174,7 @@ describe('QuadStore', () => {
 
   });
 
-  describe('QuadStore.prototype.getputdel()', () => {
+  describe('QuadStore.prototype.patch()', () => {
 
     const quadsSamples = [
       { subject: 's', predicate: 'p', object: 'o', context: 'c' },
@@ -184,6 +184,55 @@ describe('QuadStore', () => {
       { subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' },
     ];
 
+    it('should delete old quads and add new ones (cb)', (done) => {
+      const quadsArray = quadsSamples;
+      const oldQuads = [
+        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
+      ];
+      const newQuads = [
+        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+      ];
+      const expected = quadsSamples.slice(2).concat(newQuads);
+      qs.put(quadsArray, (putErr) => {
+        if (putErr) { done(putErr); return; }
+        qs.patch(oldQuads, newQuads, (patchErr) => {
+          if (patchErr) { done(patchErr); return; }
+          qs.get({}, (getErr, quads) => {
+            if (getErr) { done(getErr); return; }
+            newQuads.sort(utils.quadSorter);
+            quads.sort(utils.quadSorter);
+            should(quads).have.length(expected.length);
+            should(quads).be.deepEqual(expected.sort(utils.quadSorter));
+            done();
+          });
+        });
+      });
+    });
+
+    it('should delete old quads and add new ones (promise)', () => {
+      const quadsArray = quadsSamples;
+      const oldQuads = [
+        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
+      ];
+      const newQuads = [
+        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+      ];
+      const expected = quadsSamples.slice(2).concat(newQuads);
+      return qs.put(quadsArray)
+        .then(() => qs.patch(oldQuads, newQuads))
+        .then(() => qs.get({}))
+        .then((quads) => {
+          newQuads.sort(utils.quadSorter);
+          quads.sort(utils.quadSorter);
+          should(quads).have.length(expected.length);
+          should(quads).be.deepEqual(expected.sort(utils.quadSorter));
+        });
+    });
+
     it('should delete matching quads and do an insert (cb)', (done) => {
       const quadsArray = quadsSamples;
       const newQuads = [
@@ -192,14 +241,14 @@ describe('QuadStore', () => {
       ];
       qs.put(quadsArray, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.getdelput({}, newQuads, (err) => {
-          if (err) { done(err); return; }
+        qs.patch({ subject: 's2' }, newQuads, (patchErr) => {
+          if (patchErr) { done(patchErr); return; }
           qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
             newQuads.sort(utils.quadSorter);
             quads.sort(utils.quadSorter);
-            should(quads).have.length(2);
-            should(quads).be.deepEqual(newQuads);
+            should(quads).have.length(4);
+            should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
             done();
           });
         });
@@ -214,7 +263,7 @@ describe('QuadStore', () => {
       ];
       return qs.put(quadsArray)
         .then(() => {
-          return qs.getdelput({}, newQuads);
+          return qs.patch({ subject: 's2' }, newQuads);
         })
         .then(() => {
           return qs.get({});
@@ -222,8 +271,8 @@ describe('QuadStore', () => {
         .then((quads) => {
           newQuads.sort(utils.quadSorter);
           quads.sort(utils.quadSorter);
-          should(quads).have.length(2);
-          should(quads).be.deepEqual(newQuads);
+          should(quads).have.length(4);
+          should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
         });
     });
 

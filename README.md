@@ -57,9 +57,8 @@ Very much under development.
     - [QuadStore.prototype.get](#quadstoreprototypeget)
     - [QuadStore.prototype.put](#quadstoreprototypeput)
     - [QuadStore.prototype.del](#quadstoreprototypedel)
-    - [QuadStore.prototype.delput](#quadstoreprototypedelput)
-    - [QuadStore.prototype.getdelput](#quadstoreprototypegetdelput)
-    - [QuadStore.prototype.createreadstream](#quadstoreprototypecreatereadstream)
+    - [QuadStore.prototype.patch](#quadstoreprototypepatch)
+    - [QuadStore.prototype.createReadStream](#quadstoreprototypecreatereadstream)
 - [RDF/JS Interface](#rdfjs-interface)
     - [RdfStore class](#rdfstore-class)
     - [RdfStore.prototype.match](#rdfstoreprototypematch)
@@ -83,7 +82,14 @@ Very much under development.
     const QuadStore = require('quadstore').QuadStore;
     const store = new QuadStore('./path/to/db', opts);
 
-Instantiates a new store.
+Instantiates a new store. Supported options are:
+
+    opts.db = require('leveldown');   // Levelup's backend
+    opts.contextKey = 'context';      // Name of fourth term
+    
+The `contextKey` option determines which key the store will use to read and
+write the context of each quad. A value of `graph` requires all quads to be
+formatted as `{ subject, predicate, object, graph }` objects.
 
 #### QuadStore.prototype.put() 
 
@@ -107,7 +113,12 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 
 Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
 
-#### QuadStore.prototype.delput() 
+#### QuadStore.prototype.patch()
+ 
+This methods deletes and inserts quads in a single operation.
+
+If the first argument is an array, it is assumed to be an array of quads
+to be deleted.
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
@@ -117,11 +128,23 @@ Deletes existing quads. Does *not* throw or return an error if quads do not exis
         {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
     ];
     
-    store.delput(oldQuads, newQUads, (delputErr) => {}); // callback
-    store.delput(oldQuads, newQUads).then(() => {}); // promise
+    store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
+    store.patch(oldQuads, newQUads).then(() => {}); // promise
     
-Deletes `oldQuads` and inserts `newQuads` in a single operation. Does *not* throw or return errors if
-deleting non-existing quads or updating already existing quads. 
+if the first argument is not an array, it is assumed to be a set of terms
+matching those of the quads to be deleted.
+
+    const matchTerms = {subject: 'so', context: 'co'}
+    
+    const newQuads = [
+        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+    ];
+    
+    store.patch(matchTerms, newQUads, (delputErr) => {}); // callback
+    store.patch(matchTerms, newQUads).then(() => {}); // promise
+    
+This method does *not* throw or return errors if deleting non-existing quads
+or updating pre-existing ones. 
 
 #### QuadStore.prototype.get() 
 
@@ -139,18 +162,6 @@ Returns all quads within the store matching the terms in the specified query.
     const readableStream = store.createReadStream(query);
 
 Returns a `stream.Readable` of all quads matching the terms in the specified query. 
-
-#### QuadStore.prototype.getdelput()
-
-    const delQuery = {context: 'co'};
-    const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
-    ];
-    
-    store.getdelput(delQuery, newQuads, (mdiErr) => {}); // callback
-    store.getdelput(delQuery, newQuads).then(() => {}); // promise
-
-Deletes all quads matching the terms in `delQuery` and stores `newQuads` in a single operation.
 
 ### RDF/JS Interface 
 

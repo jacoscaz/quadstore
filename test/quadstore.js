@@ -539,6 +539,70 @@ describe('QuadStore', () => {
 
     });
 
+    describe('QuadStore.prototype.query() - Combined queries', () => {
+      it('Should query, union, and join correctly', () => {
+        const initialQuads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', context: 'g1' },
+          { subject: 's0', predicate: 'p2', object: 'o6', context: 'g2' },
+          { subject: 's3', predicate: 'p3', object: 'o3', context: 'g3' },
+          { subject: 's4', predicate: 'p5', object: 'o4', context: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 'o5', context: 'g5' },
+          { subject: 's6', predicate: 'p5', object: 'o6', context: 'g6' }
+        ];
+        const filter = ((quad) => quad.predicate === 'p1');
+        const queryTerms = { subject: 's0' };
+        const unionTerms = { predicate: 'p5' };
+        const joinTerms = { object: 'o6' };
+        const expectedQuads = [initialQuads[2], initialQuads[6]]
+          .sort(utils.quadSorter);
+        return qs.put(initialQuads)
+          .then(() => {
+            return qs.query(queryTerms)
+              .union(qs.query(unionTerms))
+              .join(qs.query(joinTerms), ['object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            foundQuads.sort(utils.quadSorter);
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(expectedQuads);
+          });
+      });
+
+      it('Should join (single, subject), join (single, predicate), and join (single, object) correctly', () => {
+        const initialQuads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
+          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g1' },
+          { subject: 's0', predicate: 'p0', object: 'o6', context: 'g2' },
+          { subject: 's0', predicate: 'p3', object: 'o3', context: 'g3' },
+          { subject: 's0', predicate: 'p5', object: 'o4', context: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 'o5', context: 'g5' },
+          { subject: 's6', predicate: 'p5', object: 'o6', context: 'g6' }
+        ];
+        const queryTerms = {};
+        const firstJoinTerms = { subject: 's0' };
+        const secondJoinTerms = { predicate: 'p0' };
+        const thirdJoinTerms = { object: 'o0' };
+        const expectedQuads = initialQuads.slice(0, 2)
+          .sort(utils.quadSorter);
+        return qs.put(initialQuads)
+          .then(() => {
+            return qs.query(queryTerms)
+              .join(qs.query(firstJoinTerms), ['subject'])
+              .join(qs.query(secondJoinTerms), ['predicate'])
+              .join(qs.query(thirdJoinTerms), ['object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            foundQuads.sort(utils.quadSorter);
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(expectedQuads);
+          });
+      });
+
+    });
+
   });
 
 });

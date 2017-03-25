@@ -14,7 +14,7 @@ describe('RdfStore', () => {
   let rs;
 
   beforeEach(() => {
-    rs = new RdfStore(shortid.generate(), {db: memdown, dataFactory: factory});
+    rs = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
   });
 
   describe('RDF/JS interface', () => {
@@ -104,17 +104,17 @@ describe('RdfStore', () => {
         rs.import(source)
           .on('error', done)
           .on('end', () => {
-          const object = factory.literal('o2', 'en-gb');
-          utils.toArray(rs.match(null, null, object), (arrayErr, matchedQuads) => {
-            if (arrayErr) {
-              done(arrayErr);
-              return;
-            }
-            should(matchedQuads).have.length(1);
-            should(matchedQuads[0]).deepEqual(quads[1]);
-            done();
+            const object = factory.literal('o2', 'en-gb');
+            utils.toArray(rs.match(null, null, object), (arrayErr, matchedQuads) => {
+              if (arrayErr) {
+                done(arrayErr);
+                return;
+              }
+              should(matchedQuads).have.length(1);
+              should(matchedQuads[0]).deepEqual(quads[1]);
+              done();
+            });
           });
-        });
       });
 
       it('should match quads by graph', (done) => {

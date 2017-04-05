@@ -1,6 +1,7 @@
 
 'use strict';
 
+const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
 const memdown = require('memdown');
@@ -8,6 +9,16 @@ const shortid = require('shortid');
 const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
 const AsyncIterator = require('asynciterator');
+
+function stripTermSerializedValue(quads) {
+  const _quads = _.isArray(quads) ? quads : [quads];
+  quads.forEach((quad) => {
+    ['subject', 'predicate', 'object', 'graph'].forEach((termKey) => {
+      delete quad[termKey]._serializedValue;
+    });
+  });
+  return _.isArray(quads) ? _quads : _quads[0];
+}
 
 describe('RdfStore', () => {
 
@@ -46,6 +57,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[1]);
               done();
@@ -78,6 +90,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[1]);
               done();
@@ -110,6 +123,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[1]);
               done();
@@ -142,6 +156,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[1]);
               done();
@@ -173,6 +188,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[0]);
               done();
@@ -204,6 +220,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0].graph).deepEqual(quads[0].graph);
               done();
@@ -233,6 +250,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(1);
               should(matchedQuads[0]).deepEqual(quads[0]);
               done();
@@ -270,6 +288,7 @@ describe('RdfStore', () => {
                 done(arrayErr);
                 return;
               }
+              stripTermSerializedValue(matchedQuads);
               should(matchedQuads).have.length(3);
               should(matchedQuads[0]).deepEqual(quads[0]);
               should(matchedQuads[1]).deepEqual(quads[1]);
@@ -331,6 +350,7 @@ describe('RdfStore', () => {
                     done(arrayErr);
                     return;
                   }
+                  stripTermSerializedValue(matchedQuads);
                   should(matchedQuads).have.length(1);
                   should(matchedQuads[0]).deepEqual(importQuads[0]);
                   done();
@@ -376,6 +396,7 @@ describe('RdfStore', () => {
                     done(arrayErr);
                     return;
                   }
+                  stripTermSerializedValue(matchedQuads);
                   should(matchedQuads).have.length(1);
                   should(matchedQuads[0]).deepEqual(importQuads[0]);
                   done();
@@ -421,6 +442,7 @@ describe('RdfStore', () => {
           .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
           .toArray((err, foundQuads) => {
             if (err) { done(err); return; }
+            stripTermSerializedValue(foundQuads);
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[1]);
             done();

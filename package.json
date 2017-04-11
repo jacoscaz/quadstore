@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "A quadstore for node.js",
   "keywords": [
     "node",
@@ -21,7 +21,7 @@
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
-    "async": "^2.1.5",
+    "asynciterator": "^1.1.0",
     "benchmark": "^2.1.3",
     "browserify": "^14.1.0",
     "eslint": "^3.13.0",
@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "async": "^2.1.5",
-    "asynciterator": "^1.1.0",
     "collections": "^5.0.6",
     "levelup": "^1.3.5",
     "lodash": "^4.17.4",

@@ -244,7 +244,7 @@ terms, such as those used in the `query`, `get` and `createReadStream` methods, 
 
     const matchTerms = {
         subject: dataFactory.namedNode('http://example.com/subject'),
-        subject: dataFactory.namedNode('http://example.com/predicate')
+        predicate: dataFactory.namedNode('http://example.com/predicate')
     };
 
     store.get(matchTerms).then((quads) => {

@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "A quadstore for node.js",
   "keywords": [
     "node",

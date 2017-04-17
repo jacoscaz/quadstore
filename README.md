@@ -43,12 +43,12 @@ A LevelDB-backed graph database for Node.js with native support for quads.
 
 ## Introduction ##
 
-A quad is a triple with an added `context` term.
+A quad is a triple with an added `graph` term.
 
-    (subject, predicate, object, context)
+    (subject, predicate, object, graph)
 
 Such additional term facilitates the representation of metadata, such as provenance, in the form of other quads having
-the `context` of the former quads as their subject.
+the `graph` of the former quads as their subject or object.
 
 Quadstore heavily borrows from LevelGraph's approach to storing tuples but employs a different indexing strategy that
 requires the same number of indexes to handle the additional dimension and efficiently store and query quads.
@@ -62,28 +62,21 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Very much under development.
+Active, under development.
 
 #### Current features:
 
-- API supports both Promises (native) and callbacks
-- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
+- Supports both native Promise(s) and callbacks
+- Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
 - Full CRUD of quads
 - Advanced queries (union, join, sort, filter)
-- Configurable name for context term
 
-#### Upcoming features / goals
+#### Release notes
 
-- v0.1.0
-    - API freeze for current features
-    - more unit test coverage
-    - first official release (non alpha)
-- v0.2.0
-    - better unit tests
-
-#### Features we're thinking about
-
-- SPARQL support
+- v1.0.0
+    - default `contextKey` value changed from `context` to `graph`
+- v0.2.1
+    - replaces AsyncIterator instances w/ native (Readable|Writable)Stream instances
 
 ## Relationship with LevelUP / LevelDOWN
 
@@ -117,9 +110,9 @@ Instantiates a new store. Supported options are:
     opts.contextKey = 'context';      // Name of fourth term
 
 The `contextKey` option determines which key the store will use to read and
-write the context of each quad. A value of `graph` requires all quads to be
-formatted as `{ subject, predicate, object, graph }` objects. Similarly, the
-default `context` value requires all quads to be formatted as
+write the context of each quad. The default value `graph` requires all quads to be
+formatted as `{ subject, predicate, object, graph }` objects. Similarly, the value
+`context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
 
 The `db` option is optional and, if provided, *must* be a factory function
@@ -130,7 +123,7 @@ returning an object compatible with
 #### QuadStore.prototype.put()
 
     const quads = [
-        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
 
     store.put(quads, (putErr) => {}); // callback
@@ -141,7 +134,7 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 #### QuadStore.prototype.del()
 
     const quads = [
-        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
 
     store.del(quads, (delErr) => {}); // callback
@@ -157,11 +150,11 @@ If the first argument is an array, it is assumed to be an array of quads
 to be deleted.
 
     const oldQuads = [
-        {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
+        {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
     ];
 
     const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
 
     store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
@@ -170,10 +163,10 @@ to be deleted.
 if the first argument is not an array, it is assumed to be a set of terms
 matching those of the quads to be deleted.
 
-    const matchTerms = {subject: 'so', context: 'co'}
+    const matchTerms = {subject: 'so', graph: 'go'}
 
     const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
 
     store.patch(matchTerms, newQUads, (delputErr) => {}); // callback
@@ -184,7 +177,7 @@ or updating pre-existing ones.
 
 #### QuadStore.prototype.get()
 
-    const query = {context: 'c'};
+    const query = {graph: 'g'};
 
     store.get(query, (getErr, matchingQuads) => {}); // callback
     store.get(query).then((matchingQuads) => {}); // promise
@@ -193,7 +186,7 @@ Returns all quads within the store matching the terms in the specified query.
 
 #### QuadStore.prototype.createReadStream()
 
-    const query = {context: 'c'};
+    const query = {graph: 'c'};
 
     const readableStream = store.createReadStream(query);
 

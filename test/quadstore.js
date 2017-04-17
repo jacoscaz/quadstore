@@ -18,7 +18,7 @@ describe('QuadStore', () => {
   describe('QuadStore.prototype.put()', () => {
 
     it('should store a single quad correctly (as object) (cb)', (done) => {
-      const newQuad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      const newQuad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       qs.put(newQuad, (putErr) => {
         if (putErr) { done(putErr); return; }
         qs.get({}, (err, foundQuads) => {
@@ -31,7 +31,7 @@ describe('QuadStore', () => {
     });
 
     it('should store a single quad correctly (as object) (promise)', () => {
-      const newQuad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      const newQuad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       return qs.put(newQuad)
         .then(() => {
           return qs.get({});
@@ -43,7 +43,7 @@ describe('QuadStore', () => {
     });
 
     it('should store a single quad correctly (as array) (cb)', (done) => {
-      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', context: 'c' }];
+      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', graph: 'c' }];
       qs.put(newQuads, (putErr) => {
         if (putErr) { done(putErr); return; }
         qs.get({}, (getErr, foundQuads) => {
@@ -56,7 +56,7 @@ describe('QuadStore', () => {
     });
 
     it('should store a single quad correctly (as array) (promise)', () => {
-      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', context: 'c' }];
+      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', graph: 'c' }];
       return qs.put(newQuads)
         .then(() => {
           return qs.get({});
@@ -69,8 +69,8 @@ describe('QuadStore', () => {
 
     it('should store multiple quads correctly (cb)', (done) => {
       const newQuads = [
-        { subject: 's0', predicate: 'p0', object: 'o0', context: 'c0' },
-        { subject: 's1', predicate: 'p1', object: 'o1', context: 'c1' }
+        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
+        { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
       qs.put(newQuads, (putErr) => {
         if (putErr) { done(putErr); return; }
@@ -86,8 +86,8 @@ describe('QuadStore', () => {
 
     it('should store multiple quads correctly (promise)', () => {
       const newQuads = [
-        { subject: 's0', predicate: 'p0', object: 'o0', context: 'c0' },
-        { subject: 's1', predicate: 'p1', object: 'o1', context: 'c1' }
+        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
+        { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
       return qs.put(newQuads)
         .then(() => {
@@ -102,8 +102,8 @@ describe('QuadStore', () => {
 
     it('should not duplicate quads (cb)', (done) => {
       const newQuads = [
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' }
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
       qs.put(newQuads, (putErr) => {
         if (putErr) { done(putErr); return; }
@@ -118,8 +118,8 @@ describe('QuadStore', () => {
 
     it('should not duplicate quads (promise)', () => {
       const newQuads = [
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' }
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
       return qs.put(newQuads)
         .then(() => {
@@ -136,7 +136,7 @@ describe('QuadStore', () => {
   describe('QuadStore.prototype.del()', () => {
 
     it('should delete a quad correctly (cb)', (done) => {
-      const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      const quad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       qs.put(quad, (putErr) => {
         if (putErr) { done(putErr); return; }
         qs.get({}, (getErr, quads) => {
@@ -155,7 +155,7 @@ describe('QuadStore', () => {
     });
 
     it('should delete a quad correctly (promise)', () => {
-      const quad = { subject: 's', predicate: 'p', object: 'o', context: 'c' };
+      const quad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       return qs.put(quad)
         .then(() => {
           return qs.get({});
@@ -177,22 +177,22 @@ describe('QuadStore', () => {
   describe('QuadStore.prototype.patch()', () => {
 
     const quadsSamples = [
-      { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-      { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
-      { subject: 's2', predicate: 'p', object: 'o', context: 'c' },
-      { subject: 's2', predicate: 'p', object: 'o2', context: 'c' },
-      { subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' },
+      { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+      { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
+      { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
+      { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
+      { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
     ];
 
     it('should delete old quads and add new ones (cb)', (done) => {
       const quadsArray = quadsSamples;
       const oldQuads = [
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-        { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
       ];
       const newQuads = [
-        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
-        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+        { subject: 's3', predicate: 'p3', object: 'o2', graph: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', graph: 'c1' },
       ];
       const expected = quadsSamples.slice(2).concat(newQuads);
       qs.put(quadsArray, (putErr) => {
@@ -214,12 +214,12 @@ describe('QuadStore', () => {
     it('should delete old quads and add new ones (promise)', () => {
       const quadsArray = quadsSamples;
       const oldQuads = [
-        { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-        { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
       ];
       const newQuads = [
-        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
-        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+        { subject: 's3', predicate: 'p3', object: 'o2', graph: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', graph: 'c1' },
       ];
       const expected = quadsSamples.slice(2).concat(newQuads);
       return qs.put(quadsArray)
@@ -236,8 +236,8 @@ describe('QuadStore', () => {
     it('should delete matching quads and do an insert (cb)', (done) => {
       const quadsArray = quadsSamples;
       const newQuads = [
-        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
-        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+        { subject: 's3', predicate: 'p3', object: 'o2', graph: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', graph: 'c1' },
       ];
       qs.put(quadsArray, (putErr) => {
         if (putErr) { done(putErr); return; }
@@ -258,8 +258,8 @@ describe('QuadStore', () => {
     it('should delete matching quads and do an insert (promise)', () => {
       const quadsArray = quadsSamples;
       const newQuads = [
-        { subject: 's3', predicate: 'p3', object: 'o2', context: 'c' },
-        { subject: 's4', predicate: 'p3', object: 'o2', context: 'c1' },
+        { subject: 's3', predicate: 'p3', object: 'o2', graph: 'c' },
+        { subject: 's4', predicate: 'p3', object: 'o2', graph: 'c1' },
       ];
       return qs.put(quadsArray)
         .then(() => {
@@ -281,11 +281,11 @@ describe('QuadStore', () => {
   describe('QuadStore.prototype.get()', () => {
 
     const quadsSamples = [
-      { subject: 's', predicate: 'p', object: 'o', context: 'c' },
-      { subject: 's', predicate: 'p2', object: 'o2', context: 'c2' },
-      { subject: 's2', predicate: 'p', object: 'o', context: 'c' },
-      { subject: 's2', predicate: 'p', object: 'o2', context: 'c' },
-      { subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' },
+      { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+      { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
+      { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
+      { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
+      { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
     ];
 
     it('should match quads by subject', (done) => {
@@ -324,7 +324,7 @@ describe('QuadStore', () => {
     it('should match quads by context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ context: 'c' }, (getErr, quads) => {
+        qs.get({ graph: 'c' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(3);
           done();
@@ -357,7 +357,7 @@ describe('QuadStore', () => {
     it('should match quads by subject and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ subject: 's2', context: 'c' }, (getErr, quads) => {
+        qs.get({ subject: 's2', graph: 'c' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(2);
           done();
@@ -379,7 +379,7 @@ describe('QuadStore', () => {
     it('should match quads by predicate and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ predicate: 'p', context: 'c' }, (getErr, quads) => {
+        qs.get({ predicate: 'p', graph: 'c' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(3);
           done();
@@ -390,7 +390,7 @@ describe('QuadStore', () => {
     it('should match quads by object and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ object: 'o2', context: 'c2' }, (getErr, quads) => {
+        qs.get({ object: 'o2', graph: 'c2' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(2);
 
@@ -413,7 +413,7 @@ describe('QuadStore', () => {
     it('should match quads by subject, predicate and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ subject: 's', predicate: 'p2', context: 'c2' }, (getErr, quads) => {
+        qs.get({ subject: 's', predicate: 'p2', graph: 'c2' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(1);
           done();
@@ -424,7 +424,7 @@ describe('QuadStore', () => {
     it('should match quads by subject, object and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ subject: 's', object: 'o2', context: 'c2' }, (getErr, quads) => {
+        qs.get({ subject: 's', object: 'o2', graph: 'c2' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(1);
           done();
@@ -435,7 +435,7 @@ describe('QuadStore', () => {
     it('should match quads by predicate, object and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
+        qs.get({ predicate: 'p2', object: 'o2', graph: 'c2' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(2);
           done();
@@ -446,7 +446,7 @@ describe('QuadStore', () => {
     it('should match quads by subject, predicate, object and context', (done) => {
       qs.put(quadsSamples, (putErr) => {
         if (putErr) { done(putErr); return; }
-        qs.get({ subject: 's2', predicate: 'p2', object: 'o2', context: 'c2' }, (getErr, quads) => {
+        qs.get({ subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' }, (getErr, quads) => {
           if (getErr) { done(getErr); return; }
           should(quads).have.length(1);
           should(quads[0]).deepEqual(quadsSamples[4]);
@@ -463,14 +463,14 @@ describe('QuadStore', () => {
 
       it('Should query correctly.', (done) => {
         const quads = [
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
-          { subject: 's0', predicate: 'p1', object: 'o1', context: 'g1' },
-          { subject: 's2', predicate: 'p2', object: 'o2', context: 'g2' },
-          { subject: 's2', predicate: 'p4', object: 'o3', context: 'g3' },
-          { subject: 's4', predicate: 'p4', object: 'o4', context: 'g4' },
-          { subject: 's5', predicate: 'p5', object: 'o3', context: 'g5' },
-          { subject: 's6', predicate: 'p6', object: 'o6', context: 'g6' },
-          { subject: 's7', predicate: 'p7', object: 'o7', context: 'g7' },
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's2', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's2', predicate: 'p4', object: 'o3', graph: 'g3' },
+          { subject: 's4', predicate: 'p4', object: 'o4', graph: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 'o3', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g6' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
         qs.put(quads);
         const first = qs.query({ subject: 's0' });
@@ -491,14 +491,14 @@ describe('QuadStore', () => {
     describe('QuadStore.prototype.query().filter()', () => {
       it('Should filter correctly.', (done) => {
         const quads = [
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
-          { subject: 's0', predicate: 'p1', object: 'o1', context: 'g1' },
-          { subject: 's2', predicate: 'p2', object: 'o2', context: 'g2' },
-          { subject: 's2', predicate: 'p4', object: 'o3', context: 'g3' },
-          { subject: 's2', predicate: 'p4', object: 'o4', context: 'g4' },
-          { subject: 's2', predicate: 'p5', object: 'o3', context: 'g5' },
-          { subject: 's2', predicate: 'p6', object: 'o6', context: 'g6' },
-          { subject: 's2', predicate: 'p7', object: 'o7', context: 'g7' },
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's2', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's2', predicate: 'p4', object: 'o3', graph: 'g3' },
+          { subject: 's2', predicate: 'p4', object: 'o4', graph: 'g4' },
+          { subject: 's2', predicate: 'p5', object: 'o3', graph: 'g5' },
+          { subject: 's2', predicate: 'p6', object: 'o6', graph: 'g6' },
+          { subject: 's2', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
         qs.put(quads);
         qs.query({ subject: 's2' })
@@ -517,18 +517,18 @@ describe('QuadStore', () => {
 
       it('Should query correctly.', (done) => {
         const quads = [
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
-          { subject: 's1', predicate: 'p1', object: 'o1', context: 'g1' },
-          { subject: 's2', predicate: 'p2', object: 'o2', context: 'g2' },
-          { subject: 's3', predicate: 'p4', object: 'o5', context: 'g3' },
-          { subject: 's3', predicate: 'p4', object: 'o4', context: 'g4' },
-          { subject: 's3', predicate: 'p5', object: 'o3', context: 'g5' },
-          { subject: 's6', predicate: 'p6', object: 'o6', context: 'g5' },
-          { subject: 's7', predicate: 'p7', object: 'o7', context: 'g7' },
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's2', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's3', predicate: 'p4', object: 'o5', graph: 'g3' },
+          { subject: 's3', predicate: 'p4', object: 'o4', graph: 'g4' },
+          { subject: 's3', predicate: 'p5', object: 'o3', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g5' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
         qs.put(quads);
         return qs.query({ subject: 's3' })
-          .join(qs.query({ context: 'g5' }), ['context'])
+          .join(qs.query({ graph: 'g5' }), ['context'])
           .toArray((err, foundQuads) => {
             if (err) { done(err); return; }
             should(foundQuads).have.length(1);
@@ -542,13 +542,13 @@ describe('QuadStore', () => {
     describe('QuadStore.prototype.query() - Combined queries', () => {
       it('Should query, union, and join correctly', () => {
         const initialQuads = [
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
-          { subject: 's0', predicate: 'p1', object: 'o1', context: 'g1' },
-          { subject: 's0', predicate: 'p2', object: 'o6', context: 'g2' },
-          { subject: 's3', predicate: 'p3', object: 'o3', context: 'g3' },
-          { subject: 's4', predicate: 'p5', object: 'o4', context: 'g4' },
-          { subject: 's5', predicate: 'p5', object: 'o5', context: 'g5' },
-          { subject: 's6', predicate: 'p5', object: 'o6', context: 'g6' }
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's0', predicate: 'p2', object: 'o6', graph: 'g2' },
+          { subject: 's3', predicate: 'p3', object: 'o3', graph: 'g3' },
+          { subject: 's4', predicate: 'p5', object: 'o4', graph: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 'o5', graph: 'g5' },
+          { subject: 's6', predicate: 'p5', object: 'o6', graph: 'g6' }
         ];
         const filter = ((quad) => quad.predicate === 'p1');
         const queryTerms = { subject: 's0' };
@@ -572,13 +572,13 @@ describe('QuadStore', () => {
 
       it('Should join (single, subject), join (single, predicate), and join (single, object) correctly', () => {
         const initialQuads = [
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g0' },
-          { subject: 's0', predicate: 'p0', object: 'o0', context: 'g1' },
-          { subject: 's0', predicate: 'p0', object: 'o6', context: 'g2' },
-          { subject: 's0', predicate: 'p3', object: 'o3', context: 'g3' },
-          { subject: 's0', predicate: 'p5', object: 'o4', context: 'g4' },
-          { subject: 's5', predicate: 'p5', object: 'o5', context: 'g5' },
-          { subject: 's6', predicate: 'p5', object: 'o6', context: 'g6' }
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g1' },
+          { subject: 's0', predicate: 'p0', object: 'o6', graph: 'g2' },
+          { subject: 's0', predicate: 'p3', object: 'o3', graph: 'g3' },
+          { subject: 's0', predicate: 'p5', object: 'o4', graph: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 'o5', graph: 'g5' },
+          { subject: 's6', predicate: 'p5', object: 'o6', graph: 'g6' }
         ];
         const queryTerms = {};
         const firstJoinTerms = { subject: 's0' };

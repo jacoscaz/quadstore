@@ -43,12 +43,12 @@ A LevelDB-backed graph database for Node.js with native support for quads.
 
 ## Introduction ##
 
-A quad is a triple with an added `context` term.
+A quad is a triple with an added `graph` term.
 
-    (subject, predicate, object, context)
+    (subject, predicate, object, graph)
 
 Such additional term facilitates the representation of metadata, such as provenance, in the form of other quads having
-the `context` of the former quads as their subject.
+the `graph` of the former quads as their subject or object.
 
 Quadstore heavily borrows from LevelGraph's approach to storing tuples but employs a different indexing strategy that
 requires the same number of indexes to handle the additional dimension and efficiently store and query quads.
@@ -62,28 +62,18 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Very much under development.
+Active, under development.
+
+#### Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md).
 
 #### Current features:
 
-- API supports both Promises (native) and callbacks
-- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
+- Supports both native Promise(s) and callbacks
+- Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
 - Full CRUD of quads
 - Advanced queries (union, join, sort, filter)
-- Configurable name for context term
-
-#### Upcoming features / goals
-
-- v0.1.0
-    - API freeze for current features
-    - more unit test coverage
-    - first official release (non alpha)
-- v0.2.0
-    - better unit tests
-
-#### Features we're thinking about
-
-- SPARQL support
 
 ## Relationship with LevelUP / LevelDOWN
 
@@ -114,12 +104,12 @@ the `leveldown` package **which has to be explicitly installed via `npm`**.
 Instantiates a new store. Supported options are:
 
     opts.db = require('leveldown');   // Levelup's backend
-    opts.contextKey = 'context';      // Name of fourth term
+    opts.contextKey = 'graph';        // Name of fourth term
 
 The `contextKey` option determines which key the store will use to read and
-write the context of each quad. A value of `graph` requires all quads to be
-formatted as `{ subject, predicate, object, graph }` objects. Similarly, the
-default `context` value requires all quads to be formatted as
+write the fourth term of each quad. The default value `graph` requires all quads to be
+formatted as `{ subject, predicate, object, graph }` objects. Similarly, the value
+`context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
 
 The `db` option is optional and, if provided, *must* be a factory function
@@ -130,7 +120,7 @@ returning an object compatible with
 #### QuadStore.prototype.put()
 
     const quads = [
-        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
 
     store.put(quads, (putErr) => {}); // callback
@@ -141,7 +131,7 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 #### QuadStore.prototype.del()
 
     const quads = [
-        {subject: 's', predicate: 'p', object: 'o', context: 'c'}
+        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
 
     store.del(quads, (delErr) => {}); // callback
@@ -157,11 +147,11 @@ If the first argument is an array, it is assumed to be an array of quads
 to be deleted.
 
     const oldQuads = [
-        {subject: 'so', predicate: 'po', object: 'oo', context: 'co'}
+        {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
     ];
 
     const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
 
     store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
@@ -170,10 +160,10 @@ to be deleted.
 if the first argument is not an array, it is assumed to be a set of terms
 matching those of the quads to be deleted.
 
-    const matchTerms = {subject: 'so', context: 'co'}
+    const matchTerms = {subject: 'so', graph: 'go'}
 
     const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', context: 'cn'}
+        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
 
     store.patch(matchTerms, newQUads, (delputErr) => {}); // callback
@@ -184,7 +174,7 @@ or updating pre-existing ones.
 
 #### QuadStore.prototype.get()
 
-    const query = {context: 'c'};
+    const query = {graph: 'g'};
 
     store.get(query, (getErr, matchingQuads) => {}); // callback
     store.get(query).then((matchingQuads) => {}); // promise
@@ -193,7 +183,7 @@ Returns all quads within the store matching the terms in the specified query.
 
 #### QuadStore.prototype.createReadStream()
 
-    const query = {context: 'c'};
+    const query = {graph: 'c'};
 
     const readableStream = store.createReadStream(query);
 
@@ -388,7 +378,7 @@ Both the `QuadStore` class and the `RdfStore` class support advanced queries.
 
 #### (Quad|Rdf)Store.prototype.query()
 
-    store.query({ context: 'c' });
+    store.query({ graph: 'g' });
 
 This method is the entry point from which complex queries can be built.
 This method returns an instance of the `AbstractQuery` class, a class that
@@ -402,8 +392,8 @@ See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
 #### AbstractQuery.prototype.toReadStream()
 
     // QuadStore
-    quadStore.query({context: 'c'}).toReadStream((err, readStream) => {}); // callback
-    quadStore.query({context: 'c'}).toReadStream().then(readStream) => {}); // promise
+    quadStore.query({graph: 'g'}).toReadStream((err, readStream) => {}); // callback
+    quadStore.query({graph: 'g'}).toReadStream().then(readStream) => {}); // promise
 
     // RdfStore
     rdfStore.query({graph: dataFactory.blankNode('c')}).toReadStream((err, readStream) => {}); // callback
@@ -414,8 +404,8 @@ Creates a stream of quads matching the query.
 #### AbstractQuery.prototype.toArray()
 
     // QuadStore
-    quadStore.query({context: 'c'}).toArray((err, quads) => {}); // callback
-    quadStore.query({context: 'c'}).toArray().then(quads) => {}); // promise
+    quadStore.query({graph: 'g'}).toArray((err, quads) => {}); // callback
+    quadStore.query({graph: 'g'}).toArray().then(quads) => {}); // promise
 
     // RdfStore
     rdfStore.query({graph: dataFactory.blankNode('c')}).toArray((err, quads) => {}); // callback
@@ -426,7 +416,7 @@ Returns an array of quads matching the query.
 #### AbstractQuery.prototype.join()
 
     // QuadStore
-    const matchTermsA = {context: 'c'};
+    const matchTermsA = {graph: 'g'};
     const matchTermsB = {subject: 's'};
     quadStore.query(matchTermsA)
         .join(quadStore.query(matchTermsB), ['predicate'])
@@ -442,7 +432,7 @@ Returns an array of quads matching the query.
 Performs an inner join between the two queries limited to the terms
 specified in the array.
 
-The above example queries for all quads with context `c` and with a predicate
+The above example queries for all quads with graph `g` and with a predicate
 shared by at least another quad having subject 's'.
 
 Returns an instance of `AbstractQuery` and can be daisy-chained with
@@ -452,7 +442,7 @@ other similar methods to refine queries.
 
     // QuadStore
     quadStore.query(matchTerms)
-        .sort(['context', 'predicate], false)
+        .sort(['graph', 'predicate], false)
         .toReadStream().then(readStream) => {});
 
     // RdfStore
@@ -504,27 +494,4 @@ Both the `QuadStore` and the `RdfStore` classes can be used in browsers via `bro
 
 ## LICENSE
 
-MIT License
-
-Copyright (c) 2017 Beautiful Interactions.
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+See [LICENSE.md](./LICENSE.md).

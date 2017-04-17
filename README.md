@@ -66,7 +66,7 @@ Active, under development.
 
 #### Changelog
 
-See [CHANGELOG.md](./changelog.md).
+See [CHANGELOG.md](./CHANGELOG.md).
 
 #### Current features:
 

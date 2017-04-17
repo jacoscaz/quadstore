@@ -107,10 +107,10 @@ the `leveldown` package **which has to be explicitly installed via `npm`**.
 Instantiates a new store. Supported options are:
 
     opts.db = require('leveldown');   // Levelup's backend
-    opts.contextKey = 'context';      // Name of fourth term
+    opts.contextKey = 'graph';        // Name of fourth term
 
 The `contextKey` option determines which key the store will use to read and
-write the context of each quad. The default value `graph` requires all quads to be
+write the fourth term of each quad. The default value `graph` requires all quads to be
 formatted as `{ subject, predicate, object, graph }` objects. Similarly, the value
 `context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
@@ -381,7 +381,7 @@ Both the `QuadStore` class and the `RdfStore` class support advanced queries.
 
 #### (Quad|Rdf)Store.prototype.query()
 
-    store.query({ context: 'c' });
+    store.query({ graph: 'g' });
 
 This method is the entry point from which complex queries can be built.
 This method returns an instance of the `AbstractQuery` class, a class that
@@ -395,8 +395,8 @@ See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
 #### AbstractQuery.prototype.toReadStream()
 
     // QuadStore
-    quadStore.query({context: 'c'}).toReadStream((err, readStream) => {}); // callback
-    quadStore.query({context: 'c'}).toReadStream().then(readStream) => {}); // promise
+    quadStore.query({graph: 'g'}).toReadStream((err, readStream) => {}); // callback
+    quadStore.query({graph: 'g'}).toReadStream().then(readStream) => {}); // promise
 
     // RdfStore
     rdfStore.query({graph: dataFactory.blankNode('c')}).toReadStream((err, readStream) => {}); // callback
@@ -407,8 +407,8 @@ Creates a stream of quads matching the query.
 #### AbstractQuery.prototype.toArray()
 
     // QuadStore
-    quadStore.query({context: 'c'}).toArray((err, quads) => {}); // callback
-    quadStore.query({context: 'c'}).toArray().then(quads) => {}); // promise
+    quadStore.query({graph: 'g'}).toArray((err, quads) => {}); // callback
+    quadStore.query({graph: 'g'}).toArray().then(quads) => {}); // promise
 
     // RdfStore
     rdfStore.query({graph: dataFactory.blankNode('c')}).toArray((err, quads) => {}); // callback
@@ -419,7 +419,7 @@ Returns an array of quads matching the query.
 #### AbstractQuery.prototype.join()
 
     // QuadStore
-    const matchTermsA = {context: 'c'};
+    const matchTermsA = {graph: 'g'};
     const matchTermsB = {subject: 's'};
     quadStore.query(matchTermsA)
         .join(quadStore.query(matchTermsB), ['predicate'])
@@ -435,7 +435,7 @@ Returns an array of quads matching the query.
 Performs an inner join between the two queries limited to the terms
 specified in the array.
 
-The above example queries for all quads with context `c` and with a predicate
+The above example queries for all quads with graph `g` and with a predicate
 shared by at least another quad having subject 's'.
 
 Returns an instance of `AbstractQuery` and can be daisy-chained with
@@ -445,7 +445,7 @@ other similar methods to refine queries.
 
     // QuadStore
     quadStore.query(matchTerms)
-        .sort(['context', 'predicate], false)
+        .sort(['graph', 'predicate], false)
         .toReadStream().then(readStream) => {});
 
     // RdfStore

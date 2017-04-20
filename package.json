@@ -21,7 +21,6 @@
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
-    "asynciterator": "^1.1.0",
     "benchmark": "^2.1.3",
     "browserify": "^14.1.0",
     "eslint": "^3.13.0",

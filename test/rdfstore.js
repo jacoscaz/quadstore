@@ -4,11 +4,8 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const memdown = require('memdown');
-const shortid = require('shortid');
+const stream = require('stream');
 const factory = require('rdf-data-model');
-const RdfStore = require('..').RdfStore;
-const AsyncIterator = require('asynciterator');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -18,6 +15,17 @@ function stripTermSerializedValue(quads) {
     });
   });
   return _.isArray(quads) ? _quads : _quads[0];
+}
+
+function createArrayStream(arr) {
+  let i = 0;
+  const l = arr.length;
+  return new stream.Readable({
+    objectMode: true,
+    read() {
+      this.push(i < l ? arr[i++] : null);
+    }
+  });
 }
 
 module.exports = function () {
@@ -47,7 +55,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -80,7 +88,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -113,7 +121,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -146,7 +154,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -179,7 +187,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -210,7 +218,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -241,7 +249,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -279,7 +287,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -337,8 +345,8 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const importStream = new AsyncIterator.ArrayIterator(importQuads);
-        const removeStream = new AsyncIterator.ArrayIterator(removeQuads);
+        const importStream = createArrayStream(importQuads);
+        const removeStream = createArrayStream(removeQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {
@@ -384,7 +392,7 @@ module.exports = function () {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const importStream = new AsyncIterator.ArrayIterator(importQuads);
+        const importStream = createArrayStream(importQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {

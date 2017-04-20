@@ -6,7 +6,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const shortid = require('shortid');
 const async = require('async');
-const AsyncIterator = require('asynciterator');
+const stream = require('stream');
 const quadstore = require('..');
 
 const rdfextFactory = require('rdf-data-model');
@@ -108,6 +108,17 @@ function pad(num, integers, decimals) {
   return ('0000' + parts[0]).slice(-1 * integers) + '.' + parts[1];
 }
 
+function createArrayStream(arr) {
+  let i = 0;
+  const l = arr.length;
+  return new stream.Readable({
+    objectMode: true,
+    read() {
+      this.push(i < l ? arr[i++] : null);
+    }
+  });
+}
+
 async.series(
   [
 
@@ -116,7 +127,7 @@ async.series(
       const quads = new Array(times).fill(true).map(() => generateTerms());
       time(
         'graph / put            ',
-        (done) => { async.eachSeries(quads, (quad, eachDone) => { store.put(quad, eachDone); }, done); },
+        (done) => { store.importFromStream(createArrayStream(quads), done); },
         (err, result) => { removeStore(store); cb(err, result); }
       )
     },
@@ -126,7 +137,7 @@ async.series(
       const quads = new Array(times).fill(true).map(() => generateQuad(rdflibFactory));
       time(
         'rdf   / import / rdflib',
-        (done) => { store.import(new AsyncIterator.ArrayIterator(quads)).on('end', done); },
+        (done) => { store.import(createArrayStream(quads)).on('end', done); },
         (err, result) => { removeStore(store); cb(err, result); }
       )
     },
@@ -136,7 +147,7 @@ async.series(
       const quads = new Array(times).fill(true).map(() => generateQuad(rdfextFactory));
       time(
         'rdf   / import / rdfext',
-        (done) => { store.import(new AsyncIterator.ArrayIterator(quads)).on('end', done); },
+        (done) => { store.import(createArrayStream(quads)).on('end', done); },
         (err, result) => { removeStore(store); cb(err, result); }
       )
     }
@@ -146,7 +157,7 @@ async.series(
     if (err) throw err;
     for (let r = 0, result; r < results.length; r++) {
       result = results[r];
-      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 9, 2), pad(result.secs, 2, 2));
+      console.log('%s %s op/s %s s', result.name, pad(times/result.secs, 9, 2), pad(result.secs, 3, 2));
     }
   }
 )

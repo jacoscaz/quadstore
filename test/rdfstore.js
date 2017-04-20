@@ -20,12 +20,12 @@ function stripTermSerializedValue(quads) {
   return _.isArray(quads) ? _quads : _quads[0];
 }
 
-describe('RdfStore', () => {
+module.exports = function () {
 
   let rs;
 
-  beforeEach(() => {
-    rs = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
+  beforeEach(function () {
+    rs = this.store;
   });
 
   describe('RDF/JS interface', () => {
@@ -453,4 +453,4 @@ describe('RdfStore', () => {
 
   });
 
-});
+};

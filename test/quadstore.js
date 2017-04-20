@@ -7,12 +7,12 @@ const shortid = require('shortid');
 const memdown = require('memdown');
 const QuadStore = require('..').QuadStore;
 
-describe('QuadStore', () => {
+module.exports = function () {
 
   let qs;
 
-  beforeEach(() => {
-    qs = new QuadStore(shortid.generate(), { db: memdown });
+  beforeEach(function () {
+    qs = this.store;
   });
 
   describe('QuadStore.prototype.put()', () => {
@@ -472,24 +472,26 @@ describe('QuadStore', () => {
           { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g6' },
           { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads);
-        const first = qs.query({ subject: 's0' });
-        const second = qs.query({ subject: 's2' });
-        first.union(second).toArray((err, foundQuads) => {
-          if (err) { done(err); return; }
-          should(foundQuads).have.length(4);
-          should(foundQuads[0]).deepEqual(quads[0]);
-          should(foundQuads[1]).deepEqual(quads[1]);
-          should(foundQuads[2]).deepEqual(quads[2]);
-          should(foundQuads[3]).deepEqual(quads[3]);
-          done();
+        qs.put(quads, (putErr) => {
+          if (putErr) { done(putErr); return; }
+          const first = qs.query({ subject: 's0' });
+          const second = qs.query({ subject: 's2' });
+          first.union(second).toArray((err, foundQuads) => {
+            if (err) { done(err); return; }
+            should(foundQuads).have.length(4);
+            should(foundQuads[0]).deepEqual(quads[0]);
+            should(foundQuads[1]).deepEqual(quads[1]);
+            should(foundQuads[2]).deepEqual(quads[2]);
+            should(foundQuads[3]).deepEqual(quads[3]);
+            done();
+          });
         });
       });
 
     });
 
     describe('QuadStore.prototype.query().filter()', () => {
-      it('Should filter correctly.', (done) => {
+      it('Should filter correctly.', () => {
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
           { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
@@ -500,22 +502,23 @@ describe('QuadStore', () => {
           { subject: 's2', predicate: 'p6', object: 'o6', graph: 'g6' },
           { subject: 's2', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads);
-        qs.query({ subject: 's2' })
-          .filter(quad => quad.predicate === 'p4')
-          .toArray((err, foundQuads) => {
-            if (err) { done(err); return; }
+        qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's2' })
+              .filter(quad => quad.predicate === 'p4')
+              .toArray();
+          })
+          .then((foundQuads) => {
             should(foundQuads).have.length(2);
             should(foundQuads[0]).deepEqual(quads[3]);
             should(foundQuads[1]).deepEqual(quads[4]);
-            done();
           });
       });
     });
 
     describe('QuadStore.prototype.query().join()', () => {
 
-      it('Should query correctly.', (done) => {
+      it('Should query correctly.', () => {
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
           { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
@@ -526,14 +529,15 @@ describe('QuadStore', () => {
           { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g5' },
           { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads);
-        return qs.query({ subject: 's3' })
-          .join(qs.query({ graph: 'g5' }), ['context'])
-          .toArray((err, foundQuads) => {
-            if (err) { done(err); return; }
+        qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's3' })
+              .join(qs.query({ graph: 'g5' }), ['context'])
+              .toArray();
+          })
+          .then((foundQuads) => {
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[5]);
-            done();
           });
       });
 
@@ -605,4 +609,4 @@ describe('QuadStore', () => {
 
   });
 
-});
+};

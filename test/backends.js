@@ -58,7 +58,7 @@ describe('RdfStore / LevelUP / MemDOWN', () => {
 
 });
 
-describe.skip('QuadStore / LevelUP / LevelDOWN', () => {
+describe('QuadStore / LevelUP / LevelDOWN', () => {
 
   beforeEach(function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());

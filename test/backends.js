@@ -14,7 +14,7 @@ const RdfStore = require('..').RdfStore;
 const quadStoreSuite = require('./quadstore');
 const rdfStoreSuite = require('./rdfstore');
 
-describe('QuadStore - LevelUP (implicit), MemDOWN', () => {
+describe('QuadStore / Auto / MemDOWN', () => {
 
   beforeEach(function () {
     this.store = new QuadStore(shortid.generate(), { db: memdown });
@@ -24,7 +24,7 @@ describe('QuadStore - LevelUP (implicit), MemDOWN', () => {
 
 });
 
-describe('RdfStore - LevelUP (implicit), MemDOWN', () => {
+describe('RdfStore / Auto / MemDOWN', () => {
 
   beforeEach(function () {
     this.store = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
@@ -34,7 +34,7 @@ describe('RdfStore - LevelUP (implicit), MemDOWN', () => {
 
 });
 
-describe('QuadStore - LevelUP (explicit), MemDOWN', () => {
+describe('QuadStore / LevelUP / MemDOWN', () => {
 
   beforeEach(function () {
     this.location = shortid();
@@ -46,7 +46,7 @@ describe('QuadStore - LevelUP (explicit), MemDOWN', () => {
 
 });
 
-describe('RdfStore - LevelUP (explicit), MemDOWN', () => {
+describe('RdfStore / LevelUP / MemDOWN', () => {
 
   beforeEach(function () {
     this.location = shortid();
@@ -58,7 +58,7 @@ describe('RdfStore - LevelUP (explicit), MemDOWN', () => {
 
 });
 
-describe.skip('QuadStore - LevelUP (explicit), LevelDOWN', () => {
+describe.skip('QuadStore / LevelUP / LevelDOWN', () => {
 
   beforeEach(function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
@@ -70,11 +70,30 @@ describe.skip('QuadStore - LevelUP (explicit), LevelDOWN', () => {
     const context = this;
     context.store.close((closeErr) => {
       if (closeErr) { done(closeErr); return; }
-      done();
       fs.remove(context.location, done);
     });
   });
 
   quadStoreSuite();
+
+});
+
+describe('RdfStore / LevelUP / LevelDOWN', () => {
+
+  beforeEach(function () {
+    this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
+    this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: leveldown });
+    this.store = new RdfStore(this.db, { dataFactory: factory });
+  });
+
+  afterEach(function (done) {
+    const context = this;
+    context.store.close((closeErr) => {
+      if (closeErr) { done(closeErr); return; }
+      fs.remove(context.location, done);
+    });
+  });
+
+  rdfStoreSuite();
 
 });

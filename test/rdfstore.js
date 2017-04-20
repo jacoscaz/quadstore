@@ -413,7 +413,7 @@ module.exports = function () {
 
     describe('RdfStore.prototype.query()', () => {
 
-      it('Should query correctly.', (done) => {
+      it('Should query correctly.', () => {
 
         const quads = [
           factory.quad(
@@ -436,16 +436,16 @@ module.exports = function () {
           )
         ];
 
-        rs.put(quads);
-
-        return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
-          .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
-          .toArray((err, foundQuads) => {
-            if (err) { done(err); return; }
+        return rs.put(quads)
+          .then(() => {
+            return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
+              .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
+              .toArray();
+          })
+          .then((foundQuads) => {
             stripTermSerializedValue(foundQuads);
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[1]);
-            done();
           });
       });
 

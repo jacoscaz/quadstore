@@ -4,7 +4,6 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const stream = require('stream');
 const factory = require('rdf-data-model');
 
 function stripTermSerializedValue(quads) {
@@ -15,17 +14,6 @@ function stripTermSerializedValue(quads) {
     });
   });
   return _.isArray(quads) ? _quads : _quads[0];
-}
-
-function createArrayStream(arr) {
-  let i = 0;
-  const l = arr.length;
-  return new stream.Readable({
-    objectMode: true,
-    read() {
-      this.push(i < l ? arr[i++] : null);
-    }
-  });
 }
 
 module.exports = () => {
@@ -55,7 +43,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -88,7 +76,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -121,7 +109,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -154,7 +142,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -187,7 +175,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -218,7 +206,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -249,7 +237,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -287,7 +275,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const source = createArrayStream(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -345,8 +333,8 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const importStream = createArrayStream(importQuads);
-        const removeStream = createArrayStream(removeQuads);
+        const importStream = utils.createArrayStream(importQuads);
+        const removeStream = utils.createArrayStream(removeQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {
@@ -392,7 +380,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const importStream = createArrayStream(importQuads);
+        const importStream = utils.createArrayStream(importQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {
@@ -419,10 +407,9 @@ module.exports = () => {
 
   describe('Graph Interface', () => {
 
-    describe('RdfStore.prototype.query()', () => {
+    describe('RdfStore.prototype.del()', () => {
 
-      it('Should query correctly.', () => {
-
+      it('Should delete matching quads correctly (callback).', (done) => {
         const quads = [
           factory.quad(
             factory.namedNode('http://ex.com/s0'),
@@ -443,7 +430,80 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
+        rs.put(quads, (putErr) => {
+          if (putErr) { done(putErr); return; }
+          rs.del({ subject: factory.namedNode('http://ex.com/s0') }, (delErr) => {
+            if (delErr) { done(delErr); return; }
+            rs.get({}, (getErr, foundQuads) => {
+              stripTermSerializedValue(foundQuads);
+              should(foundQuads).have.length(1);
+              should(foundQuads).deepEqual(quads.slice(2));
+              done();
+            });
+          });
+        });
+      });
 
+      it('Should delete matching quads correctly (promise).', () => {
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.namedNode('http://ex.com/g0')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o2', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+        return rs.put(quads)
+          .then(() => {
+            return rs.del({ subject: factory.namedNode('http://ex.com/s0') });
+          })
+          .then(() => {
+            return rs.get({});
+          })
+          .then((foundQuads) => {
+            stripTermSerializedValue(foundQuads);
+            should(foundQuads).have.length(1);
+            should(foundQuads).deepEqual(quads.slice(2));
+          });
+      });
+
+    });
+
+    describe('RdfStore.prototype.query()', () => {
+
+      it('Should query correctly.', () => {
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.namedNode('http://ex.com/g0')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o2', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
         return rs.put(quads)
           .then(() => {
             return rs.query({ subject: factory.namedNode('http://ex.com/s0') })

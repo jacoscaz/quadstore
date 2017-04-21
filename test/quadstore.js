@@ -3,9 +3,6 @@
 
 const utils = require('../lib/utils');
 const should = require('should');
-const shortid = require('shortid');
-const memdown = require('memdown');
-const QuadStore = require('..').QuadStore;
 
 module.exports = () => {
 
@@ -169,6 +166,51 @@ module.exports = () => {
         })
         .then((quadsAfterDelete) => {
           should(quadsAfterDelete).have.length(0);
+        });
+    });
+
+    it('should delete matching quads correctly (callback)', (done) => {
+      const quadsArray = [
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
+        { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
+        { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
+      ];
+      return qs.put(quadsArray, (putErr) => {
+        if (putErr) { done(putErr); return; }
+        return qs.del({ subject: 's2' }, (delErr) => {
+          if (delErr) { done(delErr); return; }
+          return qs.get({}, (getErr, quads) => {
+            if (getErr) { done(getErr); return; }
+            quads.sort(utils.quadSorter);
+            should(quads).have.length(2);
+            should(quads).be.deepEqual(quadsArray.slice(0, 2));
+            done();
+          });
+        });
+      });
+    });
+
+    it('should delete matching quads correctly (promise)', () => {
+      const quadsArray = [
+        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
+        { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
+        { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
+        { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
+      ];
+      return qs.put(quadsArray)
+        .then(() => {
+          return qs.del({ subject: 's2' });
+        })
+        .then(() => {
+          return qs.get({});
+        })
+        .then((quads) => {
+          quads.sort(utils.quadSorter);
+          should(quads).have.length(2);
+          should(quads).be.deepEqual(quadsArray.slice(0, 2));
         });
     });
 

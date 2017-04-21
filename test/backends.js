@@ -8,11 +8,11 @@ const shortid = require('shortid');
 const memdown = require('memdown');
 const levelup = require('levelup');
 const factory = require('rdf-data-model');
-const leveldown = require('leveldown');
-const QuadStore = require('..').QuadStore;
 const RdfStore = require('..').RdfStore;
-const quadStoreSuite = require('./quadstore');
+const QuadStore = require('..').QuadStore;
+const leveldown = require('leveldown');
 const rdfStoreSuite = require('./rdfstore');
+const quadStoreSuite = require('./quadstore');
 
 describe('QuadStore / Auto / MemDOWN', () => {
 

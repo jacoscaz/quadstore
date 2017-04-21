@@ -28,7 +28,7 @@ function createArrayStream(arr) {
   });
 }
 
-module.exports = function () {
+module.exports = () => {
 
   let rs;
 

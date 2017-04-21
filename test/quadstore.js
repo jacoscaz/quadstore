@@ -7,7 +7,7 @@ const shortid = require('shortid');
 const memdown = require('memdown');
 const QuadStore = require('..').QuadStore;
 
-module.exports = function () {
+module.exports = () => {
 
   let qs;
 

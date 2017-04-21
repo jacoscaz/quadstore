@@ -4,11 +4,7 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const memdown = require('memdown');
-const shortid = require('shortid');
 const factory = require('rdf-data-model');
-const RdfStore = require('..').RdfStore;
-const AsyncIterator = require('asynciterator');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -20,12 +16,12 @@ function stripTermSerializedValue(quads) {
   return _.isArray(quads) ? _quads : _quads[0];
 }
 
-describe('RdfStore', () => {
+module.exports = () => {
 
   let rs;
 
-  beforeEach(() => {
-    rs = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
+  beforeEach(function () {
+    rs = this.store;
   });
 
   describe('RDF/JS interface', () => {
@@ -47,7 +43,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -80,7 +76,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -113,7 +109,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -146,7 +142,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -179,7 +175,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -210,7 +206,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -241,7 +237,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -279,7 +275,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = utils.createArrayStream(quads);
         rs.import(source)
           .on('error', done)
           .on('end', () => {
@@ -337,8 +333,8 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g3')
           )
         ];
-        const importStream = new AsyncIterator.ArrayIterator(importQuads);
-        const removeStream = new AsyncIterator.ArrayIterator(removeQuads);
+        const importStream = utils.createArrayStream(importQuads);
+        const removeStream = utils.createArrayStream(removeQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {
@@ -384,7 +380,7 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const importStream = new AsyncIterator.ArrayIterator(importQuads);
+        const importStream = utils.createArrayStream(importQuads);
         rs.import(importStream)
           .on('error', done)
           .on('end', () => {
@@ -411,10 +407,9 @@ describe('RdfStore', () => {
 
   describe('Graph Interface', () => {
 
-    describe('RdfStore.prototype.query()', () => {
+    describe('RdfStore.prototype.del()', () => {
 
-      it('Should query correctly.', (done) => {
-
+      it('Should delete matching quads correctly (callback).', (done) => {
         const quads = [
           factory.quad(
             factory.namedNode('http://ex.com/s0'),
@@ -435,17 +430,90 @@ describe('RdfStore', () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
+        rs.put(quads, (putErr) => {
+          if (putErr) { done(putErr); return; }
+          rs.del({ subject: factory.namedNode('http://ex.com/s0') }, (delErr) => {
+            if (delErr) { done(delErr); return; }
+            rs.get({}, (getErr, foundQuads) => {
+              stripTermSerializedValue(foundQuads);
+              should(foundQuads).have.length(1);
+              should(foundQuads).deepEqual(quads.slice(2));
+              done();
+            });
+          });
+        });
+      });
 
-        rs.put(quads);
+      it('Should delete matching quads correctly (promise).', () => {
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.namedNode('http://ex.com/g0')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o2', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+        return rs.put(quads)
+          .then(() => {
+            return rs.del({ subject: factory.namedNode('http://ex.com/s0') });
+          })
+          .then(() => {
+            return rs.get({});
+          })
+          .then((foundQuads) => {
+            stripTermSerializedValue(foundQuads);
+            should(foundQuads).have.length(1);
+            should(foundQuads).deepEqual(quads.slice(2));
+          });
+      });
 
-        return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
-          .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
-          .toArray((err, foundQuads) => {
-            if (err) { done(err); return; }
+    });
+
+    describe('RdfStore.prototype.query()', () => {
+
+      it('Should query correctly.', () => {
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.namedNode('http://ex.com/g0')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o2', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+        return rs.put(quads)
+          .then(() => {
+            return rs.query({ subject: factory.namedNode('http://ex.com/s0') })
+              .join(rs.query({ predicate: factory.namedNode('http://ex.com/p1') }), ['predicate'])
+              .toArray();
+          })
+          .then((foundQuads) => {
             stripTermSerializedValue(foundQuads);
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[1]);
-            done();
           });
       });
 
@@ -453,4 +521,4 @@ describe('RdfStore', () => {
 
   });
 
-});
+};

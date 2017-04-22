@@ -14,7 +14,7 @@ const leveldown = require('leveldown');
 const rdfStoreSuite = require('./rdfstore');
 const quadStoreSuite = require('./quadstore');
 
-describe.only('QuadStore / Auto / MemDOWN', () => {
+describe('QuadStore / Auto / MemDOWN', () => {
 
   beforeEach(function () {
     this.store = new QuadStore(shortid.generate(), { db: memdown });
@@ -24,7 +24,7 @@ describe.only('QuadStore / Auto / MemDOWN', () => {
 
 });
 
-describe.only('RdfStore / Auto / MemDOWN', () => {
+describe('RdfStore / Auto / MemDOWN', () => {
 
   beforeEach(function () {
     this.store = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });

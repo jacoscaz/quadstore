@@ -573,7 +573,7 @@ module.exports = () => {
         qs.put(quads)
           .then(() => {
             return qs.query({ subject: 's3' })
-              .join(qs.query({ graph: 'g5' }), ['context'])
+              .join(qs.query({ graph: 'g5' }), ['graph'])
               .toArray();
           })
           .then((foundQuads) => {
@@ -595,7 +595,6 @@ module.exports = () => {
           { subject: 's5', predicate: 'p5', object: 'o5', graph: 'g5' },
           { subject: 's6', predicate: 'p5', object: 'o6', graph: 'g6' }
         ];
-        const filter = ((quad) => quad.predicate === 'p1');
         const queryTerms = { subject: 's0' };
         const unionTerms = { predicate: 'p5' };
         const joinTerms = { object: 'o6' };

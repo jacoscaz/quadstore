@@ -1,7 +1,6 @@
 
 'use strict';
 
-const utils = require('../lib/utils');
 const should = require('should');
 
 module.exports = () => {
@@ -183,7 +182,7 @@ module.exports = () => {
           if (delErr) { done(delErr); return; }
           return qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            quads.sort(utils.quadSorter);
+            quads.sort(qs._createOrderComparator());
             should(quads).have.length(2);
             should(quads).be.deepEqual(quadsArray.slice(0, 2));
             done();
@@ -208,7 +207,7 @@ module.exports = () => {
           return qs.get({});
         })
         .then((quads) => {
-          quads.sort(utils.quadSorter);
+          quads.sort(qs._createOrderComparator());
           should(quads).have.length(2);
           should(quads).be.deepEqual(quadsArray.slice(0, 2));
         });
@@ -243,10 +242,10 @@ module.exports = () => {
           if (patchErr) { done(patchErr); return; }
           qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            newQuads.sort(utils.quadSorter);
-            quads.sort(utils.quadSorter);
+            newQuads.sort(qs._createOrderComparator());
+            quads.sort(qs._createOrderComparator());
             should(quads).have.length(expected.length);
-            should(quads).be.deepEqual(expected.sort(utils.quadSorter));
+            should(quads).be.deepEqual(expected.sort(qs._createOrderComparator()));
             done();
           });
         });
@@ -268,10 +267,10 @@ module.exports = () => {
         .then(() => qs.patch(oldQuads, newQuads))
         .then(() => qs.get({}))
         .then((quads) => {
-          newQuads.sort(utils.quadSorter);
-          quads.sort(utils.quadSorter);
+          newQuads.sort(qs._createOrderComparator());
+          quads.sort(qs._createOrderComparator());
           should(quads).have.length(expected.length);
-          should(quads).be.deepEqual(expected.sort(utils.quadSorter));
+          should(quads).be.deepEqual(expected.sort(qs._createOrderComparator()));
         });
     });
 
@@ -287,8 +286,8 @@ module.exports = () => {
           if (patchErr) { done(patchErr); return; }
           qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            newQuads.sort(utils.quadSorter);
-            quads.sort(utils.quadSorter);
+            newQuads.sort(qs._createOrderComparator());
+            quads.sort(qs._createOrderComparator());
             should(quads).have.length(4);
             should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
             done();
@@ -311,8 +310,8 @@ module.exports = () => {
           return qs.get({});
         })
         .then((quads) => {
-          newQuads.sort(utils.quadSorter);
-          quads.sort(utils.quadSorter);
+          newQuads.sort(qs._createOrderComparator());
+          quads.sort(qs._createOrderComparator());
           should(quads).have.length(4);
           should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
         });
@@ -601,7 +600,7 @@ module.exports = () => {
         const unionTerms = { predicate: 'p5' };
         const joinTerms = { object: 'o6' };
         const expectedQuads = [initialQuads[2], initialQuads[6]]
-          .sort(utils.quadSorter);
+          .sort(qs._createOrderComparator());
         return qs.put(initialQuads)
           .then(() => {
             return qs.query(queryTerms)
@@ -610,7 +609,7 @@ module.exports = () => {
               .toArray();
           })
           .then((foundQuads) => {
-            foundQuads.sort(utils.quadSorter);
+            foundQuads.sort(qs._createOrderComparator());
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(expectedQuads);
           });
@@ -631,7 +630,7 @@ module.exports = () => {
         const secondJoinTerms = { predicate: 'p0' };
         const thirdJoinTerms = { object: 'o0' };
         const expectedQuads = initialQuads.slice(0, 2)
-          .sort(utils.quadSorter);
+          .sort(qs._createOrderComparator());
         return qs.put(initialQuads)
           .then(() => {
             return qs.query(queryTerms)
@@ -641,7 +640,7 @@ module.exports = () => {
               .toArray();
           })
           .then((foundQuads) => {
-            foundQuads.sort(utils.quadSorter);
+            foundQuads.sort(qs._createOrderComparator());
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(expectedQuads);
           });

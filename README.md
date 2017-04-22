@@ -67,7 +67,8 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Active, under development.
+Active, under development. Starting from version 2.1.1 The `master` branch is kept in sync with the
+package published on NPM and all development work happens on the `devel` branch.
 
 #### Changelog
 

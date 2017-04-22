@@ -17,7 +17,9 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
-        - [QuadStore.prototype.createReadStream](#quadstoreprototypecreatereadstream)
+        - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
+        - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
+        - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
     - [RDF/JS Interface](#rdfjs-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
@@ -25,15 +27,18 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [RdfStore.prototype.put](#rdfstoreprototypeput)
         - [RdfStore.prototype.del](#rdfstoreprototypedel)
         - [RdfStore.prototype.patch](#rdfstoreprototypepatch)
-        - [RdfStore.prototype.createReadStream](#rdfstoreprototypecreatereadstream)
+        - [RdfStore.prototype.getStream](#rdfstoreprototypegetstream)
+        - [RdfStore.prototype.putStream](#rdfstoreprototypeputstream)
+        - [RdfStore.prototype.delStream](#rdfstoreprototypedelstream)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
     - [Advanced Queries](#advanced-queries)
         - [(Quad|Rdf)Store.prototype.query](#quadrdfstoreprototypequery)
-        - [AbstractQuery.prototype.toReadStream](#abstractqueryprototypetoreadstream)
-        - [AbstractQuery.prototype.toReadArray](#abstractqueryprototypetoarray)
+        - [AbstractQuery.prototype.get](#abstractqueryprototypeget)
+        - [AbstractQuery.prototype.del](#abstractqueryprototypedel)
+        - [AbstractQuery.prototype.getStream](#abstractqueryprototypegetstream)
         - [AbstractQuery.prototype.join](#abstractqueryprototypejoin)
         - [AbstractQuery.prototype.sort](#abstractqueryprototypesort)
         - [AbstractQuery.prototype.filter](#abstractqueryprototypefilter)
@@ -62,7 +67,8 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Active, under development.
+Active, under development. Starting from version 2.1.1 The `master` branch is kept in sync with the
+package published on NPM and all development work happens on the `devel` branch.
 
 #### Changelog
 
@@ -117,6 +123,15 @@ returning an object compatible with
 [LevelDOWN](https://github.com/level/leveldown/)'s API. See
 [Relationship with LevelUP / LevelDOWN](#relationship-with-levelup-leveldown).
 
+#### QuadStore.prototype.get()
+
+    const matchTerms = {graph: 'g'};
+
+    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
+    store.get(matchTerms).then((matchingQuads) => {}); // promise
+
+Returns an array of all quads within the store matching the specified terms.
+
 #### QuadStore.prototype.put()
 
     const quads = [
@@ -130,6 +145,12 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 
 #### QuadStore.prototype.del()
 
+This method deletes quads. It Does *not* throw or return an error if the specified
+quads are not present in the store.
+
+If the first argument is a quad or an array of quads, this method will delete such
+quads from the store.
+
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
@@ -137,14 +158,22 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
     store.del(quads, (delErr) => {}); // callback
     store.del(quads).then(() => {}); // promise
 
-Deletes existing quads. Does *not* throw or return an error if quads do not exist within the store.
+If the first argument is a set of matching terms, this method will delete all quads
+matching such terms from the store.
+
+    const matchTerms = {graph: 'g'};
+
+    store.del(matchTerms, (delErr) => {}); // callback
+    store.del(matchTerms).then(() => {}); // promise
 
 #### QuadStore.prototype.patch()
 
-This methods deletes and inserts quads in a single operation.
+This methods deletes and inserts quads in a single operation. It Does *not* throw or
+return an error if the specified quads are not present in the store (delete) or already
+present in the store (update).
 
-If the first argument is an array, it is assumed to be an array of quads
-to be deleted.
+If the first argument is a single quad or an array of quads, it is assumed to be an
+array of quads to be deleted.
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
@@ -157,8 +186,8 @@ to be deleted.
     store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
     store.patch(oldQuads, newQUads).then(() => {}); // promise
 
-if the first argument is not an array, it is assumed to be a set of terms
-matching those of the quads to be deleted.
+If the first argument is a set of matching terms, this method will delete all quads
+matching such terms from the store.
 
     const matchTerms = {subject: 'so', graph: 'go'}
 
@@ -166,28 +195,31 @@ matching those of the quads to be deleted.
         {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
 
-    store.patch(matchTerms, newQUads, (delputErr) => {}); // callback
-    store.patch(matchTerms, newQUads).then(() => {}); // promise
+    store.patch(matchTerms, newQuads, (delputErr) => {}); // callback
+    store.patch(matchTerms, newQuads).then(() => {}); // promise
 
-This method does *not* throw or return errors if deleting non-existing quads
-or updating pre-existing ones.
+#### QuadStore.prototype.getStream()
 
-#### QuadStore.prototype.get()
+    const matchTerms = {graph: 'c'};
 
-    const query = {graph: 'g'};
+    const readableStream = store.getStream(matchTerms);
 
-    store.get(query, (getErr, matchingQuads) => {}); // callback
-    store.get(query).then((matchingQuads) => {}); // promise
+*Synchronously* returns a `stream.Readable` of all quads matching the terms in the specified
+query.
 
-Returns all quads within the store matching the terms in the specified query.
+#### QuadStore.prototype.putStream()
 
-#### QuadStore.prototype.createReadStream()
+    store.putStream(readableStream, (err) => {});
+    store.putStream(readableStream).then(() => {});
 
-    const query = {graph: 'c'};
+Imports all quads coming through the specified `stream.Readable` into the store.
 
-    const readableStream = store.createReadStream(query);
+#### QuadStore.prototype.delStream()
 
-Returns a `stream.Readable` of all quads matching the terms in the specified query.
+    store.delStream(readableStream, (err) => {});
+    store.delStream(readableStream).then(() => {});
+
+Deletes all quads coming through the specified `stream.Readable` from the store.
 
 ### RDF/JS Interface
 
@@ -220,12 +252,13 @@ changed.
 #### Graph API, Quad and Term instances
 
 The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, the `get`,
-`put`, `del`, `patch`, `query` and `createReadStream` methods accept and return (streams of
-and/or arrays of) `Quad` objects as produced by the `dataFactory.quad` method. Matching
-terms, such as those used in the `query`, `get` and `createReadStream` methods, must be
-`Term` objects as produced by the `dataFactory.namedNode`, `dataFactory.blankNode` or
-`dataFactory.literal` methods. The same applies for the `match`, `import`, `remove` and
-`removeMatches` methods inherited from the RDF/JS interface.
+`put`, `del`, `patch`, `query`, `getStream`, `putStream` and `delStream` methods accept
+and return (streams of and/or arrays of) `Quad` objects as produced by the
+`dataFactory.quad` method. Matching terms, such as those used in the `query`, `get` and
+`createReadStream` methods, must be `Term` objects as produced by the
+`dataFactory.namedNode`, `dataFactory.blankNode` or `dataFactory.literal` methods.
+The same applies for the `match`, `import`, `remove` and `removeMatches` methods inherited
+from the RDF/JS interface.
 
 #### RdfStore.prototype.get()
  
@@ -281,9 +314,19 @@ See [QuadStore.prototype.put()](#quadstoreprototypeput).
             dataFactory.blankNode('g')
         )
     ];
-    
-    store.del(newQuads).then(() => {});
+
     store.del(newQuads, (err) => {});
+    store.del(newQuads).then(() => {});
+
+or
+
+    const dataFactory = require('rdf-data-model');
+    const store = new RdfStore('/path/to/db', { dataFactory });
+
+    const matchTerms = {graph: dataFactory.namedNode('http://example.com/graph')};
+
+    store.del(matchTerms, (err) => {});
+    store.del(matchTerms).then(() => {});
 
 See [QuadStore.prototype.del()](#quadstoreprototypedel).
 
@@ -308,10 +351,36 @@ See [QuadStore.prototype.del()](#quadstoreprototypedel).
     
     store.patch(matchTerms, newQuads).then(() => {});
     store.patch(matchTerms, newQuads, (err) => {});
+
+or
+
+    const dataFactory = require('rdf-data-model');
+    const store = new RdfStore('/path/to/db', { dataFactory });
+
+    const oldQuads = [
+        dataFactory.quad(
+            dataFactory.namedNode('http://old.com/subject'),
+            dataFactory.namedNode('http://old.com/predicate'),
+            dataFactory.literal('object'),
+            dataFactory.blankNode('g')
+        )
+    ];
+
+    const newQuads = [
+        dataFactory.quad(
+            dataFactory.namedNode('http://new.com/subject'),
+            dataFactory.namedNode('http://new.com/predicate'),
+            dataFactory.literal('object'),
+            dataFactory.blankNode('g')
+        )
+    ];
+
+    store.patch(oldQuads, newQuads).then(() => {});
+    store.patch(oldQuads, newQuads, (err) => {});
     
 See [QuadStore.prototype.patch()](#quadstoreprototypepatch).
 
-#### RdfStore.prototype.createReadStream()
+#### RdfStore.prototype.getStream()
 
     const dataFactory = require('rdf-data-model');
     const store = new RdfStore('/path/to/db', { dataFactory });
@@ -321,11 +390,29 @@ See [QuadStore.prototype.patch()](#quadstoreprototypepatch).
         predicate: dataFactory.namedNode('http://example.com/predicate')
     };
 
-    const readableStream = store.createReadStream(matchTerms);
+    const readableStream = store.getStream(matchTerms);
 
-Returns a `stream.Readable` of all quads matching the terms in the specified query.
+*Synchronously* returns a `stream.Readable` of all quads matching the specified terms.
 
-See [QuadStore.prototype.createReadStream()](#quadstoreprototypecreatereadstream).
+See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
+
+#### RdfStore.prototype.putStream()
+
+    store.putStream(readableStream, (err) => {});
+    store.putStream(readableStream).then(() => {});
+
+Imports all quads coming through the specified `stream.Readable` into the store.
+
+See [QuadStore.prototype.putStream()](#quadstoreprototypeputstream).
+
+#### RdfStore.prototype.delStream()
+
+    store.delStream(readableStream, (err) => {});
+    store.delStream(readableStream).then(() => {});
+
+Deletes all quads coming through the specified `stream.Readable` from the store.
+
+See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
 
 #### RdfStore.prototype.match()
 
@@ -389,19 +476,7 @@ quads and matching terms as produced by `dataFactory.quad()` and
 `dataFactory.namedNode()`, `dataFactory.blankNode()`, `dataFactory.literal()`.
 See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
 
-#### AbstractQuery.prototype.toReadStream()
-
-    // QuadStore
-    quadStore.query({graph: 'g'}).toReadStream((err, readStream) => {}); // callback
-    quadStore.query({graph: 'g'}).toReadStream().then(readStream) => {}); // promise
-
-    // RdfStore
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toReadStream((err, readStream) => {}); // callback
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toReadStream().then(readStream) => {}); // promise
-
-Creates a stream of quads matching the query.
-
-#### AbstractQuery.prototype.toArray()
+#### AbstractQuery.prototype.get()
 
     // QuadStore
     quadStore.query({graph: 'g'}).toArray((err, quads) => {}); // callback
@@ -413,6 +488,29 @@ Creates a stream of quads matching the query.
 
 Returns an array of quads matching the query.
 
+#### AbstractQuery.prototype.del()
+
+    // QuadStore
+    quadStore.query({graph: 'g'}).del((err) => {}); // callback
+    quadStore.query({graph: 'g'}).del().then() => {}); // promise
+
+    // RdfStore
+    rdfStore.query({graph: dataFactory.blankNode('c')}).del((err) => {}); // callback
+    rdfStore.query({graph: dataFactory.blankNode('c')}).del().then() => {}); // promise
+
+Removes all matching quads from the store in one single operation.
+See also [AbstractQuery.prototype.delStream()](#abstractqueryprototypedelstream).
+
+#### AbstractQuery.prototype.getStream()
+
+    // QuadStore
+    const readableStream = quadStore.query({graph: 'g'}).getStream();
+
+    // RdfStore
+    const readableStream = rdfStore.query({graph: dataFactory.blankNode('c')}).getStream();
+
+*Synchronously* returns a stream of quads matching the query.
+
 #### AbstractQuery.prototype.join()
 
     // QuadStore
@@ -420,14 +518,14 @@ Returns an array of quads matching the query.
     const matchTermsB = {subject: 's'};
     quadStore.query(matchTermsA)
         .join(quadStore.query(matchTermsB), ['predicate'])
-        .toReadStream((err, readStream) => {});
+        .get((err, quads) => {});
 
     // RdfStore
     const matchTermsA = {graph: dataFactory.namedNode('http://example.com/graph')};
     const matchTermsB = {subject: dataFactory.namedNode('http://example.com/subject')};
     rdfStore.query(matchTermsA)
         .join(rdfStore.query(matchTermsB), ['predicate'])
-        .toReadStream((err, readStream) => {});
+        .get((err, quads) => {});
 
 Performs an inner join between the two queries limited to the terms
 specified in the array.
@@ -443,12 +541,12 @@ other similar methods to refine queries.
     // QuadStore
     quadStore.query(matchTerms)
         .sort(['graph', 'predicate], false)
-        .toReadStream().then(readStream) => {});
+        .get().then(quads) => {});
 
     // RdfStore
     rdfStore.query(matchTerms)
         .sort(['graph', 'predicate], false)
-        .toReadStream().then(readStream) => {});
+        .get().then(quads) => {});
 
 Sorts results in lexicographical order based on the values of the terms in the array.
 
@@ -460,12 +558,12 @@ methods to refine queries.
     // QuadStore
     quadStore.query(matchTerms)
         .filter(quad => quad.subject === 's')
-        .toReadStream().then(readStream) => {});
+        .get().then(quads) => {});
 
     // RdfStore
     rdfStore.query(matchTerms)
         .filter(quad => quad.subject.termType === 'NamedNode')
-        .toReadStream().then(readStream) => {});
+        .get().then(quads) => {});
 
 Filters results according to the provided function.
 
@@ -476,7 +574,7 @@ methods to refine queries.
 
     store.query(matchTermsA)
         .union(store.query(matchTermsB))
-        .toReadStream().then(readStream) => {});
+        .get().then(quads) => {});
 
 Merges the results of both queries as if they were a single query (no ordering guaranteed).
 

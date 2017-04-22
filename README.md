@@ -403,7 +403,7 @@ See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
 
 Imports all quads coming through the specified `stream.Readable` into the store.
 
-See [RdfStore.prototype.putStream()](#quadstoreprototypeputstream).
+See [QuadStore.prototype.putStream()](#quadstoreprototypeputstream).
 
 #### RdfStore.prototype.delStream()
 
@@ -412,7 +412,7 @@ See [RdfStore.prototype.putStream()](#quadstoreprototypeputstream).
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
-See [RdfStore.prototype.delStream()](#quadstoreprototypedelstream).
+See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
 
 #### RdfStore.prototype.match()
 

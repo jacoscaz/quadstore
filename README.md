@@ -39,7 +39,6 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [AbstractQuery.prototype.get](#abstractqueryprototypeget)
         - [AbstractQuery.prototype.del](#abstractqueryprototypedel)
         - [AbstractQuery.prototype.getStream](#abstractqueryprototypegetstream)
-        - [AbstractQuery.prototype.delStream](#abstractqueryprototypedelstream)
         - [AbstractQuery.prototype.join](#abstractqueryprototypejoin)
         - [AbstractQuery.prototype.sort](#abstractqueryprototypesort)
         - [AbstractQuery.prototype.filter](#abstractqueryprototypefilter)

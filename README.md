@@ -67,19 +67,26 @@ Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbas
 
 ## Status ##
 
-Active, under development. Starting from version 2.1.1 The `master` branch is kept in sync with the
-package published on NPM and all development work happens on the `devel` branch.
+Unstable, active, under development.
 
 #### Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-#### Current features:
+#### Current version and features:
+
+Current version: **v2.1.1** [[See on NPM](https://www.npmjs.com/package/quadstore)]
 
 - Supports both native Promise(s) and callbacks
 - Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
 - Full CRUD of quads
 - Advanced queries (union, join, sort, filter)
+
+Release notes:
+
+- The updated API introduced is on track for an API freeze and become the final API.
+- We've switched to [Semantic Versioning](https://www.npmjs.com/package/quadstore). Pre-releases will be tagged accordingly.
+- The `master` branch is now kept in sync with NPM and all development work happens on the `devel` branch.
 
 ## Relationship with LevelUP / LevelDOWN
 

@@ -14,20 +14,24 @@ A LevelDB-backed graph database for Node.js with native support for quads.
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
+        - [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
+        - [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
     - [RDF/JS Interface](#rdfjs-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
         - [RdfStore.prototype.get](#rdfstoreprototypeget)
+        - [RdfStore.prototype.getByIndex](#rdfstoreprototypegetbyindex)
         - [RdfStore.prototype.put](#rdfstoreprototypeput)
         - [RdfStore.prototype.del](#rdfstoreprototypedel)
         - [RdfStore.prototype.patch](#rdfstoreprototypepatch)
         - [RdfStore.prototype.getStream](#rdfstoreprototypegetstream)
+        - [RdfStore.prototype.getByIndexStream](#rdfstoreprototypegetbyindexstream)
         - [RdfStore.prototype.putStream](#rdfstoreprototypeputstream)
         - [RdfStore.prototype.delStream](#rdfstoreprototypedelstream)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
@@ -36,6 +40,7 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
     - [Advanced Queries](#advanced-queries)
         - [(Quad|Rdf)Store.prototype.query](#quadrdfstoreprototypequery)
+        - [(Quad|Rdf)Store.prototype.queryByIndex](#quadrdfstoreprototypequerybyindex)
         - [AbstractQuery.prototype.get](#abstractqueryprototypeget)
         - [AbstractQuery.prototype.del](#abstractqueryprototypedel)
         - [AbstractQuery.prototype.getStream](#abstractqueryprototypegetstream)
@@ -139,6 +144,18 @@ returning an object compatible with
 
 Returns an array of all quads within the store matching the specified terms.
 
+#### QuadStore.prototype.getByIndex()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+Returns an array of all quads within the store matching the specified conditions as
+tested against the specified custom index. Options available are `lt`,`lte`, `gt`, 
+`gte`, `limit`, `reverse`.
+
 #### QuadStore.prototype.put()
 
     const quads = [
@@ -214,6 +231,17 @@ matching such terms from the store.
 *Synchronously* returns a `stream.Readable` of all quads matching the terms in the specified
 query.
 
+#### QuadStore.prototype.getByIndexStream()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    const readableStream = store.getStream(name, opts);
+
+*Synchronously* returns a `stream.Readable` of all quads within the store matching the 
+specified conditions as tested against the specified custom index. Options available are 
+`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+
 #### QuadStore.prototype.putStream()
 
     store.putStream(readableStream, (err) => {});
@@ -288,6 +316,23 @@ from the RDF/JS interface.
     });
     
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
+
+#### RdfStore.prototype.getByIndex()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+Returns an array of all quads within the store matching the specified conditions as
+tested against the specified custom index. Options available are `lt`,`lte`, `gt`, 
+`gte`, `limit`, `reverse`. 
+
+**CAREFUL** - conditions will be tested against serialized terms. The serialization
+format is that used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+
+Also see [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex).
     
 #### RdfStore.prototype.put()
 
@@ -403,6 +448,23 @@ See [QuadStore.prototype.patch()](#quadstoreprototypepatch).
 
 See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
 
+#### RdfStore.prototype.getByIndexStream()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+*Synchronously* returns a `stream.Readable` of all quads within the store matching 
+the specified conditions as tested against the specified custom index. Options 
+available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`. 
+
+**CAREFUL** - conditions will be tested against serialized terms. The serialization
+format is that used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+
+Also see [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream).
+
 #### RdfStore.prototype.putStream()
 
     store.putStream(readableStream, (err) => {});
@@ -482,6 +544,21 @@ If used on instances of `RdfStore`, the `query()` method accepts and returns
 quads and matching terms as produced by `dataFactory.quad()` and
 `dataFactory.namedNode()`, `dataFactory.blankNode()`, `dataFactory.literal()`.
 See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
+
+#### (Quad|Rdf)Store.prototype.queryByIndex()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.queryByIndex(name, opts);
+
+Similar to [(Quad|Rdf)Store.prototype.query()](#quadrdfstoreprototypequery)
+this method returns an instance of the `AbstractQuery` class. Options available are 
+`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+
+**CAREFUL** - if the store is an instance of `RdfStore`, conditions will be tested 
+against serialized terms. The serialization format is that used by 
+[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### AbstractQuery.prototype.get()
 

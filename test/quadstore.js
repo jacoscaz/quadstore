@@ -669,7 +669,7 @@ module.exports = () => {
 
   });
 
-  describe.only('Indexes', () => {
+  describe('Indexes', () => {
 
     describe('QuadStore.prototype.registerIndex()', () => {
 

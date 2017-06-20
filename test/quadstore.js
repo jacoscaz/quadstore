@@ -696,7 +696,7 @@ module.exports = () => {
           { subject: 's1', predicate: 'p2', object: 'o2', graph: 'g2' },
         ];
         return qs.put(quads)
-          .then(() => qs.getByIndex(name, { start: 's1', end: 's1' }))
+          .then(() => qs.getByIndex(name, { gte: 's1', lte: 's1' }))
           .then((foundQuads) => {
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(quads.slice(1));

@@ -22,6 +22,7 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
+        - [QuadStore.prototype.registerIndex](#quadstoreprototyperegisterindex)
     - [RDF/JS Interface](#rdfjs-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
@@ -34,6 +35,7 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [RdfStore.prototype.getByIndexStream](#rdfstoreprototypegetbyindexstream)
         - [RdfStore.prototype.putStream](#rdfstoreprototypeputstream)
         - [RdfStore.prototype.delStream](#rdfstoreprototypedelstream)
+        - [RdfStore.prototype.registerIndex](#rdfstoreprototyperegisterindex)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
@@ -146,14 +148,14 @@ Returns an array of all quads within the store matching the specified terms.
 
 #### QuadStore.prototype.getByIndex()
 
-    const name = 'customIndex';
+    const name = 'index';
     const opts = {gte: 'subject1', lte: 'subject42'};
 
     store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
     store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
 
 Returns an array of all quads within the store matching the specified conditions as
-tested against the specified custom index. Options available are `lt`,`lte`, `gt`, 
+tested against the specified index. Options available are `lt`,`lte`, `gt`,
 `gte`, `limit`, `reverse`.
 
 #### QuadStore.prototype.put()
@@ -233,13 +235,13 @@ query.
 
 #### QuadStore.prototype.getByIndexStream()
 
-    const name = 'customIndex';
+    const name = 'index';
     const opts = {gte: 'subject1', lte: 'subject42'};
 
     const readableStream = store.getStream(name, opts);
 
 *Synchronously* returns a `stream.Readable` of all quads within the store matching the 
-specified conditions as tested against the specified custom index. Options available are 
+specified conditions as tested against the specified index. Options available are
 `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
 
 #### QuadStore.prototype.putStream()
@@ -255,6 +257,14 @@ Imports all quads coming through the specified `stream.Readable` into the store.
     store.delStream(readableStream).then(() => {});
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
+
+#### QuadStore.prototype.registerIndex()
+
+    store.registerIndex('updatedAt', function (quad) {
+      return quad.subject.split('').reverse().join('');
+    });
+
+Creates a new index that uses the provided function to compute index keys.
 
 ### RDF/JS Interface
 
@@ -319,14 +329,14 @@ See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### RdfStore.prototype.getByIndex()
 
-    const name = 'customIndex';
+    const name = 'index';
     const opts = {gte: 'subject1', lte: 'subject42'};
 
     store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
     store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
 
 Returns an array of all quads within the store matching the specified conditions as
-tested against the specified custom index. Options available are `lt`,`lte`, `gt`, 
+tested against the specified index. Options available are `lt`,`lte`, `gt`,
 `gte`, `limit`, `reverse`. 
 
 **CAREFUL** - conditions will be tested against serialized terms. The serialization
@@ -450,14 +460,14 @@ See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
 
 #### RdfStore.prototype.getByIndexStream()
 
-    const name = 'customIndex';
+    const name = 'index';
     const opts = {gte: 'subject1', lte: 'subject42'};
 
     store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
     store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
 
 *Synchronously* returns a `stream.Readable` of all quads within the store matching 
-the specified conditions as tested against the specified custom index. Options 
+the specified conditions as tested against the specified index. Options
 available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`. 
 
 **CAREFUL** - conditions will be tested against serialized terms. The serialization
@@ -482,6 +492,14 @@ See [QuadStore.prototype.putStream()](#quadstoreprototypeputstream).
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
 See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
+
+#### RdfStore.prototype.registerIndex()
+
+See [QuadStore.prototype.registerIndex()](#quadstoreprototyperegisterindex).
+
+** CAREFUL ** - when used on an instance of the RdfStore class, the key generation
+function provided through this method will still receive serialized simple quads
+with serialized terms rather than RDF/JS quads.
 
 #### RdfStore.prototype.match()
 

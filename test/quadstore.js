@@ -686,17 +686,34 @@ module.exports = () => {
 
     describe('QuadStore.prototype.getByIndex', () => {
 
-      it('Should get quads using a custom index correctly.', () => {
-        const name = 'SUBJECT';
-        const keygen = quad => quad.subject;
-        qs.registerIndex(name, keygen);
+      it('Should get quads using a standard index correctly.', () => {
+        const name = 'SPOG';
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
           { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
           { subject: 's1', predicate: 'p2', object: 'o2', graph: 'g2' },
         ];
         return qs.put(quads)
-          .then(() => qs.getByIndex(name, { gte: 's1', lte: 's1' }))
+          .then(() => qs.getByIndex(name, { gte: 's1', lte: 's1' + qs.boundary }))
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(1));
+          });
+      });
+
+      it('Should get quads using a custom index correctly.', () => {
+        const name = 'SUBJECT';
+        const keygen = quad => quad.date;
+        qs.registerIndex(name, keygen);
+        const todaysDate = '1970-01-01';
+        const yesterdaysDate = '1969-12-31'
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0', date: yesterdaysDate },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1', date: todaysDate },
+          { subject: 's1', predicate: 'p2', object: 'o2', graph: 'g2', date: todaysDate },
+        ];
+        return qs.put(quads)
+          .then(() => qs.getByIndex(name, { gte: todaysDate, lte: todaysDate + qs.boundary }))
           .then((foundQuads) => {
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(quads.slice(1));

@@ -1,6 +1,7 @@
 
 'use strict';
 
+const _ = require('lodash');
 const should = require('should');
 
 module.exports = () => {
@@ -543,7 +544,7 @@ module.exports = () => {
           { subject: 's2', predicate: 'p6', object: 'o6', graph: 'g6' },
           { subject: 's2', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads)
+        return qs.put(quads)
           .then(() => {
             return qs.query({ subject: 's2' })
               .filter(quad => quad.predicate === 'p4')
@@ -559,7 +560,7 @@ module.exports = () => {
 
     describe('QuadStore.prototype.query().join()', () => {
 
-      it('Should query correctly.', () => {
+      it('Should join queries correctly (same terms).', () => {
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
           { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
@@ -570,7 +571,7 @@ module.exports = () => {
           { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g5' },
           { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads)
+        return qs.put(quads)
           .then(() => {
             return qs.query({ subject: 's3' })
               .join(qs.query({ graph: 'g5' }), ['graph'])
@@ -579,6 +580,30 @@ module.exports = () => {
           .then((foundQuads) => {
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[5]);
+          });
+      });
+
+      it('Should join queries correctly (different terms).', () => {
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's2', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's3', predicate: 'p4', object: 'o5', graph: 'g3' },
+          { subject: 's3', predicate: 'p4', object: 'o4', graph: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 's3', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 's3', graph: 'g5' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g5' },
+        ];
+        return qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's3' })
+              .join(qs.query({ graph: 'g5' }), ['subject'], ['object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(_.map(foundQuads, 'subject')).deepEqual(_.map(quads.slice(5, 7), 'object'));
+
           });
       });
 

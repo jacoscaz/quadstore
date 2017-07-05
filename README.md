@@ -158,6 +158,11 @@ Returns an array of all quads within the store matching the specified conditions
 tested against the specified index. Options available are `lt`,`lte`, `gt`,
 `gte`, `limit`, `reverse`.
 
+For standard prefix-matching queries, append the boundary character `store.boundary`
+to the `lte` value:
+
+    { gte: 's', lte: 's' + store.boundary }
+
 #### QuadStore.prototype.put()
 
     const quads = [
@@ -243,6 +248,11 @@ query.
 *Synchronously* returns a `stream.Readable` of all quads within the store matching the 
 specified conditions as tested against the specified index. Options available are
 `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+
+For standard prefix-matching queries, append the boundary character `store.boundary`
+to the `lte` value:
+
+    { gte: 's', lte: 's' + store.boundary }
 
 #### QuadStore.prototype.putStream()
 

@@ -523,22 +523,37 @@ See also [AbstractQuery.prototype.delStream()](#abstractqueryprototypedelstream)
     // QuadStore
     const matchTermsA = {graph: 'g'};
     const matchTermsB = {subject: 's'};
-    quadStore.query(matchTermsA)
-        .join(quadStore.query(matchTermsB), ['predicate'])
+    const compareTermsA = ['predicate'];
+    const compareTermsB = ['predicate'];
+    const queryA = quadStore.query(matchTermsA);
+    const queryB = quadStore.query(matchTermsB);
+    queryA
+        .join(queryB, compareTermsA, compareTermsB)
         .get((err, quads) => {});
 
     // RdfStore
     const matchTermsA = {graph: dataFactory.namedNode('http://example.com/graph')};
     const matchTermsB = {subject: dataFactory.namedNode('http://example.com/subject')};
-    rdfStore.query(matchTermsA)
-        .join(rdfStore.query(matchTermsB), ['predicate'])
+    const compareTermsA = ['predicate'];
+    const compareTermsB = ['predicate'];
+    const queryA = quadStore.query(matchTermsA);
+    const queryB = quadStore.query(matchTermsB);
+    quaryA
+        .join(queryB, compareTermsA, compareTermsB)
         .get((err, quads) => {});
 
 Performs an inner join between the two queries limited to the terms
-specified in the array.
+specified in the `compareTerms` arrays, passing on quads from the **first** query.
 
 The above example queries for all quads with graph `g` and with a predicate
 shared by at least another quad having subject 's'.
+
+The `compareTerms` arrays allows to join quads using different terms. The following join
+
+    queryA.join(queryB, ['subject'], ['object'])
+
+results in quads matching `queryA`'s terms being filtered according to whether quads 
+matching `queryB`'s terms are found such as `someQueryAQuad.subject === someQueryBQuad.object`.
 
 Returns an instance of `AbstractQuery` and can be daisy-chained with
 other similar methods to refine queries.

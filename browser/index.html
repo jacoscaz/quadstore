@@ -5,14 +5,18 @@
     <title>Title</title>
 </head>
 <body>
-<script src="./quadstore-bundle.js"></script>
+<script src="./quadstore.dist.js"></script>
 <script>
-    const quad = { subject: 's', predicate: 'p', object: 'o', graph: 'g' };
-    quadstore.put(quad, (putErr) => {
-      quadstore.match({}, (matchErr, quads) => {
-        console.log(quads);
-      });
+  const store = new quadstore.QuadStore('quadstore', { db: quadstore.leveljs });
+  const quads = [
+    { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+    { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
+  ];
+  store.put(quads, (putErr) => {
+    store.get({}, (matchErr, quads) => {
+      console.log(quads);
     });
+  });
 </script>
 </body>
 </html>

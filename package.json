@@ -14,7 +14,7 @@
   "scripts": {
     "test": "nyc mocha",
     "repeat-test": "while mocha; do :; done",
-    "build-browser-test": "browserify browser/quadstore.js -s quadstore -o browser/quadstore-bundle.js"
+    "build-browser": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js"
   },
   "repository": {
     "type": "git",

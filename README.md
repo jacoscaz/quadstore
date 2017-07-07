@@ -481,7 +481,7 @@ the specified conditions as tested against the specified index. Options
 available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`. 
 
 **CAREFUL** - conditions will be tested against serialized terms. The serialization
-format is that used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 Also see [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream).
 
@@ -508,8 +508,8 @@ See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
 See [QuadStore.prototype.registerIndex()](#quadstoreprototyperegisterindex).
 
 ** CAREFUL ** - when used on an instance of the RdfStore class, the key generation
-function provided through this method will still receive serialized simple quads
-with serialized terms rather than RDF/JS quads.
+function provided through this method will still receive serialized quads. The
+serialization format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### RdfStore.prototype.match()
 

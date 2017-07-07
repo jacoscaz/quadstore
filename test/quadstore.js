@@ -621,8 +621,30 @@ module.exports = () => {
           })
           .then((foundQuads) => {
             should(foundQuads).have.length(2);
-            should(_.map(foundQuads, 'subject')).deepEqual(_.map(quads.slice(5, 7), 'object'));
+            should(foundQuads).deepEqual(quads.slice(3, 5));
+          });
+      });
 
+      it('Should join queries correctly (different terms and multiple terms).', () => {
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's0', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's3', predicate: 'p4', object: 'o3', graph: 'g3' },
+          { subject: 's4', predicate: 'p0', object: 's0', graph: 'g5' },
+          { subject: 's5', predicate: 'p1', object: 's0', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 's0', graph: 'g5' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g5' },
+        ];
+        return qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's0' })
+              .join(qs.query({ graph: 'g5' }), ['predicate', 'subject'], ['predicate', 'object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(0, 2));
           });
       });
 

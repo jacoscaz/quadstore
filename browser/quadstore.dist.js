@@ -501,29 +501,16 @@ class QuadStore extends events.EventEmitter {
     return pattern;
   }
 
-  _createEqualComparator(termNames) {
-    if (!termNames) termNames = ['subject', 'predicate', 'object', this._contextKey];
-    return function equalComparator(quadA, quadB) {
-      return termNames.reduce((eq, termName) => {
-        return eq && quadA[termName] === quadB[termName];
-      }, true);
-    };
-  }
-
-  _createOrderComparator(termNames) {
-    if (!termNames) termNames = ['subject', 'predicate', 'object', this._contextKey];
-    return function orderComparator(quadA, quadB) {
-      function _compare(_quadA, _quadB, _termNames) {
-        if (_termNames.length === 0) {
-          return 0;
-        }
-        const termName = _termNames[0];
-        if (_quadA[termName] === _quadB[termName]) {
-          return _compare(_quadA, _quadB, _termNames.slice(1));
-        }
-        return _quadA[termName] < _quadB[termName] ? -1 : 1;
+  _createQuadComparator(termNamesA, termNamesB) {
+    if (!termNamesA) termNamesA = ['subject', 'predicate', 'object', this._contextKey];
+    if (!termNamesB) termNamesB = termNamesA.slice();
+    if (termNamesA.length !== termNamesB.length) throw new Error('Different lengths');
+    return function comparator(quadA, quadB) {
+      for (let i = 0; i <= termNamesA.length; i += 1) {
+        if (i === termNamesA.length) return 0;
+        else if (quadA[termNamesA[i]] < quadB[termNamesB[i]]) return -1;
+        else if (quadA[termNamesA[i]] > quadB[termNamesB[i]]) return 1;
       }
-      return _compare(quadA, quadB, termNames);
     };
   }
 
@@ -575,13 +562,21 @@ class AbstractQuery {
     return new SortQuery(this._store, this, termNames, reverse);
   }
 
-  join(query, termNames, sort) {
+  join(otherQuery, thisTermNames, otherTermNames, sort) {
+    if (_.isBoolean(otherTermNames)) {
+      sort = otherTermNames;
+      otherTermNames = null;
+    }
+    if (_.isNil(otherTermNames)) {
+      otherTermNames = thisTermNames.slice();
+    }
     if (_.isNil(sort)) sort = true;
-    assert(_.isObject(query), 'The "query" argument is not a query.');
-    assert(_.isString(query._queryType), 'The "query" argument is not a query.');
-    assert(isTermNameArray(termNames), 'The "termNames" argument is not an array of term names.');
+    assert(_.isObject(otherQuery), 'The "query" argument is not a query.');
+    assert(_.isString(otherQuery._queryType), 'The "query" argument is not a query.');
+    assert(isTermNameArray(thisTermNames), 'The "termNames" argument is not an array of term names.');
+    assert(isTermNameArray(otherTermNames), 'The "termNames" argument is not an array of term names.');
     assert(_.isBoolean(sort), 'The "sort" argument is not a boolean value.');
-    return new JoinQuery(this._store, this, query, termNames, sort);
+    return new JoinQuery(this._store, this, otherQuery, thisTermNames, otherTermNames, sort);
   }
 
   union(query) {
@@ -723,7 +718,7 @@ function drain(source) {
 
 class JoinStream extends stream.Readable {
 
-  constructor(A, B, equal, compare) {
+  constructor(A, B, comparator) {
     super({ objectMode: true });
     const joinStream = this;
     this._A = A;
@@ -732,8 +727,7 @@ class JoinStream extends stream.Readable {
     this._currentB = null;
     this._endedA = false;
     this._endedB = false;
-    this._equal = equal;
-    this._compare = compare;
+    this._comparator = comparator;
     this._reading = false;
     function onEnd() {
       joinStream.push(null);
@@ -767,15 +761,16 @@ class JoinStream extends stream.Readable {
           return;
         }
       }
-      if (js._equal(js._currentA, js._currentB)) {
+      const ordering = js._comparator(js._currentA, js._currentB);
+      if (ordering < 0) {
+        __read(true, false);
+      } else if (ordering === 0) {
         const keepReading = js.push(js._currentA);
         if (keepReading) {
-          __read(true, true);
+          __read(true, false);
         } else {
           js._reading = false;
         }
-      } else if (js._compare(js._currentA, js._currentB) < 0) {
-        __read(true, false);
       } else {
         __read(false, true);
       }
@@ -786,11 +781,12 @@ class JoinStream extends stream.Readable {
 
 class JoinQuery extends AbstractQuery {
 
-  constructor(store, parent, other, termNames, sort) {
+  constructor(store, parent, other, parentTermNames, otherTermNames, sort) {
     super(store, parent);
     this._queryType = 'join';
     this._other = other;
-    this._termNames = termNames;
+    this._parentTermNames = parentTermNames;
+    this._otherTermNames = otherTermNames;
     this._sort = sort;
   }
 
@@ -799,15 +795,14 @@ class JoinQuery extends AbstractQuery {
     let parentStream;
     let otherStream;
     if (this._sort) {
-      parentStream = this._parent.sort(this._termNames)._execute();
-      otherStream = this._other.sort(this._termNames)._execute();
+      parentStream = this._parent.sort(this._parentTermNames)._execute();
+      otherStream = this._other.sort(this._otherTermNames)._execute();
     } else {
       parentStream = this._parent._execute();
       otherStream = this._other._execute();
     }
-    const equalComparator = store._createEqualComparator(this._termNames);
-    const orderComparator = store._createOrderComparator(this._termNames);
-    return new JoinStream(parentStream, otherStream, equalComparator, orderComparator);
+    const comparator = store._createQuadComparator(this._parentTermNames, this._otherTermNames);
+    return new JoinStream(parentStream, otherStream, comparator);
   }
 
 }
@@ -836,13 +831,10 @@ class SortQuery extends AbstractQuery {
   _execute() {
     const query = this;
     const store = this._store;
+    const comparator = store._createQuadComparator(query._termNames);
     const throughStream = new stream.PassThrough({ objectMode: true });
     setImmediate(() => {
-      const sortedArr = new SortedArray(
-        [],
-        store._createEqualComparator(query._termNames),
-        store._createOrderComparator(query._termNames)
-      );
+      const sortedArr = new SortedArray([], comparator, comparator);
       query._parent._execute()
         .on('data', (quad) => { sortedArr.add(quad); })
         .on('end', () => {
@@ -1090,31 +1082,16 @@ class RdfStore extends QuadStore {
     );
   }
 
-  _createEqualComparator(termNames) {
-    if (!termNames) termNames = ['subject', 'predicate', 'object', this._contextKey];
-    return function equalComparator(quadA, quadB) {
-      return termNames.reduce((eq, termName) => {
-        return eq && quadA[termName]._serializedValue === quadB[termName]._serializedValue;
-      }, true);
-    };
-  }
-
-  _createOrderComparator(termNames) {
-    if (!termNames) termNames = ['subject', 'predicate', 'object', this._contextKey];
+  _createQuadComparator(termNamesA, termNamesB) {
+    if (!termNamesA) termNamesA = ['subject', 'predicate', 'object', this._contextKey];
+    if (!termNamesB) termNamesB = termNamesA.slice();
+    if (termNamesA.length !== termNamesB.length) throw new Error('Different lengths');
     return function orderComparator(quadA, quadB) {
-      function _compare(_quadA, _quadB, _termNames) {
-        if (_termNames.length === 0) {
-          return 0;
-        }
-        const termName = _termNames[0];
-        const termValueA = _quadA[termName]._serializedValue;
-        const termValueB = _quadB[termName]._serializedValue;
-        if (termValueA === termValueB) {
-          return _compare(_quadA, _quadB, _termNames.slice(1));
-        }
-        return termValueA < termValueB ? -1 : 1;
+      for (let i = 0; i <= termNamesA.length; i += 1) {
+        if (i === termNamesA.length) return 0;
+        else if (quadA[termNamesA[i]]._serializedValue < quadB[termNamesB[i]]._serializedValue) return -1;
+        else if (quadA[termNamesA[i]]._serializedValue > quadB[termNamesB[i]]._serializedValue) return 1;
       }
-      return _compare(quadA, quadB, termNames);
     };
   }
 

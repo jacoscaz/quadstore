@@ -82,7 +82,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 #### Current version and features:
 
-Current version: **v2.1.1** [[See on NPM](https://www.npmjs.com/package/quadstore)]
+Current version: **v2.2.0-alpha** [[See on NPM](https://www.npmjs.com/package/quadstore)]
 
 - Supports both native Promise(s) and callbacks
 - Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface

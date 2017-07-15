@@ -1,6 +1,7 @@
 
 'use strict';
 
+const _ = require('lodash');
 const should = require('should');
 
 module.exports = () => {
@@ -182,7 +183,7 @@ module.exports = () => {
           if (delErr) { done(delErr); return; }
           return qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            quads.sort(qs._createOrderComparator());
+            quads.sort(qs._createQuadComparator());
             should(quads).have.length(2);
             should(quads).be.deepEqual(quadsArray.slice(0, 2));
             done();
@@ -207,7 +208,7 @@ module.exports = () => {
           return qs.get({});
         })
         .then((quads) => {
-          quads.sort(qs._createOrderComparator());
+          quads.sort(qs._createQuadComparator());
           should(quads).have.length(2);
           should(quads).be.deepEqual(quadsArray.slice(0, 2));
         });
@@ -242,10 +243,10 @@ module.exports = () => {
           if (patchErr) { done(patchErr); return; }
           qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            newQuads.sort(qs._createOrderComparator());
-            quads.sort(qs._createOrderComparator());
+            newQuads.sort(qs._createQuadComparator());
+            quads.sort(qs._createQuadComparator());
             should(quads).have.length(expected.length);
-            should(quads).be.deepEqual(expected.sort(qs._createOrderComparator()));
+            should(quads).be.deepEqual(expected.sort(qs._createQuadComparator()));
             done();
           });
         });
@@ -267,10 +268,10 @@ module.exports = () => {
         .then(() => qs.patch(oldQuads, newQuads))
         .then(() => qs.get({}))
         .then((quads) => {
-          newQuads.sort(qs._createOrderComparator());
-          quads.sort(qs._createOrderComparator());
+          newQuads.sort(qs._createQuadComparator());
+          quads.sort(qs._createQuadComparator());
           should(quads).have.length(expected.length);
-          should(quads).be.deepEqual(expected.sort(qs._createOrderComparator()));
+          should(quads).be.deepEqual(expected.sort(qs._createQuadComparator()));
         });
     });
 
@@ -286,8 +287,8 @@ module.exports = () => {
           if (patchErr) { done(patchErr); return; }
           qs.get({}, (getErr, quads) => {
             if (getErr) { done(getErr); return; }
-            newQuads.sort(qs._createOrderComparator());
-            quads.sort(qs._createOrderComparator());
+            newQuads.sort(qs._createQuadComparator());
+            quads.sort(qs._createQuadComparator());
             should(quads).have.length(4);
             should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
             done();
@@ -310,8 +311,8 @@ module.exports = () => {
           return qs.get({});
         })
         .then((quads) => {
-          newQuads.sort(qs._createOrderComparator());
-          quads.sort(qs._createOrderComparator());
+          newQuads.sort(qs._createQuadComparator());
+          quads.sort(qs._createQuadComparator());
           should(quads).have.length(4);
           should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
         });
@@ -543,7 +544,7 @@ module.exports = () => {
           { subject: 's2', predicate: 'p6', object: 'o6', graph: 'g6' },
           { subject: 's2', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads)
+        return qs.put(quads)
           .then(() => {
             return qs.query({ subject: 's2' })
               .filter(quad => quad.predicate === 'p4')
@@ -559,7 +560,7 @@ module.exports = () => {
 
     describe('QuadStore.prototype.query().join()', () => {
 
-      it('Should query correctly.', () => {
+      it('Should join queries correctly (same terms).', () => {
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
           { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
@@ -570,7 +571,7 @@ module.exports = () => {
           { subject: 's6', predicate: 'p6', object: 'o6', graph: 'g5' },
           { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g7' },
         ];
-        qs.put(quads)
+        return qs.put(quads)
           .then(() => {
             return qs.query({ subject: 's3' })
               .join(qs.query({ graph: 'g5' }), ['graph'])
@@ -579,6 +580,52 @@ module.exports = () => {
           .then((foundQuads) => {
             should(foundQuads).have.length(1);
             should(foundQuads[0]).deepEqual(quads[5]);
+          });
+      });
+
+      it('Should join queries correctly (different terms).', () => {
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's2', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's3', predicate: 'p4', object: 'o5', graph: 'g3' },
+          { subject: 's3', predicate: 'p4', object: 'o4', graph: 'g4' },
+          { subject: 's5', predicate: 'p5', object: 's3', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 's3', graph: 'g5' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g5' },
+        ];
+        return qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's3' })
+              .join(qs.query({ graph: 'g5' }), ['subject'], ['object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(3, 5));
+          });
+      });
+
+      it('Should join queries correctly (different terms and multiple terms).', () => {
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's0', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's0', predicate: 'p2', object: 'o2', graph: 'g2' },
+          { subject: 's3', predicate: 'p4', object: 'o3', graph: 'g3' },
+          { subject: 's4', predicate: 'p0', object: 's0', graph: 'g5' },
+          { subject: 's5', predicate: 'p1', object: 's0', graph: 'g5' },
+          { subject: 's6', predicate: 'p6', object: 's0', graph: 'g5' },
+          { subject: 's7', predicate: 'p7', object: 'o7', graph: 'g5' },
+        ];
+        return qs.put(quads)
+          .then(() => {
+            return qs.query({ subject: 's0' })
+              .join(qs.query({ graph: 'g5' }), ['predicate', 'subject'], ['predicate', 'object'])
+              .toArray();
+          })
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(0, 2));
           });
       });
 
@@ -599,7 +646,7 @@ module.exports = () => {
         const unionTerms = { predicate: 'p5' };
         const joinTerms = { object: 'o6' };
         const expectedQuads = [initialQuads[2], initialQuads[6]]
-          .sort(qs._createOrderComparator());
+          .sort(qs._createQuadComparator());
         return qs.put(initialQuads)
           .then(() => {
             return qs.query(queryTerms)
@@ -608,7 +655,7 @@ module.exports = () => {
               .toArray();
           })
           .then((foundQuads) => {
-            foundQuads.sort(qs._createOrderComparator());
+            foundQuads.sort(qs._createQuadComparator());
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(expectedQuads);
           });
@@ -629,7 +676,7 @@ module.exports = () => {
         const secondJoinTerms = { predicate: 'p0' };
         const thirdJoinTerms = { object: 'o0' };
         const expectedQuads = initialQuads.slice(0, 2)
-          .sort(qs._createOrderComparator());
+          .sort(qs._createQuadComparator());
         return qs.put(initialQuads)
           .then(() => {
             return qs.query(queryTerms)
@@ -639,9 +686,64 @@ module.exports = () => {
               .toArray();
           })
           .then((foundQuads) => {
-            foundQuads.sort(qs._createOrderComparator());
+            foundQuads.sort(qs._createQuadComparator());
             should(foundQuads).have.length(2);
             should(foundQuads).deepEqual(expectedQuads);
+          });
+      });
+
+    });
+
+  });
+
+  describe('Indexes', () => {
+
+    describe('QuadStore.prototype.registerIndex()', () => {
+
+      it('Should register a new index correctly.', () => {
+        const name = 'SUBJECT';
+        const keygen = quad => quad.subject;
+        qs.registerIndex(name, keygen);
+        const index = qs._getIndex(name);
+        should(name).equal(index.name);
+        should(keygen).equal(index.keygen);
+      });
+
+    });
+
+    describe('QuadStore.prototype.getByIndex', () => {
+
+      it('Should get quads using a standard index correctly.', () => {
+        const name = 'SPOG';
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0' },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1' },
+          { subject: 's1', predicate: 'p2', object: 'o2', graph: 'g2' },
+        ];
+        return qs.put(quads)
+          .then(() => qs.getByIndex(name, { gte: 's1', lte: 's1' + qs.boundary }))
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(1));
+          });
+      });
+
+      it('Should get quads using a custom index correctly.', () => {
+        const name = 'SUBJECT';
+        const keygen = quad => quad.date;
+        qs.registerIndex(name, keygen);
+        const todaysDate = '1970-01-01';
+        const yesterdaysDate = '1969-12-31'
+        const quads = [
+          { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0', date: yesterdaysDate },
+          { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1', date: todaysDate },
+          { subject: 's1', predicate: 'p2', object: 'o2', graph: 'g2', date: todaysDate },
+        ];
+        return qs.put(quads)
+          .then(() => qs.getByIndex(name, { gte: todaysDate, lte: todaysDate + qs.boundary }))
+          .then((foundQuads) => {
+            should(foundQuads).have.length(2);
+            should(foundQuads).deepEqual(quads.slice(1));
           });
       });
 

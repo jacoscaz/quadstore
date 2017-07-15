@@ -14,28 +14,35 @@ A LevelDB-backed graph database for Node.js with native support for quads.
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
+        - [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
+        - [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
+        - [QuadStore.prototype.registerIndex](#quadstoreprototyperegisterindex)
     - [RDF/JS Interface](#rdfjs-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
         - [RdfStore.prototype.get](#rdfstoreprototypeget)
+        - [RdfStore.prototype.getByIndex](#rdfstoreprototypegetbyindex)
         - [RdfStore.prototype.put](#rdfstoreprototypeput)
         - [RdfStore.prototype.del](#rdfstoreprototypedel)
         - [RdfStore.prototype.patch](#rdfstoreprototypepatch)
         - [RdfStore.prototype.getStream](#rdfstoreprototypegetstream)
+        - [RdfStore.prototype.getByIndexStream](#rdfstoreprototypegetbyindexstream)
         - [RdfStore.prototype.putStream](#rdfstoreprototypeputstream)
         - [RdfStore.prototype.delStream](#rdfstoreprototypedelstream)
+        - [RdfStore.prototype.registerIndex](#rdfstoreprototyperegisterindex)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
     - [Advanced Queries](#advanced-queries)
         - [(Quad|Rdf)Store.prototype.query](#quadrdfstoreprototypequery)
+        - [(Quad|Rdf)Store.prototype.queryByIndex](#quadrdfstoreprototypequerybyindex)
         - [AbstractQuery.prototype.get](#abstractqueryprototypeget)
         - [AbstractQuery.prototype.del](#abstractqueryprototypedel)
         - [AbstractQuery.prototype.getStream](#abstractqueryprototypegetstream)
@@ -75,7 +82,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 #### Current version and features:
 
-Current version: **v2.1.1** [[See on NPM](https://www.npmjs.com/package/quadstore)]
+Current version: **v2.2.0** [[See on NPM](https://www.npmjs.com/package/quadstore)]
 
 - Supports both native Promise(s) and callbacks
 - Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
@@ -138,6 +145,23 @@ returning an object compatible with
     store.get(matchTerms).then((matchingQuads) => {}); // promise
 
 Returns an array of all quads within the store matching the specified terms.
+
+#### QuadStore.prototype.getByIndex()
+
+    const name = 'index';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+Returns an array of all quads within the store matching the specified conditions as
+tested against the specified index. Options available are `lt`,`lte`, `gt`,
+`gte`, `limit`, `reverse`.
+
+For standard prefix-matching queries, append the boundary character `store.boundary`
+to the `lte` value:
+
+    { gte: 's', lte: 's' + store.boundary }
 
 #### QuadStore.prototype.put()
 
@@ -214,6 +238,22 @@ matching such terms from the store.
 *Synchronously* returns a `stream.Readable` of all quads matching the terms in the specified
 query.
 
+#### QuadStore.prototype.getByIndexStream()
+
+    const name = 'index';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    const readableStream = store.getStream(name, opts);
+
+*Synchronously* returns a `stream.Readable` of all quads within the store matching the 
+specified conditions as tested against the specified index. Options available are
+`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+
+For standard prefix-matching queries, append the boundary character `store.boundary`
+to the `lte` value:
+
+    { gte: 's', lte: 's' + store.boundary }
+
 #### QuadStore.prototype.putStream()
 
     store.putStream(readableStream, (err) => {});
@@ -227,6 +267,14 @@ Imports all quads coming through the specified `stream.Readable` into the store.
     store.delStream(readableStream).then(() => {});
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
+
+#### QuadStore.prototype.registerIndex()
+
+    store.registerIndex('updatedAt', function (quad) {
+      return quad.subject.split('').reverse().join('');
+    });
+
+Creates a new index that uses the provided function to compute index keys.
 
 ### RDF/JS Interface
 
@@ -288,6 +336,23 @@ from the RDF/JS interface.
     });
     
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
+
+#### RdfStore.prototype.getByIndex()
+
+    const name = 'index';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+Returns an array of all quads within the store matching the specified conditions as
+tested against the specified index. Options available are `lt`,`lte`, `gt`,
+`gte`, `limit`, `reverse`. 
+
+**CAREFUL** - conditions will be tested against serialized terms. The serialization
+format is that used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+
+Also see [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex).
     
 #### RdfStore.prototype.put()
 
@@ -403,6 +468,23 @@ See [QuadStore.prototype.patch()](#quadstoreprototypepatch).
 
 See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
 
+#### RdfStore.prototype.getByIndexStream()
+
+    const name = 'index';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
+    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+
+*Synchronously* returns a `stream.Readable` of all quads within the store matching 
+the specified conditions as tested against the specified index. Options
+available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`. 
+
+**CAREFUL** - conditions will be tested against serialized terms. The serialization
+format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+
+Also see [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream).
+
 #### RdfStore.prototype.putStream()
 
     store.putStream(readableStream, (err) => {});
@@ -420,6 +502,14 @@ See [QuadStore.prototype.putStream()](#quadstoreprototypeputstream).
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
 See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
+
+#### RdfStore.prototype.registerIndex()
+
+See [QuadStore.prototype.registerIndex()](#quadstoreprototyperegisterindex).
+
+** CAREFUL ** - when used on an instance of the RdfStore class, the key generation
+function provided through this method will still receive serialized quads. The
+serialization format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### RdfStore.prototype.match()
 
@@ -483,6 +573,21 @@ quads and matching terms as produced by `dataFactory.quad()` and
 `dataFactory.namedNode()`, `dataFactory.blankNode()`, `dataFactory.literal()`.
 See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
 
+#### (Quad|Rdf)Store.prototype.queryByIndex()
+
+    const name = 'customIndex';
+    const opts = {gte: 'subject1', lte: 'subject42'};
+
+    store.queryByIndex(name, opts);
+
+Similar to [(Quad|Rdf)Store.prototype.query()](#quadrdfstoreprototypequery)
+this method returns an instance of the `AbstractQuery` class. Options available are 
+`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+
+**CAREFUL** - if the store is an instance of `RdfStore`, conditions will be tested 
+against serialized terms. The serialization format is that used by 
+[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+
 #### AbstractQuery.prototype.get()
 
     // QuadStore
@@ -523,22 +628,37 @@ See also [AbstractQuery.prototype.delStream()](#abstractqueryprototypedelstream)
     // QuadStore
     const matchTermsA = {graph: 'g'};
     const matchTermsB = {subject: 's'};
-    quadStore.query(matchTermsA)
-        .join(quadStore.query(matchTermsB), ['predicate'])
+    const compareTermsA = ['predicate'];
+    const compareTermsB = ['predicate'];
+    const queryA = quadStore.query(matchTermsA);
+    const queryB = quadStore.query(matchTermsB);
+    queryA
+        .join(queryB, compareTermsA, compareTermsB)
         .get((err, quads) => {});
 
     // RdfStore
     const matchTermsA = {graph: dataFactory.namedNode('http://example.com/graph')};
     const matchTermsB = {subject: dataFactory.namedNode('http://example.com/subject')};
-    rdfStore.query(matchTermsA)
-        .join(rdfStore.query(matchTermsB), ['predicate'])
+    const compareTermsA = ['predicate'];
+    const compareTermsB = ['predicate'];
+    const queryA = quadStore.query(matchTermsA);
+    const queryB = quadStore.query(matchTermsB);
+    quaryA
+        .join(queryB, compareTermsA, compareTermsB)
         .get((err, quads) => {});
 
 Performs an inner join between the two queries limited to the terms
-specified in the array.
+specified in the `compareTerms` arrays, passing on quads from the **first** query.
 
 The above example queries for all quads with graph `g` and with a predicate
 shared by at least another quad having subject 's'.
+
+The `compareTerms` arrays allows to join quads using different terms. The following join
+
+    queryA.join(queryB, ['subject'], ['object'])
+
+results in quads matching `queryA`'s terms being filtered according to whether quads 
+matching `queryB`'s terms are found such as `someQueryAQuad.subject === someQueryBQuad.object`.
 
 Returns an instance of `AbstractQuery` and can be daisy-chained with
 other similar methods to refine queries.

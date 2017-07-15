@@ -62,3 +62,7 @@ typings/
 
 # Browser build
 /browser/quadstore-bundle.js
+
+# Mac OS stuff
+.DS_Store
+

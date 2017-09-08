@@ -590,13 +590,15 @@ against serialized terms. The serialization format is that used by
 
 #### AbstractQuery.prototype.get()
 
+Previously `toArray()`
+
     // QuadStore
-    quadStore.query({graph: 'g'}).toArray((err, quads) => {}); // callback
-    quadStore.query({graph: 'g'}).toArray().then(quads) => {}); // promise
+    quadStore.query({graph: 'g'}).get((err, quads) => {}); // callback
+    quadStore.query({graph: 'g'}).get().then(quads) => {}); // promise
 
     // RdfStore
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toArray((err, quads) => {}); // callback
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toArray().then(quads) => {}); // promise
+    rdfStore.query({graph: dataFactory.blankNode('c')}).get((err, quads) => {}); // callback
+    rdfStore.query({graph: dataFactory.blankNode('c')}).get().then(quads) => {}); // promise
 
 Returns an array of quads matching the query.
 

@@ -550,7 +550,7 @@ function isTermNameArray(arr) {
 class AbstractQuery {
 
   constructor(store, parent) {
-    this._store = store;
+    this._rdfStore = store;
     this._parent = parent;
     this._queryType = 'abstract';
   }
@@ -559,7 +559,7 @@ class AbstractQuery {
     if (_.isNil(reverse)) reverse = false;
     assert(isTermNameArray(termNames), 'The "termNames" argument is not an array of term names.');
     assert(_.isBoolean(reverse), 'The "reverse" argument is not boolean.');
-    return new SortQuery(this._store, this, termNames, reverse);
+    return new SortQuery(this._rdfStore, this, termNames, reverse);
   }
 
   join(otherQuery, thisTermNames, otherTermNames, sort) {
@@ -576,17 +576,17 @@ class AbstractQuery {
     assert(isTermNameArray(thisTermNames), 'The "termNames" argument is not an array of term names.');
     assert(isTermNameArray(otherTermNames), 'The "termNames" argument is not an array of term names.');
     assert(_.isBoolean(sort), 'The "sort" argument is not a boolean value.');
-    return new JoinQuery(this._store, this, otherQuery, thisTermNames, otherTermNames, sort);
+    return new JoinQuery(this._rdfStore, this, otherQuery, thisTermNames, otherTermNames, sort);
   }
 
   union(query) {
     assert(_.isObject(query) && _.isString(query._queryType), 'The "query" argument is not a query.');
-    return new UnionQuery(this._store, this, query);
+    return new UnionQuery(this._rdfStore, this, query);
   }
 
   filter(fn) {
     assert(_.isFunction(fn), 'The "fn" argument is not a function.');
-    return new FilterQuery(this._store, this, fn);
+    return new FilterQuery(this._rdfStore, this, fn);
   }
 
   get(cb) {
@@ -607,7 +607,7 @@ class AbstractQuery {
 
   del(cb) {
     const query = this;
-    const store = query._store;
+    const store = query._rdfStore;
     assert(_.isNil(cb) || _.isFunction(cb), 'The "cb" argument is not a function.');
     function _del(resolve, reject) {
       query.get((getErr, quads) => {
@@ -791,7 +791,7 @@ class JoinQuery extends AbstractQuery {
   }
 
   _execute() {
-    const store = this._store;
+    const store = this._rdfStore;
     let parentStream;
     let otherStream;
     if (this._sort) {
@@ -830,7 +830,7 @@ class SortQuery extends AbstractQuery {
 
   _execute() {
     const query = this;
-    const store = this._store;
+    const store = this._rdfStore;
     const comparator = store._createQuadComparator(query._termNames);
     const throughStream = new stream.PassThrough({ objectMode: true });
     setImmediate(() => {
@@ -914,7 +914,7 @@ class RdfStore extends QuadStore {
     if (_.isNil(opts)) opts = {};
     super(path, _.extend({}, opts, { contextKey: 'graph' }));
     assert(_.isObject(opts.dataFactory), 'Missing "opts.dataFactory" property.');
-    this._dataFactory = opts.dataFactory;
+    this.dataFactory = opts.dataFactory;
   }
 
   static get valueEncoding() {
@@ -1030,16 +1030,16 @@ class RdfStore extends QuadStore {
   _exportTerm(term) {
     let exported;
     if (term === defaultGraphTermValue) {
-      exported = this._dataFactory.defaultGraph();
+      exported = this.dataFactory.defaultGraph();
     } else if (n3u.isLiteral(term)) {
       const value = n3u.getLiteralValue(term);
       const datatype = n3u.getLiteralType(term);
       const language = n3u.getLiteralLanguage(term);
-      exported = this._dataFactory.literal(value, language || (datatype && this._dataFactory.namedNode(datatype)) || null);
+      exported = this.dataFactory.literal(value, language || (datatype && this.dataFactory.namedNode(datatype)) || null);
     } else if (n3u.isBlank(term)) {
-      exported = this._dataFactory.blankNode(term.slice(2));
+      exported = this.dataFactory.blankNode(term.slice(2));
     } else if (n3u.isIRI(term)) {
-      exported = this._dataFactory.namedNode(term);
+      exported = this.dataFactory.namedNode(term);
     } else {
       throw new Error('Bad term ' + term + ', cannot export');
     }
@@ -1074,7 +1074,7 @@ class RdfStore extends QuadStore {
   }
 
   _exportQuad(quad) {
-    return this._dataFactory.quad(
+    return this.dataFactory.quad(
       this._exportTerm(quad.subject),
       this._exportTerm(quad.predicate),
       this._exportTerm(quad.object),

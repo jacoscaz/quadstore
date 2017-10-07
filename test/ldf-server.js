@@ -4,12 +4,12 @@
 const _ = require('lodash');
 const os = require('os');
 const fs = require('fs-extra');
-const ldf = require('../lib/ldf');
 const path = require('path');
+const should = require('should');
 const shortid = require('shortid');
-const levelup = require('leveldown');
-const ldfClient = require('ldf-client');
 const RdfStore = require('../').RdfStore;
+const ldfClient = require('ldf-client');
+const LdfServer = require('../lib/ldf-server');
 const dataFactory = require('rdf-data-model');
 
 function wait(delay) {
@@ -28,13 +28,13 @@ function streamToArray(readStream) {
   });
 }
 
-describe.only('LDF Datasource', () => {
+describe('LDF Datasource', () => {
 
   beforeEach(async function () {
     const ctx = this;
     ctx.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
     ctx.store = new RdfStore(ctx.location, { dataFactory });
-    ctx.server = ldf.initLdfServer(ctx.store);
+    ctx.server = new LdfServer(ctx.store, { logLevel: 'silent' });
     await new Promise((resolve, reject) => {
       ctx.server.listen(8883, (err) => {
         err ? reject(err) : resolve();
@@ -53,10 +53,26 @@ describe.only('LDF Datasource', () => {
     await fs.remove(ctx.location);
   });
 
-  it('LDF', async function () {
+  it('Simple test', async function () {
+    const ctx = this;
+    for (let i = 0; i < 2000; i++) {
+      await ctx.store.put(dataFactory.quad(
+        dataFactory.namedNode('http://ex.com/s' + i),
+        dataFactory.namedNode('http://ex.com/p' + i),
+        dataFactory.namedNode('http://ex.com/o' + i),
+        dataFactory.namedNode('http://ex.com/g' + i)
+      ));
+    }
+    const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
+    const sparqlIterator = new ldfClient.SparqlIterator(query, { fragmentsClient: ctx.client })
+    const results = await streamToArray(sparqlIterator);
+    should(results).have.length(2000);
+  });
+
+  it.only('Keep the server running for 5 minutes', async function () {
     this.timeout(0);
     const ctx = this;
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 2000; i++) {
       await ctx.store.put(dataFactory.quad(
         dataFactory.namedNode('http://ex.com/s' + i),
         dataFactory.namedNode('http://ex.com/p' + i),
@@ -65,9 +81,6 @@ describe.only('LDF Datasource', () => {
       ));
     }
     await wait(300 * 1000);
-    const query = 'SELECT * { ?s ?p ?o }';
-    const results = await streamToArray(new ldfClient.SparqlIterator(query, { fragmentsClient: ctx.client }));
-    console.log(results);
   });
 
 });

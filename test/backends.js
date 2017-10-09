@@ -4,6 +4,7 @@
 const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
+const utils = require('../lib/utils');
 const shortid = require('shortid');
 const memdown = require('memdown');
 const levelup = require('levelup');
@@ -26,8 +27,9 @@ describe('QuadStore / Auto / MemDOWN', () => {
 
 describe('RdfStore / Auto / MemDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.store = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
   });
 
   afterEach(function () {
@@ -56,10 +58,11 @@ describe('QuadStore / LevelUP / MemDOWN', () => {
 
 describe('RdfStore / LevelUP / MemDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.location = shortid();
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: memdown });
     this.store = new RdfStore(this.db, { dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
   });
 
   afterEach(function () {
@@ -92,10 +95,11 @@ describe('QuadStore / LevelUP / LevelDOWN', () => {
 
 describe('RdfStore / LevelUP / LevelDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: leveldown });
     this.store = new RdfStore(this.db, { dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
   });
 
   afterEach(function (done) {

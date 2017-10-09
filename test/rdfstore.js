@@ -520,8 +520,8 @@ module.exports = () => {
     });
 
     describe('RdfStore.prototype.sparql()', () => {
-      it('Simple test', function () {
-        this.timeout(5000);
+
+      it('Shoud return the correct number of entries', function () {
         const ctx = this;
         const store = ctx.store;
         const dataFactory = store.dataFactory;
@@ -537,13 +537,36 @@ module.exports = () => {
         return store.put(quads)
           .then(() => {
             const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
-            console.log('QUERYYYY');
             return utils.streamToArray(ctx.store.sparql(query));
           })
           .then((results) => {
             should(results).have.length(20);
           });
       });
+    });
+
+    it('Shoud return the correct number of entries (LIMIT)', function () {
+      this.timeout(5000);
+      const ctx = this;
+      const store = ctx.store;
+      const dataFactory = store.dataFactory;
+      const quads = [];
+      for (let i = 0; i < 20; i++) {
+        quads.push(dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s' + i),
+          dataFactory.namedNode('http://ex.com/p' + i),
+          dataFactory.namedNode('http://ex.com/o' + i),
+          dataFactory.namedNode('http://ex.com/g' + i)
+        ));
+      }
+      return store.put(quads)
+        .then(() => {
+          const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } } LIMIT 2';
+          return utils.streamToArray(ctx.store.sparql(query));
+        })
+        .then((results) => {
+          should(results).have.length(2);
+        });
     });
 
   });

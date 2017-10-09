@@ -30,6 +30,10 @@ describe('RdfStore / Auto / MemDOWN', () => {
     this.store = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
   });
 
+  afterEach(function () {
+    return this.store.close();
+  });
+
   rdfStoreSuite();
 
 });
@@ -42,6 +46,10 @@ describe('QuadStore / LevelUP / MemDOWN', () => {
     this.store = new QuadStore(this.db);
   });
 
+  afterEach(function () {
+    return this.store.close();
+  });
+
   quadStoreSuite();
 
 });
@@ -52,6 +60,10 @@ describe('RdfStore / LevelUP / MemDOWN', () => {
     this.location = shortid();
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: memdown });
     this.store = new RdfStore(this.db, { dataFactory: factory });
+  });
+
+  afterEach(function () {
+    return this.store.close();
   });
 
   rdfStoreSuite();

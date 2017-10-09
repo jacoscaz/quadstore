@@ -733,7 +733,7 @@ module.exports = () => {
         const keygen = quad => quad.date;
         qs.registerIndex(name, keygen);
         const todaysDate = '1970-01-01';
-        const yesterdaysDate = '1969-12-31'
+        const yesterdaysDate = '1969-12-31';
         const quads = [
           { subject: 's0', predicate: 'p0', object: 'o0', graph: 'g0', date: yesterdaysDate },
           { subject: 's1', predicate: 'p1', object: 'o1', graph: 'g1', date: todaysDate },

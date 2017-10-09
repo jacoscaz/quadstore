@@ -4,6 +4,7 @@
 const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
+const utils = require('../lib/utils');
 const shortid = require('shortid');
 const memdown = require('memdown');
 const levelup = require('levelup');
@@ -26,8 +27,13 @@ describe('QuadStore / Auto / MemDOWN', () => {
 
 describe('RdfStore / Auto / MemDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.store = new RdfStore(shortid.generate(), { db: memdown, dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
+  });
+
+  afterEach(function () {
+    return this.store.close();
   });
 
   rdfStoreSuite();
@@ -42,23 +48,32 @@ describe('QuadStore / LevelUP / MemDOWN', () => {
     this.store = new QuadStore(this.db);
   });
 
+  afterEach(function () {
+    return this.store.close();
+  });
+
   quadStoreSuite();
 
 });
 
 describe('RdfStore / LevelUP / MemDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.location = shortid();
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: memdown });
     this.store = new RdfStore(this.db, { dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
+  });
+
+  afterEach(function () {
+    return this.store.close();
   });
 
   rdfStoreSuite();
 
 });
 
-describe.skip('QuadStore / LevelUP / LevelDOWN', () => {
+describe('QuadStore / LevelUP / LevelDOWN', () => {
 
   beforeEach(function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
@@ -78,12 +93,13 @@ describe.skip('QuadStore / LevelUP / LevelDOWN', () => {
 
 });
 
-describe.skip('RdfStore / LevelUP / LevelDOWN', () => {
+describe('RdfStore / LevelUP / LevelDOWN', () => {
 
-  beforeEach(function () {
+  beforeEach(async function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: leveldown });
     this.store = new RdfStore(this.db, { dataFactory: factory });
+    await utils.resolveOnEvent(this.store, 'ready');
   });
 
   afterEach(function (done) {

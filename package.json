@@ -57,6 +57,7 @@
   "contributors": [
     "Matteo Murgida <teomurgi@gmail.com>"
   ],
+  "engineStrict": true,
   "engines": {
     "node": ">=8.0.0"
   },

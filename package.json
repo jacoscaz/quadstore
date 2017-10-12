@@ -58,7 +58,7 @@
     "Matteo Murgida <teomurgi@gmail.com>"
   ],
   "engines": {
-    "node": ">=6.0.x"
+    "node": ">=8.0.0"
   },
   "license": "MIT",
   "homepage": "https://github.com/beautifulinteractions/node-quadstore",

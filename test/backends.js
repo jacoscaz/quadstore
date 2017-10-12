@@ -21,6 +21,10 @@ describe('QuadStore / Auto / MemDOWN', () => {
     this.store = new QuadStore(shortid.generate(), { db: memdown });
   });
 
+  afterEach(function () {
+    return this.store.close();
+  });
+
   quadStoreSuite();
 
 });
@@ -105,7 +109,10 @@ describe('RdfStore / LevelUP / LevelDOWN', () => {
   afterEach(function (done) {
     const context = this;
     context.store.close((closeErr) => {
-      if (closeErr) { done(closeErr); return; }
+      if (closeErr) {
+        done(closeErr);
+        return;
+      }
       fs.remove(context.location, done);
     });
   });

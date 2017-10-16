@@ -24,6 +24,7 @@
     "max-len": "off",
     "comma-dangle": "off",
     "consistent-return": "off",
-    "padded-blocks": "off"
+    "padded-blocks": "off",
+    "no-restricted-syntax": "off"
   }
 }

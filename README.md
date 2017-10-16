@@ -42,16 +42,20 @@ A quad is a triple with an added `graph` term.
 
     (subject, predicate, object, graph)
 
-Such additional term facilitates the representation of metadata, such as provenance, in the form of other quads having
-the `graph` of the former quads as their subject or object.
+Such additional term facilitates the representation of metadata, such as 
+provenance, in the form of other quads having the `graph` of the former 
+quads as their subject or object.
 
-Quadstore heavily borrows from LevelGraph's approach to storing tuples but employs a different indexing strategy that
-requires the same number of indexes to handle the additional dimension and efficiently store and query quads.
+Quadstore heavily borrows from LevelGraph's approach to storing tuples but 
+employs a different indexing strategy that requires the same number of indexes
+to handle the additional dimension and efficiently store and query quads.
 
 LevelGraph's approach to storing tuples is described in this presentation
-[How to Cook a Graph Database in a Night](http://nodejsconfit.levelgraph.io/) by LevelGraph's creator Matteo Collina.
+[How to Cook a Graph Database in a Night](http://nodejsconfit.levelgraph.io/)
+by LevelGraph's creator Matteo Collina.
 
-Quadstore's indexing strategy has been developed by [Sarra Abbassi](mailto:abbassy.sarra@gmail.com) and
+Quadstore's indexing strategy has been developed by 
+[Sarra Abbassi](mailto:abbassy.sarra@gmail.com) and 
 [Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper
 [RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
 
@@ -63,37 +67,41 @@ Unstable, active, under development.
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-#### Current version and features:
+#### Current version and features
 
-Current version: **v2.2.0** [[See on NPM](https://www.npmjs.com/package/quadstore)]
+Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
-- Supports both native Promise(s) and callbacks
-- Implements the [RDF/JS](https://github.com/rdfjs/representation-task-force) Store interface
-- Full CRUD of quads
-- Advanced queries (union, join, sort, filter)
+- Supports retrieval, update, insertion and removal of quads.
+- Supports both Promise(s) and callbacks.
+- Supports `SPARQL` queries (`SELECT` only).
+- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' 
+  `Store`, `Source` and `Sink` interfaces.
 
-Release notes:
+#### Notes
 
-- The updated API introduced is on track for an API freeze and become the final API.
-- We've switched to [Semantic Versioning](https://www.npmjs.com/package/quadstore). Pre-releases will be tagged accordingly.
-- The `master` branch is now kept in sync with NPM and all development work happens on the `devel` branch.
+- Uses [Semantic Versioning](https://www.npmjs.com/package/quadstore). 
+  Pre-releases are tagged accordingly.
+- The `master` branch is kept in sync with NPM and all development work happens
+  on the `devel` branch and/or issue-specific branches.
 
 ## Relationship with LevelUP / LevelDOWN
 
-`quadstore` uses the [LevelUP](https://github.com/level/levelup) package to
+`quadstore` uses the [LevelUP](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
 #### Storage backends
 
-- `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package offers persistent storage backed by LevelDB itself.
-- `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers volatile in-memory storage.
-- `level.js` - The [level.js](https://github.com/maxogden/level.js) package  offers persistent in-browser storage through IndexedDB.
+- `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package 
+  offers persistent storage backed by LevelDB itself.
+- `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers
+  volatile in-memory storage.
 
 #### Default backend
 
-If no backend is specified through the options of the [QuadStore](#quadstore-class)
-and [RdfStore](#rdfstore-class) constructors, `levelup` will attempt at `require()`ing
-the `leveldown` package **which has to be explicitly installed via `npm`**.
+If no backend is specified through the options of the 
+[QuadStore](#quadstore-class) and [RdfStore](#rdfstore-class) constructors, 
+`levelup` will attempt at `require()`ing the `leveldown` package **which has to
+be explicitly installed via `npm`**.
 
 ## Usage ##
 
@@ -110,9 +118,9 @@ Instantiates a new store. Supported options are:
     opts.contextKey = 'graph';        // Name of fourth term
 
 The `contextKey` option determines which key the store will use to read and
-write the fourth term of each quad. The default value `graph` requires all quads to be
-formatted as `{ subject, predicate, object, graph }` objects. Similarly, the value
-`context` would require all quads to be formatted as
+write the fourth term of each quad. The default value `graph` requires all 
+quads to be formatted as `{ subject, predicate, object, graph }` objects. 
+Similarly, the value `context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
 
 The `db` option is optional and, if provided, *must* be a factory function
@@ -137,12 +145,12 @@ Returns an array of all quads within the store matching the specified terms.
     store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
     store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
 
-Returns an array of all quads within the store matching the specified conditions as
-tested against the specified index. Options available are `lt`,`lte`, `gt`,
-`gte`, `limit`, `reverse`.
+Returns an array of all quads within the store matching the specified 
+conditions as tested against the specified index. Options available are `lt`,
+`lte`, `gt`, `gte`, `limit`, `reverse`.
 
-For standard prefix-matching queries, append the boundary character `store.boundary`
-to the `lte` value:
+For standard prefix-matching queries, append the boundary character 
+`store.boundary` to the `lte` value:
 
     { gte: 's', lte: 's' + store.boundary }
 
@@ -159,11 +167,11 @@ Stores new quads. Does *not* throw or return an error if quads already exists.
 
 #### QuadStore.prototype.del()
 
-This method deletes quads. It Does *not* throw or return an error if the specified
-quads are not present in the store.
+This method deletes quads. It Does *not* throw or return an error if the 
+specified quads are not present in the store.
 
-If the first argument is a quad or an array of quads, this method will delete such
-quads from the store.
+If the first argument is a quad or an array of quads, this method will delete 
+such quads from the store.
 
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
@@ -172,8 +180,8 @@ quads from the store.
     store.del(quads, (delErr) => {}); // callback
     store.del(quads).then(() => {}); // promise
 
-If the first argument is a set of matching terms, this method will delete all quads
-matching such terms from the store.
+If the first argument is a set of matching terms, this method will delete all 
+quads matching such terms from the store.
 
     const matchTerms = {graph: 'g'};
 
@@ -182,12 +190,12 @@ matching such terms from the store.
 
 #### QuadStore.prototype.patch()
 
-This methods deletes and inserts quads in a single operation. It Does *not* throw or
-return an error if the specified quads are not present in the store (delete) or already
-present in the store (update).
+This methods deletes and inserts quads in a single operation. It Does *not* 
+throw or return an error if the specified quads are not present in the store 
+(delete) or already present in the store (update).
 
-If the first argument is a single quad or an array of quads, it is assumed to be an
-array of quads to be deleted.
+If the first argument is a single quad or an array of quads, it is assumed to 
+be an array of quads to be deleted.
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
@@ -200,8 +208,8 @@ array of quads to be deleted.
     store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
     store.patch(oldQuads, newQUads).then(() => {}); // promise
 
-If the first argument is a set of matching terms, this method will delete all quads
-matching such terms from the store.
+If the first argument is a set of matching terms, this method will delete all 
+quads matching such terms from the store.
 
     const matchTerms = {subject: 'so', graph: 'go'}
 
@@ -218,8 +226,8 @@ matching such terms from the store.
 
     const readableStream = store.getStream(matchTerms);
 
-*Synchronously* returns a `stream.Readable` of all quads matching the terms in the specified
-query.
+*Synchronously* returns a `stream.Readable` of all quads matching the terms in 
+the specified query.
 
 #### QuadStore.prototype.getByIndexStream()
 
@@ -228,12 +236,12 @@ query.
 
     const readableStream = store.getStream(name, opts);
 
-*Synchronously* returns a `stream.Readable` of all quads within the store matching the 
-specified conditions as tested against the specified index. Options available are
-`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+*Synchronously* returns a `stream.Readable` of all quads within the store 
+matching the specified conditions as tested against the specified index. 
+Options available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
 
-For standard prefix-matching queries, append the boundary character `store.boundary`
-to the `lte` value:
+For standard prefix-matching queries, append the boundary character 
+`store.boundary` to the `lte` value:
 
     { gte: 's', lte: 's' + store.boundary }
 
@@ -261,12 +269,15 @@ Creates a new index that uses the provided function to compute index keys.
 
 ### RDF Interface
 
-`quadstore` aims to support the [RDF/JS](https://github.com/rdfjs/representation-task-force)
-interface specification through the specialized `RdfStore` class, which currently implements
-the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no RegExp(s)).
+`quadstore` aims to support the 
+[RDF/JS](https://github.com/rdfjs/representation-task-force) interface 
+specification through the specialized `RdfStore` class, which currently 
+implements the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no 
+RegExp(s)).
 
-Additionally, the `RdfStore` class also supports `SPARQL` queries and provides `HTTP` endpoints
-matching the [RDF/JS](https://github.com/rdfjs/representation-task-force)'s specification.
+Additionally, the `RdfStore` class also supports `SPARQL` queries and provides
+`HTTP` endpoints matching the 
+[RDF/JS](https://github.com/rdfjs/representation-task-force)'s specification.
 
 #### RdfStore class
 
@@ -287,32 +298,36 @@ returning an object compatible with
 [Relationship with LevelUP / LevelDOWN](#relationship-with-levelup-leveldown).
 
 The `dataFactory` option is mandatory and *must* be an implementation of the
-`dataFactory` interface defined in the RDF/JS specification. One such implementation
-is available at [rdf-ext/rdf-data-model](https://github.com/rdf-ext/rdf-data-model).
+`dataFactory` interface defined in the RDF/JS specification. One such 
+implementation is available at 
+[rdf-ext/rdf-data-model](https://github.com/rdf-ext/rdf-data-model).
 
-The `contextKey` option from the `QuadStore` class is set to `graph` and cannot be
-changed.
+The `contextKey` option from the `QuadStore` class is set to `graph` and cannot
+be changed.
 
-The `httpAddr` and `httpPort` options specify the address and port that the internal 
-`HTTP` server should listen to.
+The `httpAddr` and `httpPort` options specify the address and port that the
+internal `HTTP` server should listen to.
 
-The `httpBaseUrl` option is used by the internal `HTTP` server to render URLs correctly.
+The `httpBaseUrl` option is used by the internal `HTTP` server to render URLs
+correctly.
 
 #### Graph API, Quad and Term instances
 
-The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, the `get`,
-`put`, `del`, `patch`, `query`, `getStream`, `putStream` and `delStream` methods accept
-and return (streams of and/or arrays of) `Quad` objects as produced by the
-`dataFactory.quad` method. 
+The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, 
+the `get`, `put`, `del`, `patch`, `query`, `getStream`, `putStream` and 
+`delStream` methods accept and return (streams of and/or arrays of) `Quad` 
+objects as produced by the `dataFactory.quad` method. 
 
-Matching terms, such as those used in the `query`, `get` and `createReadStream` methods, 
-must be `Term` objects as produced by the `dataFactory.namedNode`, `dataFactory.blankNode` 
-or `dataFactory.literal` methods. The same applies for the `match`, `import`, `remove` 
-and `removeMatches` methods inherited from the RDF/JS interface.
+Matching terms, such as those used in the `query`, `get` and `createReadStream`
+methods, must be `Term` objects as produced by the `dataFactory.namedNode`, 
+`dataFactory.blankNode` or `dataFactory.literal` methods. 
 
-The conditions used in `getByIndex()`, `getByIndexStream()` and the key generation function
-used in `registerIndex()` **must** use the serialization format of 
-[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+The same rules apply for the `match`, `import`, `remove` and `removeMatches` 
+methods inherited from the RDF/JS interface.
+
+The conditions used in `getByIndex()`, `getByIndexStream()` and the key 
+generation function used in `registerIndex()` **must** use the serialization 
+format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### RdfStore.prototype.match()
 
@@ -343,8 +358,8 @@ Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided ter
       })
       .on('end', () => {});
 
-Returns a `stream.Readable` of RDF/JS `Term` dictionaries keyed according to the 
-variables returned by the query.
+Returns a `stream.Readable` of RDF/JS `Term` dictionaries keyed according to 
+the variables returned by the query.
 
 #### RdfStore.prototype.import()
 
@@ -384,54 +399,61 @@ The following endpoints are made avaible by the internal `HTTP` server:
 #### `GET /match`
 
 Mirrors `RDF/JS`'s `Source.match()` method. Returns quads serialized either in 
-`application/n-quads` or `application/trig` matching the specified query parameters. 
+`application/n-quads` or `application/trig` matching the specified query 
+parameters. 
 
-Supported parameters are `subject`, `predicate`, `object`, `graph`, `offset` and `limit`.
+Supported parameters are `subject`, `predicate`, `object`, `graph`, `offset` 
+and `limit`.
 
     GET http://127.0.0.1:8080/match?subject=<value>&offset=10&limit=10
     
-Values for the `subject`, `predicate`, `object` and `graph` parameters **must** be
-serialized using [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3) and **must**
+Values for the `subject`, `predicate`, `object` and `graph` parameters **must**
+be serialized using 
+[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3) and **must** 
 be urlencoded.
 
 #### `POST /import`
 
-Mirrors `RDF/JS`'s `Sink.import()` method. Accepts a payload of quads serialized either in 
-`application/n-quads` or `application/trig` and imports them into the store.
+Mirrors `RDF/JS`'s `Sink.import()` method. Accepts a payload of quads serialized 
+either in `application/n-quads` or `application/trig` and imports them into 
+the store.
 
     POST http://127.0.0.1:8080/import
  
 #### `POST /delete`
 
-Mirrors `RDF/JS`'s `Store.delete()` method. Accepts a payload of quads serialized either in 
-`application/n-quads` or `application/trig` and deleted them from the store.
+Mirrors `RDF/JS`'s `Store.delete()` method. Accepts a payload of quads 
+serialized either in `application/n-quads` or `application/trig` and deleted 
+them from the store.
 
     POST http://127.0.0.1:8080/delete
 
 #### `GET /ldf`
 
-Provides a [Linked Data Fragments](http://linkeddatafragments.org/) endpoint implementing
-the [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
+Provides a [Linked Data Fragments](http://linkeddatafragments.org/) endpoint 
+implementing the 
+[Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
 interface for use with suitable clients.
 
     GET http://127.0.0.1:8080/ldf?page=2
 
 ### Advanced queries (DEPRECATED)
 
-Version 3.0 deprecates support for daisy-chained queries in favour of the 
+Version 3.0 deprecates support for daisy-chained queries in favour of the
 [RdfStore.prototype.sparql()](#rdfstoreprototypesparql) method. 
 
 ### Browser
 
-Browser use is not currently supported. That said, both the `QuadStore` and the `RdfStore` 
-classes can be used in browsers via `browserify` and `level-js`:
+Browser use is not currently supported. That said, both the `QuadStore` and the
+`RdfStore` classes can be used in browsers via `browserify` and `level-js`:
 
     const leveljs = require('level-js');
     const QuadStore = require('quadstore').QuadStore;
 
     const store = new QuadStore('name', { db: leveljs });
     
-Browser support is being tracked in [issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
+Browser support is being tracked in 
+[issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
 and could use some help from interested parties.
 
 ## LICENSE

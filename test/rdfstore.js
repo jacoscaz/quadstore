@@ -1,9 +1,8 @@
+/* eslint global-require: "off" */
+
 
 'use strict';
 
-const _ = require('lodash');
-const utils = require('../lib/utils');
-const should = require('should');
 const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
 const asynctools = require('asynctools');

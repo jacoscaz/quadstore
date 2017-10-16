@@ -23,33 +23,16 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
         - [QuadStore.prototype.registerIndex](#quadstoreprototyperegisterindex)
-    - [RDF/JS Interface](#rdfjs-interface)
+    - [RDF Interface](#rdf-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
-        - [RdfStore.prototype.get](#rdfstoreprototypeget)
-        - [RdfStore.prototype.getByIndex](#rdfstoreprototypegetbyindex)
-        - [RdfStore.prototype.put](#rdfstoreprototypeput)
-        - [RdfStore.prototype.del](#rdfstoreprototypedel)
-        - [RdfStore.prototype.patch](#rdfstoreprototypepatch)
-        - [RdfStore.prototype.getStream](#rdfstoreprototypegetstream)
-        - [RdfStore.prototype.getByIndexStream](#rdfstoreprototypegetbyindexstream)
-        - [RdfStore.prototype.putStream](#rdfstoreprototypeputstream)
-        - [RdfStore.prototype.delStream](#rdfstoreprototypedelstream)
-        - [RdfStore.prototype.registerIndex](#rdfstoreprototyperegisterindex)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
+        - [RdfStore.prototype.sparql](#rdfstoreprototypesparql)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
-    - [Advanced Queries](#advanced-queries)
-        - [(Quad|Rdf)Store.prototype.query](#quadrdfstoreprototypequery)
-        - [(Quad|Rdf)Store.prototype.queryByIndex](#quadrdfstoreprototypequerybyindex)
-        - [AbstractQuery.prototype.get](#abstractqueryprototypeget)
-        - [AbstractQuery.prototype.del](#abstractqueryprototypedel)
-        - [AbstractQuery.prototype.getStream](#abstractqueryprototypegetstream)
-        - [AbstractQuery.prototype.join](#abstractqueryprototypejoin)
-        - [AbstractQuery.prototype.sort](#abstractqueryprototypesort)
-        - [AbstractQuery.prototype.filter](#abstractqueryprototypefilter)
-        - [AbstractQuery.prototype.union](#abstractqueryprototypeunion)
+        - [RdfStore HTTP API](#rdfstore-http-api)
+    - [Advanced Queries](#advanced-queries-deprecated)
     - [Browser](#browser)
 - [License](#license)
 
@@ -276,11 +259,14 @@ Deletes all quads coming through the specified `stream.Readable` from the store.
 
 Creates a new index that uses the provided function to compute index keys.
 
-### RDF/JS Interface
+### RDF Interface
 
 `quadstore` aims to support the [RDF/JS](https://github.com/rdfjs/representation-task-force)
 interface specification through the specialized `RdfStore` class, which currently implements
 the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no RegExp(s)).
+
+Additionally, the `RdfStore` class also supports `SPARQL` queries and provides `HTTP` endpoints
+matching the [RDF/JS](https://github.com/rdfjs/representation-task-force)'s specification.
 
 #### RdfStore class
 
@@ -291,6 +277,9 @@ Instantiates a new store. Supported options are:
 
     opts.db = require('leveldown');               // Levelup's backend
     opts.dataFactory = require('rdf-data-model'); // RDFJS dataFactory implementation
+    opts.httpPort = 8080;                         // Listening port
+    opts.httpAddr = '127.0.0.1'                   // Listening address
+    opts.httpBaseUrl = 'http://127.0.0.1:8080';   // Base url for the http server
 
 The `db` option is optional and, if provided, *must* be a factory function
 returning an object compatible with
@@ -304,212 +293,26 @@ is available at [rdf-ext/rdf-data-model](https://github.com/rdf-ext/rdf-data-mod
 The `contextKey` option from the `QuadStore` class is set to `graph` and cannot be
 changed.
 
+The `httpAddr` and `httpPort` options specify the address and port that the internal 
+`HTTP` server should listen to.
+
+The `httpBaseUrl` option is used by the internal `HTTP` server to render URLs correctly.
+
 #### Graph API, Quad and Term instances
 
 The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, the `get`,
 `put`, `del`, `patch`, `query`, `getStream`, `putStream` and `delStream` methods accept
 and return (streams of and/or arrays of) `Quad` objects as produced by the
-`dataFactory.quad` method. Matching terms, such as those used in the `query`, `get` and
-`createReadStream` methods, must be `Term` objects as produced by the
-`dataFactory.namedNode`, `dataFactory.blankNode` or `dataFactory.literal` methods.
-The same applies for the `match`, `import`, `remove` and `removeMatches` methods inherited
-from the RDF/JS interface.
+`dataFactory.quad` method. 
 
-#### RdfStore.prototype.get()
- 
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
+Matching terms, such as those used in the `query`, `get` and `createReadStream` methods, 
+must be `Term` objects as produced by the `dataFactory.namedNode`, `dataFactory.blankNode` 
+or `dataFactory.literal` methods. The same applies for the `match`, `import`, `remove` 
+and `removeMatches` methods inherited from the RDF/JS interface.
 
-    const matchTerms = {
-        subject: dataFactory.namedNode('http://example.com/subject'),
-        predicate: dataFactory.namedNode('http://example.com/predicate')
-    };
-
-    store.get(matchTerms).then((quads) => {
-        // Promise
-        // all quads are produced using dataFactory.quad()
-    });
-    
-    store.get(matchTerms, (err, quads) => {
-        // Callback
-        // all quads are produced using dataFactory.quad()
-    });
-    
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
-
-#### RdfStore.prototype.getByIndex()
-
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
-
-    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
-    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
-
-Returns an array of all quads within the store matching the specified conditions as
-tested against the specified index. Options available are `lt`,`lte`, `gt`,
-`gte`, `limit`, `reverse`. 
-
-**CAREFUL** - conditions will be tested against serialized terms. The serialization
-format is that used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
-
-Also see [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex).
-    
-#### RdfStore.prototype.put()
-
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-    
-    const newQuads = [
-        dataFactory.quad(
-            dataFactory.namedNode('http://example.com/subject'),
-            dataFactory.namedNode('http://example.com/predicate'),
-            dataFactory.literal('object'),
-            dataFactory.blankNode('g')
-        )
-    ];
-
-    store.put(newQuads).then(() => {});
-    store.put(newQuads, (err) => {});
-
-See [QuadStore.prototype.put()](#quadstoreprototypeput).
-    
-#### RdfStore.prototype.del()
- 
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-        
-    const oldQuads = [
-        dataFactory.quad(
-            dataFactory.namedNode('http://example.com/subject'),
-            dataFactory.namedNode('http://example.com/predicate'),
-            dataFactory.literal('object'),
-            dataFactory.blankNode('g')
-        )
-    ];
-
-    store.del(newQuads, (err) => {});
-    store.del(newQuads).then(() => {});
-
-or
-
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-
-    const matchTerms = {graph: dataFactory.namedNode('http://example.com/graph')};
-
-    store.del(matchTerms, (err) => {});
-    store.del(matchTerms).then(() => {});
-
-See [QuadStore.prototype.del()](#quadstoreprototypedel).
-
-#### RdfStore.prototype.patch()
-
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-        
-    const matchTerms = {
-        subject: dataFactory.namedNode('http://example.com/subject'),
-        predicate: dataFactory.namedNode('http://example.com/predicate')
-    };
-    
-    const newQuads = [
-        dataFactory.quad(
-            dataFactory.namedNode('http://example.com/subject'),
-            dataFactory.namedNode('http://example.com/predicate'),
-            dataFactory.literal('object'),
-            dataFactory.blankNode('g')
-        )
-    ];
-    
-    store.patch(matchTerms, newQuads).then(() => {});
-    store.patch(matchTerms, newQuads, (err) => {});
-
-or
-
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-
-    const oldQuads = [
-        dataFactory.quad(
-            dataFactory.namedNode('http://old.com/subject'),
-            dataFactory.namedNode('http://old.com/predicate'),
-            dataFactory.literal('object'),
-            dataFactory.blankNode('g')
-        )
-    ];
-
-    const newQuads = [
-        dataFactory.quad(
-            dataFactory.namedNode('http://new.com/subject'),
-            dataFactory.namedNode('http://new.com/predicate'),
-            dataFactory.literal('object'),
-            dataFactory.blankNode('g')
-        )
-    ];
-
-    store.patch(oldQuads, newQuads).then(() => {});
-    store.patch(oldQuads, newQuads, (err) => {});
-    
-See [QuadStore.prototype.patch()](#quadstoreprototypepatch).
-
-#### RdfStore.prototype.getStream()
-
-    const dataFactory = require('rdf-data-model');
-    const store = new RdfStore('/path/to/db', { dataFactory });
-        
-    const matchTerms = {
-        subject: dataFactory.namedNode('http://example.com/subject'),
-        predicate: dataFactory.namedNode('http://example.com/predicate')
-    };
-
-    const readableStream = store.getStream(matchTerms);
-
-*Synchronously* returns a `stream.Readable` of all quads matching the specified terms.
-
-See [QuadStore.prototype.getStream()](#quadstoreprototypegetstream).
-
-#### RdfStore.prototype.getByIndexStream()
-
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
-
-    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
-    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
-
-*Synchronously* returns a `stream.Readable` of all quads within the store matching 
-the specified conditions as tested against the specified index. Options
-available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`. 
-
-**CAREFUL** - conditions will be tested against serialized terms. The serialization
-format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
-
-Also see [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream).
-
-#### RdfStore.prototype.putStream()
-
-    store.putStream(readableStream, (err) => {});
-    store.putStream(readableStream).then(() => {});
-
-Imports all quads coming through the specified `stream.Readable` into the store.
-
-See [QuadStore.prototype.putStream()](#quadstoreprototypeputstream).
-
-#### RdfStore.prototype.delStream()
-
-    store.delStream(readableStream, (err) => {});
-    store.delStream(readableStream).then(() => {});
-
-Deletes all quads coming through the specified `stream.Readable` from the store.
-
-See [QuadStore.prototype.delStream()](#quadstoreprototypedelstream).
-
-#### RdfStore.prototype.registerIndex()
-
-See [QuadStore.prototype.registerIndex()](#quadstoreprototyperegisterindex).
-
-** CAREFUL ** - when used on an instance of the RdfStore class, the key generation
-function provided through this method will still receive serialized quads. The
-serialization format is the one used by [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+The conditions used in `getByIndex()`, `getByIndexStream()` and the key generation function
+used in `registerIndex()` **must** use the serialization format of 
+[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### RdfStore.prototype.match()
 
@@ -524,6 +327,24 @@ serialization format is the one used by [Ruben Verborgh's `N3` library](https://
       .on('end', () => {});
 
 Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided terms.
+
+#### RdfStore.prototype.sparql()
+
+    const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
+    store.sparql(query)
+      .on('error', (err) => {})
+      .on('data', (terms) => {
+        // { 
+        //   '?s': <dataFactory.Term>,
+        //   '?p': <dataFactory.Term>,
+        //   '?o': <dataFactory.Term>,
+        //   '?g': <dataFactory.Term>
+        // }
+      })
+      .on('end', () => {});
+
+Returns a `stream.Readable` of RDF/JS `Term` dictionaries keyed according to the 
+variables returned by the query.
 
 #### RdfStore.prototype.import()
 
@@ -556,166 +377,62 @@ Consumes the stream removing each incoming quad.
 
 Removes all quad  matching the provided terms.
 
-### Advanced queries
+### RdfStore HTTP API
 
-Both the `QuadStore` class and the `RdfStore` class support advanced queries.
+The following endpoints are made avaible by the internal `HTTP` server:
 
-#### (Quad|Rdf)Store.prototype.query()
+#### `GET /match`
 
-    store.query({ graph: 'g' });
+Mirrors `RDF/JS`'s `Source.match()` method. Returns quads serialized either in 
+`application/n-quads` or `application/trig` matching the specified query parameters. 
 
-This method is the entry point from which complex queries can be built.
-This method returns an instance of the `AbstractQuery` class, a class that
-implements a chainable, lazy-loading, stream-based querying system.
+Supported parameters are `subject`, `predicate`, `object`, `graph`, `offset` and `limit`.
 
-If used on instances of `RdfStore`, the `query()` method accepts and returns
-quads and matching terms as produced by `dataFactory.quad()` and
-`dataFactory.namedNode()`, `dataFactory.blankNode()`, `dataFactory.literal()`.
-See [RDF/JS Quad(s) and Term(s)](#rdfjs-quads-and-terms).
+    GET http://127.0.0.1:8080/match?subject=<value>&offset=10&limit=10
+    
+Values for the `subject`, `predicate`, `object` and `graph` parameters **must** be
+serialized using [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3) and **must**
+be urlencoded.
 
-#### (Quad|Rdf)Store.prototype.queryByIndex()
+#### `POST /import`
 
-    const name = 'customIndex';
-    const opts = {gte: 'subject1', lte: 'subject42'};
+Mirrors `RDF/JS`'s `Sink.import()` method. Accepts a payload of quads serialized either in 
+`application/n-quads` or `application/trig` and imports them into the store.
 
-    store.queryByIndex(name, opts);
+    POST http://127.0.0.1:8080/import
+ 
+#### `POST /delete`
 
-Similar to [(Quad|Rdf)Store.prototype.query()](#quadrdfstoreprototypequery)
-this method returns an instance of the `AbstractQuery` class. Options available are 
-`lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
+Mirrors `RDF/JS`'s `Store.delete()` method. Accepts a payload of quads serialized either in 
+`application/n-quads` or `application/trig` and deleted them from the store.
 
-**CAREFUL** - if the store is an instance of `RdfStore`, conditions will be tested 
-against serialized terms. The serialization format is that used by 
-[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
+    POST http://127.0.0.1:8080/delete
 
-#### AbstractQuery.prototype.get()
+#### `GET /ldf`
 
-    // QuadStore
-    quadStore.query({graph: 'g'}).toArray((err, quads) => {}); // callback
-    quadStore.query({graph: 'g'}).toArray().then(quads) => {}); // promise
+Provides a [Linked Data Fragments](http://linkeddatafragments.org/) endpoint implementing
+the [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
+interface for use with suitable clients.
 
-    // RdfStore
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toArray((err, quads) => {}); // callback
-    rdfStore.query({graph: dataFactory.blankNode('c')}).toArray().then(quads) => {}); // promise
+    GET http://127.0.0.1:8080/ldf?page=2
 
-Returns an array of quads matching the query.
+### Advanced queries (DEPRECATED)
 
-#### AbstractQuery.prototype.del()
-
-    // QuadStore
-    quadStore.query({graph: 'g'}).del((err) => {}); // callback
-    quadStore.query({graph: 'g'}).del().then() => {}); // promise
-
-    // RdfStore
-    rdfStore.query({graph: dataFactory.blankNode('c')}).del((err) => {}); // callback
-    rdfStore.query({graph: dataFactory.blankNode('c')}).del().then() => {}); // promise
-
-Removes all matching quads from the store in one single operation.
-See also [AbstractQuery.prototype.delStream()](#abstractqueryprototypedelstream).
-
-#### AbstractQuery.prototype.getStream()
-
-    // QuadStore
-    const readableStream = quadStore.query({graph: 'g'}).getStream();
-
-    // RdfStore
-    const readableStream = rdfStore.query({graph: dataFactory.blankNode('c')}).getStream();
-
-*Synchronously* returns a stream of quads matching the query.
-
-#### AbstractQuery.prototype.join()
-
-    // QuadStore
-    const matchTermsA = {graph: 'g'};
-    const matchTermsB = {subject: 's'};
-    const compareTermsA = ['predicate'];
-    const compareTermsB = ['predicate'];
-    const queryA = quadStore.query(matchTermsA);
-    const queryB = quadStore.query(matchTermsB);
-    queryA
-        .join(queryB, compareTermsA, compareTermsB)
-        .get((err, quads) => {});
-
-    // RdfStore
-    const matchTermsA = {graph: dataFactory.namedNode('http://example.com/graph')};
-    const matchTermsB = {subject: dataFactory.namedNode('http://example.com/subject')};
-    const compareTermsA = ['predicate'];
-    const compareTermsB = ['predicate'];
-    const queryA = quadStore.query(matchTermsA);
-    const queryB = quadStore.query(matchTermsB);
-    quaryA
-        .join(queryB, compareTermsA, compareTermsB)
-        .get((err, quads) => {});
-
-Performs an inner join between the two queries limited to the terms
-specified in the `compareTerms` arrays, passing on quads from the **first** query.
-
-The above example queries for all quads with graph `g` and with a predicate
-shared by at least another quad having subject 's'.
-
-The `compareTerms` arrays allows to join quads using different terms. The following join
-
-    queryA.join(queryB, ['subject'], ['object'])
-
-results in quads matching `queryA`'s terms being filtered according to whether quads 
-matching `queryB`'s terms are found such as `someQueryAQuad.subject === someQueryBQuad.object`.
-
-Returns an instance of `AbstractQuery` and can be daisy-chained with
-other similar methods to refine queries.
-
-#### AbstractQuery.prototype.sort()
-
-    // QuadStore
-    quadStore.query(matchTerms)
-        .sort(['graph', 'predicate], false)
-        .get().then(quads) => {});
-
-    // RdfStore
-    rdfStore.query(matchTerms)
-        .sort(['graph', 'predicate], false)
-        .get().then(quads) => {});
-
-Sorts results in lexicographical order based on the values of the terms in the array.
-
-Returns an instance of `AbstractQuery` and can be daisy-chained with other similar
-methods to refine queries.
-
-#### AbstractQuery.prototype.filter()
-
-    // QuadStore
-    quadStore.query(matchTerms)
-        .filter(quad => quad.subject === 's')
-        .get().then(quads) => {});
-
-    // RdfStore
-    rdfStore.query(matchTerms)
-        .filter(quad => quad.subject.termType === 'NamedNode')
-        .get().then(quads) => {});
-
-Filters results according to the provided function.
-
-Returns an instance of `AbstractQuery` and can be daisy-chained with other similar
-methods to refine queries.
-
-#### AbstractQuery.prototype.union()
-
-    store.query(matchTermsA)
-        .union(store.query(matchTermsB))
-        .get().then(quads) => {});
-
-Merges the results of both queries as if they were a single query (no ordering guaranteed).
-
-Returns an instance of `AbstractQuery` and can be daisy-chained with other similar
-methods to refine queries.
+Version 3.0 deprecates support for daisy-chained queries in favour of the 
+[RdfStore.prototype.sparql()](#rdfstoreprototypesparql) method. 
 
 ### Browser
 
-Both the `QuadStore` and the `RdfStore` classes can be used in browsers via `browserify` and `level-js`:
+Browser use is not currently supported. That said, both the `QuadStore` and the `RdfStore` 
+classes can be used in browsers via `browserify` and `level-js`:
 
     const leveljs = require('level-js');
     const QuadStore = require('quadstore').QuadStore;
 
     const store = new QuadStore('name', { db: leveljs });
+    
+Browser support is being tracked in [issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
+and could use some help from interested parties.
 
 ## LICENSE
 

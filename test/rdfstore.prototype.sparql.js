@@ -132,10 +132,10 @@ module.exports = () => {
         )
       ];
       await store.put(quads);
-      const query1 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00').valueOf()}) } }`;
+      const query1 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00Z').valueOf()}) } }`;
       const results1 = await utils.streamToArray(store.sparql(query1));
       should(results1).have.length(1);
-      const query2 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:00:00').valueOf()}) } }`;
+      const query2 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:00:00Z').valueOf()}) } }`;
       const results2 = await utils.streamToArray(store.sparql(query2));
       should(results2).have.length(2);
     });

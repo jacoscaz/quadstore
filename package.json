@@ -8,13 +8,14 @@
     "quadstore",
     "graph",
     "rdf",
-    "database"
+    "database",
+    "sparql",
+    "rdfjs"
   ],
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "repeat-test": "while mocha; do :; done",
-    "build-browser": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js"
+    "browserify": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js"
   },
   "repository": {
     "type": "git",

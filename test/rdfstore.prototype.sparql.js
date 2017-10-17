@@ -66,7 +66,7 @@ module.exports = () => {
       should(results).have.length(10);
     });
 
-    it.only('Should filter quads correctly', async function () {
+    it.only('Should filter quads correctly by comparing integers', async function () {
       const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const store = this.store;
       const dataFactory = store.dataFactory;
@@ -99,6 +99,45 @@ module.exports = () => {
       await store.put(quads);
       const results = await utils.streamToArray(store.sparql('SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= 4) } }'));
       should(results).have.length(2);
+    });
+
+    it.only('Should filter quads correctly by comparing timestamps as integers', async function () {
+      const XSD = 'http://www.w3.org/2001/XMLSchema#';
+      const store = this.store;
+      const dataFactory = store.dataFactory;
+      const quads = [
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.literal(new Date('2017-01-02T00:00:00Z').valueOf(), `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p3'),
+          dataFactory.literal(new Date('2017-01-01T00:00:00Z').valueOf(), `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p0'),
+          dataFactory.literal(new Date('2017-01-01T12:00:00Z').valueOf(), `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p1'),
+          dataFactory.literal(new Date('2017-01-01T16:00:00Z').valueOf(), `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        )
+      ];
+      await store.put(quads);
+      const query = `
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00').valueOf()}) } }
+      `;
+      const results = await utils.streamToArray(store.sparql(query));
+      should(results).have.length(1);
     });
 
   });

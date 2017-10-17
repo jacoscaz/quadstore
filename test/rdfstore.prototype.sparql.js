@@ -47,6 +47,25 @@ module.exports = () => {
       should(results).have.length(132);
     });
 
+    it('Shoud match the correct number of entries', async function () {
+      const ctx = this;
+      const store = ctx.store;
+      const dataFactory = store.dataFactory;
+      const quads = [];
+      for (let i = 0; i < 200; i++) {
+        quads.push(dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s' + (i % 10)),
+          dataFactory.namedNode('http://ex.com/p' + (i % 20)),
+          dataFactory.namedNode('http://ex.com/o' + (i % 50)),
+          dataFactory.namedNode('http://ex.com/g' + i)
+        ));
+      }
+      await store.put(quads);
+      const query = 'SELECT *  WHERE { GRAPH ?g { <http://ex.com/s0> <http://ex.com/p0> ?o } }';
+      const results = await utils.streamToArray(ctx.store.sparql(query));
+      should(results).have.length(10);
+    });
+
   });
 
 };

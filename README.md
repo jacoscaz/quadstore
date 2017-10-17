@@ -76,6 +76,9 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
 - Supports `SPARQL` queries (`SELECT` only).
 - Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' 
   `Store`, `Source` and `Sink` interfaces.
+- Exposes `HTTP` endpoints mirroring the methods of the above-mentioned RDF/JS' interfaces.
+- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
+  `HTTP` endpoint.
 
 #### Notes
 

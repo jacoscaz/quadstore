@@ -86,6 +86,7 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
   on the `devel` branch and/or issue-specific branches.
+- Requires Node.js >= 8.0.0.
 
 ## Relationship with LevelUP / LevelDOWN
 
@@ -426,7 +427,7 @@ the store.
 #### `POST /delete`
 
 Mirrors `RDF/JS`'s `Store.delete()` method. Accepts a payload of quads 
-serialized either in `application/n-quads` or `application/trig` and deleted 
+serialized either in `application/n-quads` or `application/trig` and deletes 
 them from the store.
 
     POST http://127.0.0.1:8080/delete

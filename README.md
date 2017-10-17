@@ -34,6 +34,7 @@ A LevelDB-backed graph database for Node.js with native support for quads.
         - [RdfStore HTTP API](#rdfstore-http-api)
     - [Advanced Queries](#advanced-queries-deprecated)
     - [Browser](#browser)
+- [Performance](#performance)
 - [License](#license)
 
 ## Introduction ##
@@ -466,6 +467,14 @@ Browser use is not currently supported. That said, both the `QuadStore` and the
 Browser support is being tracked in 
 [issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
 and could use some help from interested parties.
+
+## Performance
+
+We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
+file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
+MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
+second** and and **~4.3k quads per MB**. See [loadfile.js](perf/loadfile.js).
+ 
 
 ## LICENSE
 

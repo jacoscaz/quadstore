@@ -66,7 +66,7 @@ module.exports = () => {
       should(results).have.length(10);
     });
 
-    it.only('Should filter quads correctly by comparing integers', async function () {
+    it('Should filter quads correctly by comparing integers', async function () {
       const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const store = this.store;
       const dataFactory = store.dataFactory;
@@ -101,7 +101,7 @@ module.exports = () => {
       should(results).have.length(2);
     });
 
-    it.only('Should filter quads correctly by comparing timestamps as integers', async function () {
+    it('Should filter quads correctly by comparing timestamps as integers', async function () {
       const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const store = this.store;
       const dataFactory = store.dataFactory;
@@ -132,12 +132,12 @@ module.exports = () => {
         )
       ];
       await store.put(quads);
-      const query = `
-        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-        SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00').valueOf()}) } }
-      `;
-      const results = await utils.streamToArray(store.sparql(query));
-      should(results).have.length(1);
+      const query1 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00').valueOf()}) } }`;
+      const results1 = await utils.streamToArray(store.sparql(query1));
+      should(results1).have.length(1);
+      const query2 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:00:00').valueOf()}) } }`;
+      const results2 = await utils.streamToArray(store.sparql(query2));
+      should(results2).have.length(2);
     });
 
   });

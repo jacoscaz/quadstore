@@ -437,9 +437,16 @@ them from the store.
 Provides a [Linked Data Fragments](http://linkeddatafragments.org/) endpoint 
 implementing the 
 [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
-interface for use with suitable clients.
+(TPF) interface for use with suitable clients.
 
     GET http://127.0.0.1:8080/ldf?page=2
+    
+In order to support quads instead of triples, this endpoint is tested using 
+[our own fork](https://github.com/beautifulinteractions/Client.js/tree/bi)
+of the [Client.js](https://github.com/LinkedDataFragments/Client.js) library.
+The fork tracks the `feature-qpf-latest` branch of the upstream repository
+and merges in fixes from other branches. We will switch to the NPM version of 
+Client.js (`ldf-client`) in the near future.
 
 ### Advanced queries (DEPRECATED)
 

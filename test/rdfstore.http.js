@@ -94,6 +94,23 @@ module.exports = () => {
       should(matchedQuads3).have.length(1);
     });
 
+    it('Should import, match and remove quads correctly', async function () {
+      const store = this.store;
+      const quads = [
+        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
+        { subject: 'ex://s1', predicate: 'ex://p1', object: 'ex://o1', graph: 'ex://g1' },
+        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+      ];
+      await postQuads(`${store._httpBaseUrl}/import`, quads);
+      const matchedQuads1 = await getQuads(`${store._httpBaseUrl}/match`);
+      should(matchedQuads1).have.length(3);
+      await postQuads(`${store._httpBaseUrl}/remove`, quads.slice(0, 1));
+      const matchedQuads2 = await getQuads(`${store._httpBaseUrl}/match`);
+      should(matchedQuads2).have.length(2);
+      const matchedQuads3 = await getQuads(`${store._httpBaseUrl}/match?subject=${encodeURIComponent('ex://s2')}`);
+      should(matchedQuads3).have.length(1);
+    });
+
   });
 
 };

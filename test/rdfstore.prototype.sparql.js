@@ -66,6 +66,41 @@ module.exports = () => {
       should(results).have.length(10);
     });
 
+    it.only('Should filter quads correctly', async function () {
+      const XSD = 'http://www.w3.org/2001/XMLSchema#';
+      const store = this.store;
+      const dataFactory = store.dataFactory;
+      const quads = [
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p3'),
+          dataFactory.literal('8', `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p0'),
+          dataFactory.literal('1', `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p1'),
+          dataFactory.literal('3', `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s0'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.literal('5', `${XSD}integer`),
+          dataFactory.namedNode('http://ex.com/g0')
+        )
+      ];
+      await store.put(quads);
+      const results = await utils.streamToArray(store.sparql('SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= 4) } }'));
+      should(results).have.length(2);
+    });
+
   });
 
 };

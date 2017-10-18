@@ -1,6 +1,13 @@
 
 # CHANGELOG
 
+#### v3.0
+
+- deprecates `.query()`
+- adds support for SPARQL
+- adds HTTP API w/ LDF endpoint
+- improves test suite
+
 #### v2.1.1
 
 - new, (hopefully) cleaner API

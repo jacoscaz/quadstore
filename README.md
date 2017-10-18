@@ -4,7 +4,7 @@
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
 
-A LevelDB-backed graph database for Node.js with native support for quads.
+A LevelDB-backed graph database for Node.js with supporting quads, SPARQL queries and the RDF/JS interface.
 
 ## Table of contents
 

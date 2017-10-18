@@ -4,7 +4,7 @@
 
 # QUADSTORE
 
-> A LevelDB-backed graph database for Node.js with native support for quads.
+> A LevelDB-backed graph database for Node.js with supporting quads, SPARQL queries and the RDF/JS interface.
 
 [GitHub](https://github.com/beautifulinteractions/node-quadstore)
 [Get Started](#introduction)

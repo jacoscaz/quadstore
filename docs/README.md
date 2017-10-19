@@ -37,7 +37,7 @@ A LevelDB-backed graph database for Node.js with supporting quads, SPARQL querie
 - [Performance](#performance)
 - [License](#license)
 
-## Introduction ##
+## Introduction
 
 A quad is a triple with an added `graph` term.
 
@@ -60,15 +60,15 @@ Quadstore's indexing strategy has been developed by
 [Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper
 [RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
 
-## Status ##
+## Status
 
 Unstable, active, under development.
 
-#### Changelog
+### Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-#### Current version and features
+### Current version and features
 
 Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
@@ -81,7 +81,7 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
 - Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
   `HTTP` endpoint.
 
-#### Notes
+### Notes
 
 - Uses [Semantic Versioning](https://www.npmjs.com/package/quadstore). 
   Pre-releases are tagged accordingly.
@@ -94,19 +94,27 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
 `quadstore` uses the [LevelUP](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
-#### Storage backends
+### Storage backends
 
 - `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package 
   offers persistent storage backed by LevelDB itself.
 - `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers
   volatile in-memory storage.
 
-#### Default backend
+### Default backend
 
 If no backend is specified through the options of the 
 [QuadStore](#quadstore-class) and [RdfStore](#rdfstore-class) constructors, 
 `levelup` will attempt at `require()`ing the `leveldown` package **which has to
 be explicitly installed via `npm`**.
+
+### Performance
+
+We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
+file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
+MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
+second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
+
 
 ## Usage ##
 
@@ -466,15 +474,7 @@ Browser use is not currently supported. That said, both the `QuadStore` and the
     
 Browser support is being tracked in 
 [issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
-and could use some help from interested parties.
-
-## Performance
-
-We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
-file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
-MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
-second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
- 
+and could use some help from interested parties. 
 
 ## LICENSE
 

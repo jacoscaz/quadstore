@@ -34,12 +34,12 @@ async function deserializeQuads(data, format) {
   });
 }
 
-async function getQuads(targetUrl) {
-  const [payload, format] = await (new Promise((resolve, reject) => {
+async function get(targetUrl) {
+  return new Promise((resolve, reject) => {
     http.get(targetUrl, (res) => {
       if (res.statusCode !== 200) {
         res.resume();
-        reject(new Error('Bad status code.'));
+        reject(new Error(`Bad status code (${res.statusCode}).`));
         return;
       }
       res.setEncoding('utf8');
@@ -47,7 +47,11 @@ async function getQuads(targetUrl) {
       res.on('data', (chunk) => { buf += chunk; });
       res.on('end', () => { resolve([buf, res.contentType]); });
     });
-  }));
+  });
+}
+
+async function getQuads(targetUrl) {
+  const [payload, format] = await get(targetUrl);
   return deserializeQuads(payload, format);
 }
 
@@ -109,6 +113,27 @@ module.exports = () => {
       should(matchedQuads2).have.length(2);
       const matchedQuads3 = await getQuads(`${store._httpBaseUrl}/match?subject=${encodeURIComponent('ex://s2')}`);
       should(matchedQuads3).have.length(1);
+    });
+
+    it('Should provide a correct response to a SPARQL query', async function () {
+      const store = this.store;
+      const quads = [
+        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
+        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"', graph: 'ex://g1' },
+        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+      ];
+      await postQuads(`${store._httpBaseUrl}/import`, quads);
+      const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
+      const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
+      getOpts.headers = { accept: 'application/sparql-results+json' };
+      const [payload, format] = await get(getOpts);
+      const expected = `{"head": {"vars":[""]},
+        "results": { "bindings": [
+        {"s":{"value":"ex://s0","type":"uri"},"p":{"value":"ex://p0","type":"uri"},"o":{"value":"ex://o0","type":"uri"},"g":{"value":"ex://g0","type":"uri"}},
+        {"s":{"value":"ex://s1","type":"uri"},"p":{"value":"ex://p1","type":"uri"},"o":{"value":"literal","type":"literal","datatype":"http://www.w3.org/2001/XMLSchema#string"},"g":{"value":"ex://g1","type":"uri"}},
+        {"s":{"value":"ex://s2","type":"uri"},"p":{"value":"ex://p2","type":"uri"},"o":{"value":"ex://o2","type":"uri"},"g":{"value":"ex://g2","type":"uri"}}
+      ]}}`;
+      should(JSON.parse(payload)).deepEqual(JSON.parse(expected));
     });
 
   });

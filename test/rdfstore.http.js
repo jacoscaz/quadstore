@@ -127,13 +127,34 @@ module.exports = () => {
       const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
       getOpts.headers = { accept: 'application/sparql-results+json' };
       const [payload, format] = await get(getOpts);
-      const expected = `{"head": {"vars":[""]},
-        "results": { "bindings": [
-        {"s":{"value":"ex://s0","type":"uri"},"p":{"value":"ex://p0","type":"uri"},"o":{"value":"ex://o0","type":"uri"},"g":{"value":"ex://g0","type":"uri"}},
-        {"s":{"value":"ex://s1","type":"uri"},"p":{"value":"ex://p1","type":"uri"},"o":{"value":"literal","type":"literal","datatype":"http://www.w3.org/2001/XMLSchema#string"},"g":{"value":"ex://g1","type":"uri"}},
-        {"s":{"value":"ex://s2","type":"uri"},"p":{"value":"ex://p2","type":"uri"},"o":{"value":"ex://o2","type":"uri"},"g":{"value":"ex://g2","type":"uri"}}
-      ]}}`;
-      should(JSON.parse(payload)).deepEqual(JSON.parse(expected));
+      const expected = {
+        head: {
+          vars: ['']
+        },
+        results: {
+          bindings: [
+            {
+              s: { value: 'ex://s0', type: 'uri' },
+              p: { value: 'ex://p0', type:'uri' },
+              o: { value: 'ex://o0', type: 'uri' },
+              g: { value:'ex://g0', type:'uri' }
+            },
+            {
+              s: { value: 'ex://s1', type: 'uri' },
+              p: { value: 'ex://p1', type:'uri' },
+              o: { value: 'literal', type: 'literal', datatype: 'http://www.w3.org/2001/XMLSchema#string' },
+              g: { value:'ex://g1', type:'uri' }
+            },
+            {
+              s: { value: 'ex://s2', type: 'uri' },
+              p: { value: 'ex://p2', type:'uri' },
+              o: { value: 'ex://o2', type:'uri' },
+              g: { value:'ex://g2', type:'uri' }
+            }
+          ]
+        }
+      };
+      should(JSON.parse(payload)).deepEqual(expected);
     });
 
   });

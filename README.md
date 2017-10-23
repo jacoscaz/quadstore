@@ -32,6 +32,11 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
         - [RdfStore HTTP API](#rdfstore-http-api)
+            - [GET /match](#get-match)
+            - [POST /import](#post-import)
+            - [POST /remove](#post-remove)
+            - [GET /ldf](#get-ldf)
+            - [GET,POST /sparql](#getpost-sparql)
     - [Advanced Queries](#advanced-queries-deprecated)
     - [Browser](#browser)
 - [Performance](#performance)
@@ -448,6 +453,11 @@ of the [Client.js](https://github.com/LinkedDataFragments/Client.js) library.
 The fork tracks the `feature-qpf-latest` branch of the upstream repository
 and merges in fixes from other branches. We will switch to the NPM version of 
 Client.js (`ldf-client`) in the near future.
+
+#### `GET,POST /sparql`
+
+Provides a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/)
+endpoint be used with suitable clients.
 
 ### Advanced queries (DEPRECATED)
 

@@ -34,8 +34,17 @@ async function deserializeQuads(data, format) {
   });
 }
 
-async function get(targetUrl) {
+async function get(targetUrl, acceptedFormat) {
   return new Promise((resolve, reject) => {
+    const opts = typeof(targetUrl) === 'string'
+      ? url.parse(targetUrl)
+      : targetUrl;
+    if (acceptedFormat) {
+      if (!opts.headers) {
+        opts.headers = {};
+      }
+      opts.headers.accept = acceptedFormat;
+    }
     http.get(targetUrl, (res) => {
       if (res.statusCode !== 200) {
         res.resume();
@@ -55,8 +64,8 @@ async function getQuads(targetUrl) {
   return deserializeQuads(payload, format);
 }
 
-async function postQuads(targetUrl, quads) {
-  const format = 'application/trig';
+async function postQuads(targetUrl, quads, format) {
+  if (!format) format = 'application/trig';
   const payload = await serializeQuads(quads, format);
   return new Promise((resolve, reject) => {
     const opts = url.parse(targetUrl);
@@ -127,6 +136,7 @@ module.exports = () => {
       const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
       getOpts.headers = { accept: 'application/sparql-results+json' };
       const [payload, format] = await get(getOpts);
+      should(format).equal('application/sparql-results+json');
       const expected = {
         head: {
           vars: ['']
@@ -157,7 +167,7 @@ module.exports = () => {
       should(JSON.parse(payload)).deepEqual(expected);
     });
 
-    it('Should provide a correct response to a SPARQL CONSTRUCT query', async function () {
+    it('Should answer a CONSTRUCT query correctly with quads explicitly from named graphs', async function () {
       const store = this.store;
       const quads = [
         { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
@@ -167,8 +177,21 @@ module.exports = () => {
       await postQuads(`${store._httpBaseUrl}/import`, quads);
       const query = 'CONSTRUCT { ?s <ex://p3> ?o } WHERE { GRAPH ?g { ?s <ex://p1> ?o } }';
       const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
-      const [payload, format] = await get(getOpts);
-      const results = await deserializeQuads(payload, format);
+      const results = await getQuads(getOpts);
+      const expected = [{ subject:'ex://s1', predicate: 'ex://p3', object: '"literal"^^http://www.w3.org/2001/XMLSchema#string', graph: '' }];
+      should(results).deepEqual(expected);
+    });
+
+    it('Should answer a CONSTRUCT query correctly with quads implicitly from the default graph', async function () {
+      const store = this.store;
+      const quads = [
+        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0' },
+        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"' },
+        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2' },
+      ];
+      await postQuads(`${store._httpBaseUrl}/import`, quads, 'text/turtle');
+      const query = 'CONSTRUCT { ?s <ex://p3> ?o } WHERE { ?s <ex://p1> ?o }';
+      const results = await getQuads(url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`));
       const expected = [{ subject:'ex://s1', predicate: 'ex://p3', object: '"literal"^^http://www.w3.org/2001/XMLSchema#string', graph: '' }];
       should(results).deepEqual(expected);
     });

@@ -45,7 +45,7 @@ async function get(targetUrl) {
       res.setEncoding('utf8');
       let buf = '';
       res.on('data', (chunk) => { buf += chunk; });
-      res.on('end', () => { resolve([buf, res.contentType]); });
+      res.on('end', () => { resolve([buf, res.headers['content-type']]); });
     });
   });
 }
@@ -155,6 +155,22 @@ module.exports = () => {
         }
       };
       should(JSON.parse(payload)).deepEqual(expected);
+    });
+
+    it('Should provide a correct response to a SPARQL CONSTRUCT query', async function () {
+      const store = this.store;
+      const quads = [
+        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
+        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"', graph: 'ex://g1' },
+        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+      ];
+      await postQuads(`${store._httpBaseUrl}/import`, quads);
+      const query = 'CONSTRUCT { ?s <ex://p3> ?o } WHERE { GRAPH ?g { ?s <ex://p1> ?o } }';
+      const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
+      const [payload, format] = await get(getOpts);
+      const results = await deserializeQuads(payload, format);
+      const expected = [{ subject:'ex://s1', predicate: 'ex://p3', object: '"literal"^^http://www.w3.org/2001/XMLSchema#string', graph: '' }];
+      should(results).deepEqual(expected);
     });
 
   });

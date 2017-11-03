@@ -10,7 +10,12 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
 
 - [Introduction](#introduction)
 - [Status](#status)
+    - [Roadmap](#roadmap)
+    - [Changelog](#changelog)
+    - [Current version and features](#current-version-and-features)
+    - [Notes](#notes)
 - [Usage](#usage)
+    - [Storage](#storage-backends)
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
@@ -69,11 +74,15 @@ Quadstore's indexing strategy has been developed by
 
 Unstable, active, under development.
 
-#### Changelog
+### Roadmap
+
+See [ROADMAP.md](./ROADMAP.md).
+
+### Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-#### Current version and features
+### Current version and features
 
 Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
@@ -82,11 +91,14 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
 - Supports `SPARQL` queries (`SELECT` only).
 - Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' 
   `Store`, `Source` and `Sink` interfaces.
-- Exposes `HTTP` endpoints mirroring the methods of the above-mentioned RDF/JS' interfaces.
+- Exposes `HTTP` endpoints mirroring the methods of the above-mentioned RDF/JS' 
+  interfaces.
 - Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
   `HTTP` endpoint.
+- Exposes a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/)
+  `HTTP` endpoint.
 
-#### Notes
+### Notes
 
 - Uses [Semantic Versioning](https://www.npmjs.com/package/quadstore). 
   Pre-releases are tagged accordingly.
@@ -94,26 +106,24 @@ Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstor
   on the `devel` branch and/or issue-specific branches.
 - Requires Node.js >= 8.0.0.
 
-## Relationship with LevelUP / LevelDOWN
+## Usage ##
+
+### Storage
 
 `quadstore` uses the [LevelUP](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
-#### Storage backends
+We test `quadstore` using the following backends:
 
 - `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package 
   offers persistent storage backed by LevelDB itself.
 - `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers
   volatile in-memory storage.
 
-#### Default backend
-
 If no backend is specified through the options of the 
 [QuadStore](#quadstore-class) and [RdfStore](#rdfstore-class) constructors, 
 `levelup` will attempt at `require()`ing the `leveldown` package **which has to
 be explicitly installed via `npm`**.
-
-## Usage ##
 
 ### Graph API
 

@@ -40,7 +40,7 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
 
   const store = new RdfStore(absStorePath, { dataFactory });
 
-  await asynctools.onEvent(store, 'ready', true);
+  await asynctools.waitForEvent(store, 'ready', true);
 
   const absFilePath = path.resolve(process.cwd(), filePath);
 

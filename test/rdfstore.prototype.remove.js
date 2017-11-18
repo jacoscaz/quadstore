@@ -49,8 +49,8 @@ module.exports = () => {
       ];
       const importStream = utils.createArrayStream(importQuads);
       const removeStream = utils.createArrayStream(removeQuads);
-      await asynctools.onEvent(store.import(importStream), 'end', true);
-      await asynctools.onEvent(store.remove(removeStream), 'end', true);
+      await asynctools.waitForEvent(store.import(importStream), 'end', true);
+      await asynctools.waitForEvent(store.remove(removeStream), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });

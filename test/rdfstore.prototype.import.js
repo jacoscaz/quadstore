@@ -22,7 +22,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.onEvent(store.import(source), 'end', true);
+      await asynctools.waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });
@@ -51,7 +51,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.onEvent(store.import(source), 'end', true);
+      await asynctools.waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(3);
     });

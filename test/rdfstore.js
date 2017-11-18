@@ -13,7 +13,7 @@ module.exports = () => {
 
     beforeEach(async function () {
       this.store = new RdfStore(this.db, { dataFactory: factory });
-      await asynctools.onEvent(this.store, 'ready');
+      await asynctools.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {

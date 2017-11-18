@@ -32,6 +32,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^2.0.0",
+    "ldf-client": "github:beautifulinteractions/Client.js#fe69fb10dc01a8401fbb84e1a182a8cd58d639a8",
     "level-js": "^2.2.4",
     "leveldown": "^1.6.0",
     "memdown": "^1.2.4",
@@ -44,7 +45,7 @@
     "uuid": "^3.0.1"
   },
   "dependencies": {
-    "asynctools": "github:jacoscaz/asynctools",
+    "asynctools": "0.0.4",
     "collections": "^5.0.6",
     "debug": "^3.1.0",
     "deprecate": "^1.0.0",

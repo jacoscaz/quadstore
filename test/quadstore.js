@@ -12,7 +12,7 @@ module.exports = () => {
 
     beforeEach(async function () {
       this.store = new QuadStore(this.db);
-      await asynctools.onEvent(this.store, 'ready');
+      await asynctools.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {

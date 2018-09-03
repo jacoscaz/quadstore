@@ -53,7 +53,7 @@
     "lodash": "^4.17.4",
     "n3": "^0.9.1",
     "pino": "^4.7.2",
-    "rdfjs-sparql-engine": "github:beautifulinteractions/rdfjs-sparql-engine#a59149d3f7fbef88bd9c85fd5e0b204bfc995b51",
+    "rdfjs-sparql-engine": "github:beautifulinteractions/rdfjs-sparql-engine#bdcbe1ad959bc58e3dbe6ade087cd1c3e1bd69ff",
     "stoppable": "^1.0.4",
     "yurl": "^1.1.6"
   },

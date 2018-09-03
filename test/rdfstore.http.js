@@ -7,7 +7,6 @@ const yurl = require('yurl');
 const http = require('http');
 const should = require('should');
 const Promise = require('bluebird');
-const asynctools = require('asynctools');
 
 async function serializeQuads(quads, format) {
   return new Promise((resolve, reject) => {

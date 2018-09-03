@@ -3,9 +3,9 @@
 
 'use strict';
 
+const utils = require('../lib/utils');
 const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
-const asynctools = require('asynctools');
 
 module.exports = () => {
 
@@ -13,7 +13,7 @@ module.exports = () => {
 
     beforeEach(async function () {
       this.store = new RdfStore(this.db, { dataFactory: factory });
-      await asynctools.waitForEvent(this.store, 'ready');
+      await utils.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {

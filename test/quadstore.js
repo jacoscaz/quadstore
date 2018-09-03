@@ -2,8 +2,8 @@
 'use strict';
 
 const _ = require('lodash');
+const utils = require('../lib/utils');
 const should = require('should');
-const asynctools = require('asynctools');
 const QuadStore = require('..').QuadStore;
 
 module.exports = () => {
@@ -12,7 +12,7 @@ module.exports = () => {
 
     beforeEach(async function () {
       this.store = new QuadStore(this.db);
-      await asynctools.waitForEvent(this.store, 'ready');
+      await utils.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {

@@ -4,7 +4,6 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const asynctools = require('asynctools');
 
 module.exports = () => {
   describe('RdfStore.prototype.removeMatches()', () => {
@@ -32,8 +31,8 @@ module.exports = () => {
         )
       ];
       const importStream = utils.createArrayStream(importQuads);
-      await asynctools.waitForEvent(store.import(importStream), 'end', true);
-      await asynctools.waitForEvent(store.removeMatches(null, null, null, factory.namedNode('http://ex.com/g1')), 'end', true);
+      await utils.waitForEvent(store.import(importStream), 'end', true);
+      await utils.waitForEvent(store.removeMatches(null, null, null, factory.namedNode('http://ex.com/g1')), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });

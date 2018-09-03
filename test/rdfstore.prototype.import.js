@@ -4,7 +4,6 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const asynctools = require('asynctools');
 
 module.exports = () => {
 
@@ -22,7 +21,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });
@@ -51,7 +50,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());
       should(matchedQuads).have.length(3);
     });

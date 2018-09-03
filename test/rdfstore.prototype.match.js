@@ -4,7 +4,6 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const asynctools = require('asynctools');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -39,7 +38,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const subject = factory.namedNode('http://ex.com/s2');
       const matchedQuads = await utils.streamToArray(rs.match(subject));
       stripTermSerializedValue(matchedQuads);
@@ -66,7 +65,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const predicate = factory.namedNode('http://ex.com/p2');
       const matchedQuads = await utils.streamToArray(rs.match(null, predicate));
       stripTermSerializedValue(matchedQuads);
@@ -93,7 +92,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const object = factory.literal('o2', 'en-gb');
       const matchedQuads = await utils.streamToArray(rs.match(null, null, object));
       stripTermSerializedValue(matchedQuads);
@@ -120,7 +119,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const graph = factory.namedNode('http://ex.com/g2');
       const matchedQuads = await utils.streamToArray(rs.match(null, null, null, graph));
       stripTermSerializedValue(matchedQuads);
@@ -147,7 +146,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await utils.streamToArray(rs.match(null, null, null, factory.defaultGraph()));
       stripTermSerializedValue(matchedQuads);
       should(matchedQuads).have.length(1);
@@ -172,7 +171,7 @@ module.exports = () => {
         )
       ];
       const source = utils.createArrayStream(quads);
-      await asynctools.waitForEvent(store.import(source), 'end', true);
+      await utils.waitForEvent(store.import(source), 'end', true);
       const readStream = rs.match(null, null, null, factory.defaultGraph());
       const matchedQuads = await utils.streamToArray(readStream);
       stripTermSerializedValue(matchedQuads);

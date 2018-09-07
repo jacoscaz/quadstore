@@ -15,7 +15,6 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "browserify": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js",
     "postinstall": "node modify-actor-init-sparql-rdfjs-config.js && cd node_modules/@comunica/actor-init-sparql-rdfjs && npm run prepare"
   },
   "repository": {
@@ -26,21 +25,19 @@
     "asynciterator": "^1.1.0",
     "benchmark": "^2.1.3",
     "bluebird": "^3.5.1",
-    "browserify": "^14.1.0",
     "eslint": "^3.13.0",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
-    "fs-extra": "^2.0.0",
-    "level-js": "^2.2.4",
+    "fs-extra": "^7.0.0",
     "leveldown": "^4.0.1",
     "memdown": "^3.0.0",
-    "mocha": "^4.0.1",
-    "nyc": "^10.1.2",
+    "mocha": "^5.2.0",
+    "nyc": "^13.0.1",
     "rdflib": "^0.14.0",
     "shortid": "^2.2.8",
-    "should": "^11.2.0",
+    "should": "^13.2.3",
     "uuid": "^3.0.1"
   },
   "dependencies": {

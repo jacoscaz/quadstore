@@ -5,12 +5,12 @@ const n3 = require('n3');
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
-const memdown = require('memdown');
+const utils = require('../lib/utils');
 const Promise = require('bluebird');
 const shortid = require('shortid');
 const RdfStore = require('..').RdfStore;
-const asynctools = require('asynctools');
-const dataFactory = require('rdf-data-model');
+const leveldown = require('leveldown');
+const dataFactory = require('n3').DataFactory;
 const childProcess = require('child_process');
 
 function du(absPath) {
@@ -38,18 +38,17 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
 
   const absStorePath = path.join(os.tmpdir(), `node-quadstore-${shortid.generate()}`);
 
-  const store = new RdfStore(absStorePath, { dataFactory });
+  const store = new RdfStore(leveldown(absStorePath), { dataFactory });
 
-  await asynctools.waitForEvent(store, 'ready', true);
+  await utils.waitForEvent(store, 'ready');
 
   const absFilePath = path.resolve(process.cwd(), filePath);
 
   const fileReader = fs.createReadStream(absFilePath);
   const streamParser = n3.StreamParser({ format });
-  const deserializer = store._createQuadDeserializerStream();
 
   const beforeTime = Date.now();
-  await store.putStream(fileReader.pipe(streamParser).pipe(deserializer));
+  await store.putStream(fileReader.pipe(streamParser));
   const afterTime = Date.now();
 
   await store.close();

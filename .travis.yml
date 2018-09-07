@@ -1,9 +1,13 @@
 language: node_js
+
+compiler: gcc
+sudo: false
+os: linux
+
 node_js:
   - "8"
   - "10"
-before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+
 addons:
   apt:
     sources:
@@ -11,3 +15,18 @@ addons:
     packages:
       - gcc-4.9
       - g++-4.9
+
+before_install:
+  - echo $TRAVIS_NODE_VERSION
+  - npm config set python `which python`
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export CC="gcc-4.9";
+      export CXX="g++-4.9";
+      export LINK="gcc-4.9";
+      export LINKXX="g++-4.9";
+    fi
+  - nvm --version
+  - node --version
+  - npm --version
+  - gcc --version
+  - g++ --version

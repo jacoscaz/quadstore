@@ -15,7 +15,8 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "browserify": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js"
+    "browserify": "browserify browser/quadstore.src.js -s quadstore -o browser/quadstore.dist.js",
+    "postinstall": "node modify-actor-init-sparql-rdfjs-config.js && cd node_modules/@comunica/actor-init-sparql-rdfjs && npm run prepare"
   },
   "repository": {
     "type": "git",

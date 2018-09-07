@@ -32,30 +32,25 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^2.0.0",
-    "ldf-client": "github:beautifulinteractions/Client.js#fe69fb10dc01a8401fbb84e1a182a8cd58d639a8",
     "level-js": "^2.2.4",
     "leveldown": "^1.6.0",
     "memdown": "^1.2.4",
     "mocha": "^4.0.1",
     "nyc": "^10.1.2",
-    "rdf-data-model": "github:rdf-ext/rdf-data-model#2f108b9b10d83856c2f0a1f90478209730ef8a28",
     "rdflib": "^0.14.0",
     "shortid": "^2.2.8",
     "should": "^11.2.0",
     "uuid": "^3.0.1"
   },
   "dependencies": {
-    "collections": "^5.0.6",
+    "@comunica/actor-init-sparql-rdfjs": "^1.2.2",
     "debug": "^3.1.0",
-    "deprecate": "^1.0.0",
     "express": "^4.16.1",
     "levelup": "^1.3.5",
     "lodash": "^4.17.4",
-    "n3": "^0.9.1",
-    "pino": "^4.7.2",
-    "rdfjs-sparql-engine": "github:beautifulinteractions/rdfjs-sparql-engine#bdcbe1ad959bc58e3dbe6ade087cd1c3e1bd69ff",
+    "n3": "^1.0.0-beta.2",
     "stoppable": "^1.0.4",
-    "yurl": "^1.1.6"
+    "yurl": "^2.0.3"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
   "contributors": [

@@ -3,17 +3,16 @@
 
 const n3 = require('n3');
 const url = require('url');
-const yurl = require('yurl');
 const http = require('http');
 const should = require('should');
 const Promise = require('bluebird');
 
+const { namedNode, literal, defaultGraph, quad } = n3.DataFactory;
+
 async function serializeQuads(quads, format) {
   return new Promise((resolve, reject) => {
     const writer = n3.Writer({ format });
-    for (const quad of quads) {
-      writer.addTriple(quad);
-    }
+    writer.addQuads(quads);
     writer.end((err, result) => {
       if (err) reject(err);
       else resolve(result);
@@ -92,26 +91,9 @@ module.exports = () => {
     it('Should import, match and remove quads correctly', async function () {
       const store = this.store;
       const quads = [
-        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
-        { subject: 'ex://s1', predicate: 'ex://p1', object: 'ex://o1', graph: 'ex://g1' },
-        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
-      ];
-      await postQuads(`${store._httpBaseUrl}/import`, quads);
-      const matchedQuads1 = await getQuads(`${store._httpBaseUrl}/match`);
-      should(matchedQuads1).have.length(3);
-      await postQuads(`${store._httpBaseUrl}/remove`, quads.slice(0, 1));
-      const matchedQuads2 = await getQuads(`${store._httpBaseUrl}/match`);
-      should(matchedQuads2).have.length(2);
-      const matchedQuads3 = await getQuads(`${store._httpBaseUrl}/match?subject=${encodeURIComponent('ex://s2')}`);
-      should(matchedQuads3).have.length(1);
-    });
-
-    it('Should import, match and remove quads correctly', async function () {
-      const store = this.store;
-      const quads = [
-        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
-        { subject: 'ex://s1', predicate: 'ex://p1', object: 'ex://o1', graph: 'ex://g1' },
-        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+        quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), namedNode('ex://g0')),
+        quad(namedNode('ex://s1'), namedNode('ex://p1'), namedNode('ex://o1'), namedNode('ex://g1')),
+        quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), namedNode('ex://g2')),
       ];
       await postQuads(`${store._httpBaseUrl}/import`, quads);
       const matchedQuads1 = await getQuads(`${store._httpBaseUrl}/match`);
@@ -126,9 +108,9 @@ module.exports = () => {
     it('Should provide a correct response to a SPARQL query', async function () {
       const store = this.store;
       const quads = [
-        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
-        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"', graph: 'ex://g1' },
-        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+        quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), namedNode('ex://g0')),
+        quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), namedNode('ex://g1')),
+        quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), namedNode('ex://g2')),
       ];
       await postQuads(`${store._httpBaseUrl}/import`, quads);
       const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
@@ -138,7 +120,7 @@ module.exports = () => {
       should(format).equal('application/sparql-results+json');
       const expected = {
         head: {
-          vars: ['']
+          vars: ['s', 'p', 'o', 'g']
         },
         results: {
           bindings: [
@@ -151,7 +133,7 @@ module.exports = () => {
             {
               s: { value: 'ex://s1', type: 'uri' },
               p: { value: 'ex://p1', type:'uri' },
-              o: { value: 'literal', type: 'literal', datatype: 'http://www.w3.org/2001/XMLSchema#string' },
+              o: { value: 'literal', type: 'literal' },
               g: { value:'ex://g1', type:'uri' }
             },
             {
@@ -169,29 +151,28 @@ module.exports = () => {
     it('Should answer a CONSTRUCT query correctly with quads explicitly from named graphs', async function () {
       const store = this.store;
       const quads = [
-        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0', graph: 'ex://g0' },
-        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"^^http://www.w3.org/2001/XMLSchema#string', graph: 'ex://g1' },
-        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2', graph: 'ex://g2' },
+        quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), namedNode('ex://g0')),
+        quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), namedNode('ex://g1')),
+        quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), namedNode('ex://g2')),
       ];
       await postQuads(`${store._httpBaseUrl}/import`, quads);
       const query = 'CONSTRUCT { ?s <ex://p3> ?o } WHERE { GRAPH ?g { ?s <ex://p1> ?o } }';
-      const getOpts = url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
-      const results = await getQuads(getOpts);
-      const expected = [{ subject:'ex://s1', predicate: 'ex://p3', object: '"literal"', graph: '' }];
+      const results = await getQuads(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
+      const expected = [quad(namedNode('ex://s1'), namedNode('ex://p3'), literal('literal'), defaultGraph())];
       should(results).deepEqual(expected);
     });
 
     it('Should answer a CONSTRUCT query correctly with quads implicitly from the default graph', async function () {
       const store = this.store;
       const quads = [
-        { subject: 'ex://s0', predicate: 'ex://p0', object: 'ex://o0' },
-        { subject: 'ex://s1', predicate: 'ex://p1', object: '"literal"^^http://www.w3.org/2001/XMLSchema#string' },
-        { subject: 'ex://s2', predicate: 'ex://p2', object: 'ex://o2' },
+        quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), defaultGraph()),
+        quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), defaultGraph()),
+        quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), defaultGraph()),
       ];
-      await postQuads(`${store._httpBaseUrl}/import`, quads, 'text/turtle');
+      await postQuads(`${store._httpBaseUrl}/import`, quads);
       const query = 'CONSTRUCT { ?s <ex://p3> ?o } WHERE { ?s <ex://p1> ?o }';
-      const results = await getQuads(url.parse(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`));
-      const expected = [{ subject:'ex://s1', predicate: 'ex://p3', object: '"literal"', graph: '' }];
+      const results = await getQuads(`${store._httpBaseUrl}/sparql?query=${encodeURIComponent(query)}`);
+      const expected = [quad(namedNode('ex://s1'), namedNode('ex://p3'), literal('literal'), defaultGraph())];
       should(results).deepEqual(expected);
     });
 

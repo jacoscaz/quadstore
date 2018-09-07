@@ -4,6 +4,7 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
+const factory = require('n3').DataFactory;
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -22,7 +23,6 @@ module.exports = () => {
     it('should match quads by subject', async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s'),
@@ -49,7 +49,6 @@ module.exports = () => {
     it('should match quads by predicate',  async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s'),
@@ -76,7 +75,6 @@ module.exports = () => {
     it('should match quads by object',  async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s'),
@@ -103,7 +101,6 @@ module.exports = () => {
     it('should match quads by graph',  async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s'),
@@ -130,7 +127,6 @@ module.exports = () => {
     it('should match the default graph (explicit)',  async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s0'),
@@ -156,7 +152,6 @@ module.exports = () => {
     it('should match quads by the default graph (implicit)',  async function () {
       const store = this.store;
       const rs = store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s0'),

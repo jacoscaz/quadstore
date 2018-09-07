@@ -4,6 +4,7 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
+const dataFactory = require('n3').DataFactory;
 
 module.exports = () => {
 
@@ -12,7 +13,6 @@ module.exports = () => {
     it('Shoud return the correct number of entries', async function () {
       const ctx = this;
       const store = ctx.store;
-      const dataFactory = store.dataFactory;
       const quads = [];
       for (let i = 0; i < 20; i++) {
         quads.push(dataFactory.quad(
@@ -24,14 +24,13 @@ module.exports = () => {
       }
       await store.put(quads);
       const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
-      const results = await utils.streamToArray(ctx.store.sparql(query));
-      should(results).have.length(20);
+      const bindings = await utils.streamToArray(await ctx.store.sparql(query));
+      should(bindings).have.length(20);
     });
 
     it('Shoud return the correct number of entries (LIMIT)', async function () {
       const ctx = this;
       const store = ctx.store;
-      const dataFactory = store.dataFactory;
       const quads = [];
       for (let i = 0; i < 200; i++) {
         quads.push(dataFactory.quad(
@@ -43,14 +42,13 @@ module.exports = () => {
       }
       await store.put(quads);
       const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } } LIMIT 132';
-      const results = await utils.streamToArray(ctx.store.sparql(query));
-      should(results).have.length(132);
+      const bindings = await utils.streamToArray(await ctx.store.sparql(query));
+      should(bindings).have.length(132);
     });
 
     it('Shoud match the correct number of entries', async function () {
       const ctx = this;
       const store = ctx.store;
-      const dataFactory = store.dataFactory;
       const quads = [];
       for (let i = 0; i < 200; i++) {
         quads.push(dataFactory.quad(
@@ -62,14 +60,13 @@ module.exports = () => {
       }
       await store.put(quads);
       const query = 'SELECT *  WHERE { GRAPH ?g { <http://ex.com/s0> <http://ex.com/p0> ?o } }';
-      const results = await utils.streamToArray(ctx.store.sparql(query));
-      should(results).have.length(10);
+      const bindings = await utils.streamToArray(await ctx.store.sparql(query));
+      should(bindings).have.length(10);
     });
 
     it('Should filter quads correctly by comparing integers', async function () {
       const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const store = this.store;
-      const dataFactory = store.dataFactory;
       const quads = [
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s0'),
@@ -97,14 +94,14 @@ module.exports = () => {
         )
       ];
       await store.put(quads);
-      const results = await utils.streamToArray(store.sparql('SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= 4) } }'));
-      should(results).have.length(2);
+      const query = 'SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= 4) } }';
+      const bindings = await utils.streamToArray(await store.sparql(query));
+      should(bindings).have.length(2);
     });
 
     it('Should filter quads correctly by comparing timestamps as integers', async function () {
       const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const store = this.store;
-      const dataFactory = store.dataFactory;
       const quads = [
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s0'),
@@ -133,11 +130,11 @@ module.exports = () => {
       ];
       await store.put(quads);
       const query1 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:01:00Z').valueOf()}) } }`;
-      const results1 = await utils.streamToArray(store.sparql(query1));
-      should(results1).have.length(1);
+      const bindings1 = await utils.streamToArray(await store.sparql(query1));
+      should(bindings1).have.length(1);
       const query2 = `SELECT * WHERE { GRAPH ?g { ?s ?p ?o. FILTER (?o >= ${new Date('2017-01-01T16:00:00Z').valueOf()}) } }`;
-      const results2 = await utils.streamToArray(store.sparql(query2));
-      should(results2).have.length(2);
+      const bindings2 = await utils.streamToArray(await store.sparql(query2));
+      should(bindings2).have.length(2);
     });
 
   });

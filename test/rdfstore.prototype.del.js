@@ -4,6 +4,7 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
+const factory = require('n3').DataFactory;
 
 module.exports = () => {
 
@@ -11,7 +12,6 @@ module.exports = () => {
 
     it('Should delete matching quads correctly (callback).', async function () {
       const store = this.store;
-      const factory = store.dataFactory;
       const quads = [
         factory.quad(
           factory.namedNode('http://ex.com/s0'),

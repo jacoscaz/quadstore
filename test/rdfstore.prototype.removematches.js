@@ -4,12 +4,12 @@
 const _ = require('lodash');
 const utils = require('../lib/utils');
 const should = require('should');
+const factory = require('n3').DataFactory;
 
 module.exports = () => {
   describe('RdfStore.prototype.removeMatches()', () => {
     it('should remove matching quads correctly', async function () {
       const store = this.store;
-      const factory = this.store.dataFactory;
       const importQuads = [
         factory.quad(
           factory.namedNode('http://ex.com/s0'),

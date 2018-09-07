@@ -4,7 +4,6 @@
 'use strict';
 
 const utils = require('../lib/utils');
-const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
 
 module.exports = () => {
@@ -12,7 +11,7 @@ module.exports = () => {
   describe('RdfStore', () => {
 
     beforeEach(async function () {
-      this.store = new RdfStore(this.db, { dataFactory: factory });
+      this.store = new RdfStore(this.db);
       await utils.waitForEvent(this.store, 'ready');
     });
 
@@ -26,7 +25,6 @@ module.exports = () => {
     require('./rdfstore.prototype.remove')();
     require('./rdfstore.prototype.import')();
     require('./rdfstore.prototype.removematches')();
-
     require('./rdfstore.http')();
 
   });

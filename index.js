@@ -1,8 +1,8 @@
 
 'use strict';
 
-const RdfStore = require('./lib/rdfstore');
-const QuadStore = require('./lib/quadstore');
+const RdfStore = require('./lib/RdfStore');
+const QuadStore = require('./lib/QuadStore');
 
 module.exports = QuadStore;
 module.exports.RdfStore = RdfStore;

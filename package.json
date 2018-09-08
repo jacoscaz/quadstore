@@ -31,6 +31,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^7.0.0",
+    "ldf-client": "github:LinkedDataFragments/Client.js#b7d4aec12b47d32c5f8fdff4a79991b52315b490",
     "leveldown": "^4.0.1",
     "memdown": "^3.0.0",
     "mocha": "^5.2.0",

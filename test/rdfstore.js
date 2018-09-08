@@ -26,6 +26,7 @@ module.exports = () => {
     require('./rdfstore.prototype.import')();
     require('./rdfstore.prototype.removematches')();
     require('./rdfstore.http')();
+    require('./rdfstore.http.ldf')();
 
   });
 };

@@ -12,7 +12,7 @@ const { namedNode, literal, defaultGraph, quad } = n3.DataFactory;
 
 module.exports = () => {
 
-  describe('RdfStore\'s LDF endpoint', () => {
+  describe('RdfStore\'s HTTP LDF endpoint', () => {
 
     beforeEach(async function () {
       const quads = [

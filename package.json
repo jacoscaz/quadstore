@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "3.0.0",
+  "version": "4.0.1",
   "description": "A quadstore for node.js",
   "keywords": [
     "node",
@@ -17,6 +17,10 @@
     "test": "nyc mocha",
     "postinstall": "node postinstall.js"
   },
+  "files": [
+    "index.js",
+    "lib/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"

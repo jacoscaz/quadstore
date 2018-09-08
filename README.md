@@ -42,8 +42,7 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
             - [POST /remove](#post-remove)
             - [GET /ldf](#get-ldf)
             - [GET,POST /sparql](#getpost-sparql)
-    - [Advanced Queries](#advanced-queries-deprecated)
-    - [Browser](#browser)
+- [Browser](#browser)
 - [Performance](#performance)
 - [License](#license)
 
@@ -84,19 +83,15 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v4.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
-- Supports retrieval, update, insertion and removal of quads.
-- Supports both Promise(s) and callbacks.
-- Supports `SPARQL` queries (`SELECT` only).
-- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' 
-  `Store`, `Source` and `Sink` interfaces.
-- Exposes `HTTP` endpoints mirroring the methods of the above-mentioned RDF/JS' 
-  interfaces.
-- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
-  `HTTP` endpoint.
-- Exposes a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/)
-  `HTTP` endpoint.
+- Supports retrieval, update, insertion and removal of quads
+- Supports both Promise(s) and callbacks
+- Supports `SPARQL` queries
+- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces
+- Exposes `HTTP` endpoints mirroring the features of `RDF/JS`' interfaces
+- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/) `HTTP` endpoint
+- Exposes a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/) `HTTP` endpoint
 
 ### Notes
 

@@ -1,14 +1,23 @@
 
 # CHANGELOG
 
-#### v3.0
+## v4.0.1
+
+- **[breaking]** updates leveldown, levelup
+- **[breaking]** changes the way `LevelDB`'s backends are passed to constructors
+- **[breaking]** makes `.sparql()` method `async`
+- *[internal]* updates `N3` to RDF/JS version
+- *[internal]* switches to the `@comunica-/actor-init-sparql-rdfjs` SPARQL engine
+- *[internal]* consolidates dependencies
+
+## v3.0.0
 
 - deprecates `.query()`
 - adds support for SPARQL
 - adds HTTP API w/ LDF endpoint
 - improves test suite
 
-#### v2.1.1
+## v2.1.1
 
 - new, (hopefully) cleaner API
     - `getStream()`, `putStream()` and `delStream()` methods
@@ -17,10 +26,10 @@
 - `master` branch now tracking NPM
 - work now happening in `devel` branch
 
-#### v1.0.0
+## v1.0.0
 
 - default `contextKey` value changed from `context` to `graph`
 
-#### v0.2.1
+## v0.2.1
 
 - replaces AsyncIterator instances w/ native stream.(Readable|Writable) instances

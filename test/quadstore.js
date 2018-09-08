@@ -19,6 +19,7 @@ module.exports = () => {
       await this.store.close();
     });
 
+    require('./quadstore.leveldb')();
     require('./quadstore.prototype.get')();
     require('./quadstore.prototype.put')();
     require('./quadstore.prototype.del')();

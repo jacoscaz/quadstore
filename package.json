@@ -15,7 +15,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "postinstall": "node modify-actor-init-sparql-rdfjs-config.js && cd node_modules/@comunica/actor-init-sparql-rdfjs && npm run prepare"
+    "postinstall": "node postinstall.js"
   },
   "repository": {
     "type": "git",

@@ -5,31 +5,39 @@ const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 
-const actorInitSparqlRdfjsPath = path.dirname(
+const actorPath = path.dirname(
   require.resolve('@comunica/actor-init-sparql-rdfjs/package.json')
 );
 
-const actorInitSparqlRdfjsConfigPath = path.join(
-  actorInitSparqlRdfjsPath,
+const actorConfigPath = path.join(
+  actorPath,
   'config',
   'config-default.json'
 );
 
-const actorInitSparqlRdfjsConfig = fs.readFileSync(
-  actorInitSparqlRdfjsConfigPath, 
+const actorConfig = JSON.parse(fs.readFileSync(
+  actorConfigPath, 
   'utf8'
-);
+));
 
-if (!actorInitSparqlRdfjsConfig.match(/.*rdf-serializers.*/)) {
+const actorImportArray = actorConfig.import.slice();
 
-  const lines = actorInitSparqlRdfjsConfig.split(/\r?\n/g);
-  lines.splice(18, 0, '    "files-cais:config/sets/sparql-serializers.json",');
-  lines.splice(19, 0, '    "files-cais:config/sets/rdf-serializers.json",');
-  fs.writeFileSync(actorInitSparqlRdfjsConfigPath, lines.join('\n'), 'utf8');
+const additionalImportItems = [
+  'files-cais:config/sets/rdf-serializers.json',
+  'files-cais:config/sets/sparql-serializers.json'
+];
 
-  const execOpts = {cwd: actorInitSparqlRdfjsPath, env: process.env};
+for (const additionalImportItem of additionalImportItems) {
+  if (actorImportArray.indexOf(additionalImportItem)) {
+    actorImportArray.push(additionalImportItem);
+  }
+}
+
+if (actorImportArray.length > actorConfig.import.length) {
+  actorConfig.import = actorImportArray;
+  fs.writeFileSync(actorConfigPath, JSON.stringify(actorConfig, null, 2), 'utf8');
+  const execOpts = {cwd: actorPath, env: process.env};
   child_process.exec('npm run prepare', execOpts, (err) => {
     if (err) throw err;
   });
-
 }

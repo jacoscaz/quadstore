@@ -356,15 +356,15 @@ Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided ter
 Returns a `stream.Readable` that outputs the results of the query, formatted
 according to the data format specified as the second argument. 
 
-| Format                            | Datatype of emitted chunks                          |
-| --------------------------------- | --------------------------------------------------- |
-| *nil*                             | `object` dictionary of bindings as `Term` instances |
-| `comunica`                        | raw `result` object from `comunica`'s engine        |     
-| `application/json`                | simple `json` serialization                         |
-| `application/sparql-results+xml`  | SPARQL's XML serialization                          |
-| `application/sparql-results+json` | SPARQL's JSON serialization                         |
-| `application/trig`                | Trig serialization                                  |
-| `application/n-quads`             | N-Quads serialization                               |
+| Format                            | Datatype of emitted chunks                                  |
+| --------------------------------- | ----------------------------------------------------------- |
+| *nil*                             | dictionary of bindings as RDF/JS' `Term` instances          |
+| `comunica`                        | `@comunica/actor-init-sparql-rdfjs`' `result` object        |     
+| `application/json`                | simple JSON serialization                                   |
+| `application/sparql-results+xml`  | [SPARQL-XML](https://www.w3.org/TR/rdf-sparql-XMLres/)      |
+| `application/sparql-results+json` | [SPARQL-JSON](https://www.w3.org/TR/sparql11-results-json/) |
+| `application/trig`                | [Trig](https://www.w3.org/TR/trig/)                         |
+| `application/n-quads`             | [N-Quads](https://www.w3.org/TR/n-quads/)                   |
 
 RdfStore's SPARQL capabilities are powered by the 
 [Comunica](https://github.com/comunica/comunica) query engine platform. 

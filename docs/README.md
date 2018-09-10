@@ -1,5 +1,5 @@
 
-# QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg)](https://travis-ci.org/beautifulinteractions/node-quadstore) #
+# QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg?branch=master)](https://travis-ci.org/beautifulinteractions/node-quadstore)
 
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
@@ -10,7 +10,12 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
 
 - [Introduction](#introduction)
 - [Status](#status)
+    - [Roadmap](#roadmap)
+    - [Changelog](#changelog)
+    - [Current version and features](#current-version-and-features)
+    - [Notes](#notes)
 - [Usage](#usage)
+    - [Storage](#storage-backends)
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
@@ -37,8 +42,7 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
             - [POST /remove](#post-remove)
             - [GET /ldf](#get-ldf)
             - [GET,POST /sparql](#getpost-sparql)
-    - [Advanced Queries](#advanced-queries-deprecated)
-    - [Browser](#browser)
+- [Browser](#browser)
 - [Performance](#performance)
 - [License](#license)
 
@@ -67,7 +71,11 @@ Quadstore's indexing strategy has been developed by
 
 ## Status
 
-Unstable, active, under development.
+Active, under development.
+
+### Roadmap
+
+See [ROADMAP.md](./ROADMAP.md).
 
 ### Changelog
 
@@ -75,63 +83,49 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v3.0.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v4.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
-- Supports retrieval, update, insertion and removal of quads.
-- Supports both Promise(s) and callbacks.
-- Supports `SPARQL` queries (`SELECT` only).
-- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' 
-  `Store`, `Source` and `Sink` interfaces.
-- Exposes `HTTP` endpoints mirroring the methods of the above-mentioned RDF/JS' interfaces.
-- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
-  `HTTP` endpoint.
+- Supports retrieval, update, insertion and removal of quads
+- Supports both Promise(s) and callbacks
+- Supports `SPARQL` queries
+- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces
+- Exposes `HTTP` endpoints mirroring the features of `RDF/JS`' interfaces
+- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/) `HTTP` endpoint
+- Exposes a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/) `HTTP` endpoint
 
 ### Notes
 
-- Uses [Semantic Versioning](https://www.npmjs.com/package/quadstore). 
+- Uses [Semantic Versioning](https://semver.org). 
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
   on the `devel` branch and/or issue-specific branches.
 - Requires Node.js >= 8.0.0.
 
-## Relationship with LevelUP / LevelDOWN
+## Usage
+
+### Storage
 
 `quadstore` uses the [LevelUP](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
-### Storage backends
+We test `quadstore` using the following backends:
 
 - `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package 
   offers persistent storage backed by LevelDB itself.
 - `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers
   volatile in-memory storage.
 
-### Default backend
-
-If no backend is specified through the options of the 
-[QuadStore](#quadstore-class) and [RdfStore](#rdfstore-class) constructors, 
-`levelup` will attempt at `require()`ing the `leveldown` package **which has to
-be explicitly installed via `npm`**.
-
-### Performance
-
-We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
-file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
-MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
-second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
-
-## Usage ##
-
 ### Graph API
 
 #### QuadStore class
 
     const QuadStore = require('quadstore').QuadStore;
-    const store = new QuadStore('./path/to/db', opts);
+    const store = new QuadStore(abstractLevelDOWN, opts);
 
-Instantiates a new store. Supported options are:
+Instantiates a new store. The `abstractLevelDOWN` argument **must** be an 
+instance of a leveldb backend. Supported properties for the `opts` argument 
+are:
 
-    opts.db = require('leveldown');   // Levelup's backend
     opts.contextKey = 'graph';        // Name of fourth term
 
 The `contextKey` option determines which key the store will use to read and
@@ -139,11 +133,6 @@ write the fourth term of each quad. The default value `graph` requires all
 quads to be formatted as `{ subject, predicate, object, graph }` objects. 
 Similarly, the value `context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
-
-The `db` option is optional and, if provided, *must* be a factory function
-returning an object compatible with
-[LevelDOWN](https://github.com/level/leveldown/)'s API. See
-[Relationship with LevelUP / LevelDOWN](#relationship-with-levelup-leveldown).
 
 #### QuadStore.prototype.get()
 
@@ -299,25 +288,23 @@ Additionally, the `RdfStore` class also supports `SPARQL` queries and provides
 #### RdfStore class
 
     const RdfStore = require('quadstore').RdfStore;
-    const store = new RdfStore('./path/to/db', opts);
+    const store = new RdfStore(abstractLevelDOWN, opts);
 
-Instantiates a new store. Supported options are:
+Instantiates a new store. The `RdfStore` class extends `QuadStore` and requires
+an instance of a leveldb backend as the `abstractLevelDOWN` argument. In 
+addition to all options supported by `QuadStore`, `RdfStore` supports the 
+following:
 
-    opts.db = require('leveldown');               // Levelup's backend
-    opts.dataFactory = require('rdf-data-model'); // RDFJS dataFactory implementation
+    opts.dataFactory = require('@rdf-data-model'); // RDFJS dataFactory implementation
     opts.httpPort = 8080;                         // Listening port
     opts.httpAddr = '127.0.0.1'                   // Listening address
     opts.httpBaseUrl = 'http://127.0.0.1:8080';   // Base url for the http server
 
-The `db` option is optional and, if provided, *must* be a factory function
-returning an object compatible with
-[LevelDOWN](https://github.com/level/leveldown/)'s API. See
-[Relationship with LevelUP / LevelDOWN](#relationship-with-levelup-leveldown).
+The `dataFactory` option, if specified, *must* be an implementation of the
+`dataFactory` interface defined in the RDF/JS specification, such as: 
 
-The `dataFactory` option is mandatory and *must* be an implementation of the
-`dataFactory` interface defined in the RDF/JS specification. One such 
-implementation is available at 
-[rdf-ext/rdf-data-model](https://github.com/rdf-ext/rdf-data-model).
+- [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
+- [N3.js' N3.DataFactory](https://www.npmjs.com/package/n3)
 
 The `contextKey` option from the `QuadStore` class is set to `graph` and cannot
 be changed.
@@ -363,20 +350,24 @@ Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided ter
 #### RdfStore.prototype.sparql()
 
     const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
-    store.sparql(query)
-      .on('error', (err) => {})
-      .on('data', (terms) => {
-        // { 
-        //   '?s': <dataFactory.Term>,
-        //   '?p': <dataFactory.Term>,
-        //   '?o': <dataFactory.Term>,
-        //   '?g': <dataFactory.Term>
-        // }
-      })
-      .on('end', () => {});
+    const resultsStream = await store.sparql(query, 'application/sparql-results+xml);
+    resultsStream.on('data', (chunk) => { /* ... */ });
 
-Returns a `stream.Readable` of RDF/JS `Term` dictionaries keyed according to 
-the variables returned by the query.
+Returns a `stream.Readable` that outputs the results of the query, formatted
+according to the data format specified as the second argument. 
+
+| Format                            | Datatype of emitted chunks                                  |
+| --------------------------------- | ----------------------------------------------------------- |
+| *nil*                             | dictionary of bindings as RDF/JS' `Term` instances          |
+| `comunica`                        | `@comunica/actor-init-sparql-rdfjs`' `result` object        |     
+| `application/json`                | simple JSON serialization                                   |
+| `application/sparql-results+xml`  | [SPARQL-XML](https://www.w3.org/TR/rdf-sparql-XMLres/)      |
+| `application/sparql-results+json` | [SPARQL-JSON](https://www.w3.org/TR/sparql11-results-json/) |
+| `application/trig`                | [Trig](https://www.w3.org/TR/trig/)                         |
+| `application/n-quads`             | [N-Quads](https://www.w3.org/TR/n-quads/)                   |
+
+RdfStore's SPARQL capabilities are powered by the 
+[Comunica](https://github.com/comunica/comunica) query engine platform. 
 
 #### RdfStore.prototype.import()
 
@@ -466,22 +457,9 @@ Client.js (`ldf-client`) in the near future.
 Provides a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/)
 endpoint be used with suitable clients.
 
-### Advanced queries (DEPRECATED)
-
-Version 3.0 deprecates support for daisy-chained queries in favour of the
-[RdfStore.prototype.sparql()](#rdfstoreprototypesparql) method. 
-
 ### Browser
 
-Browser use is not currently supported. That said, both the `QuadStore` and the
-`RdfStore` classes can be used in browsers via `browserify` and `level-js`:
-
-    const leveljs = require('level-js');
-    const QuadStore = require('quadstore').QuadStore;
-
-    const store = new QuadStore('name', { db: leveljs });
-    
-Browser support is being tracked in 
+Browser use is currently not supported but being tracked in 
 [issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
 and could use some help from interested parties.
 
@@ -491,6 +469,7 @@ We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
 file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
 MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
 second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
+ 
 
 ## LICENSE
 

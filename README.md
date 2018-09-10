@@ -46,7 +46,7 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
 - [Performance](#performance)
 - [License](#license)
 
-## Introduction ##
+## Introduction
 
 A quad is a triple with an added `graph` term.
 
@@ -69,9 +69,9 @@ Quadstore's indexing strategy has been developed by
 [Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper
 [RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
 
-## Status ##
+## Status
 
-Unstable, active, under development.
+Active, under development.
 
 ### Roadmap
 
@@ -95,13 +95,13 @@ Current version: **v4.0.1** [[See on NPM](https://www.npmjs.com/package/quadstor
 
 ### Notes
 
-- Uses [Semantic Versioning](https://www.npmjs.com/package/quadstore). 
+- Uses [Semantic Versioning](https://semver.org). 
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
   on the `devel` branch and/or issue-specific branches.
 - Requires Node.js >= 8.0.0.
 
-## Usage ##
+## Usage
 
 ### Storage
 

@@ -4,7 +4,6 @@
 const n3 = require('n3');
 const url = require('url');
 const http = require('http');
-const Promise = require('bluebird');
 
 async function serializeQuads(quads, format) {
   return new Promise((resolve, reject) => {

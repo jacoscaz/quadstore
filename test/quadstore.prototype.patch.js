@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('lodash');
+const _ = require('../lib/lodash');
 const should = require('should');
 
 module.exports = () => {

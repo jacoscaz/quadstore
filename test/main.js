@@ -3,15 +3,15 @@
 
 const os = require('os');
 const fs = require('fs-extra');
+const util = require('util');
 const path = require('path');
-const shortid = require('shortid');
+const nanoid = require('nanoid');
 const memdown = require('memdown');
-const Promise = require('bluebird');
 const leveldown = require('leveldown');
 const rdfStoreSuite = require('./rdfstore');
 const quadStoreSuite = require('./quadstore');
 
-const remove = Promise.promisify(fs.remove, { context: fs });
+const remove = util.promisify(fs.remove);
 
 describe('MemDOWN backend', () => {
 
@@ -27,7 +27,7 @@ describe('MemDOWN backend', () => {
 describe('LevelDOWN backend', () => {
 
   beforeEach(async function () {
-    this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
+    this.location = path.join(os.tmpdir(), 'node-quadstore-' + nanoid());
     this.db = leveldown(this.location);
   });
 

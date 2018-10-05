@@ -4,7 +4,8 @@
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
 
-A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and the RDF/JS interface.
+A LevelDB-backed graph database for Node.js and the browser. 
+Supports quads, RDF/JS interfaces and SPARQL queries.
 
 ## Table of contents
 
@@ -31,17 +32,11 @@ A LevelDB-backed graph database for Node.js supporting quads, SPARQL queries and
     - [RDF Interface](#rdf-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
+        - [SPARQL queries](#sparqlqueries)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
-        - [RdfStore.prototype.sparql](#rdfstoreprototypesparql)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
-        - [RdfStore HTTP API](#rdfstore-http-api)
-            - [GET /match](#get-match)
-            - [POST /import](#post-import)
-            - [POST /remove](#post-remove)
-            - [GET /ldf](#get-ldf)
-            - [GET,POST /sparql](#getpost-sparql)
 - [Browser](#browser)
 - [Performance](#performance)
 - [License](#license)
@@ -83,15 +78,13 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v4.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v5.0.2** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
 - Supports both Promise(s) and callbacks
-- Supports `SPARQL` queries
 - Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces
-- Exposes `HTTP` endpoints mirroring the features of `RDF/JS`' interfaces
-- Exposes a [Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/) `HTTP` endpoint
-- Exposes a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/) `HTTP` endpoint
+- SPARQL queries are supported via the additional [`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore-sparql) package
+- HTTP endpoints are supported via the additional [`quadstore-http`](https://github.com/beautifulinteractions/node-quadstore-http) package.
 
 ### Notes
 
@@ -296,9 +289,6 @@ addition to all options supported by `QuadStore`, `RdfStore` supports the
 following:
 
     opts.dataFactory = require('@rdf-data-model'); // RDFJS dataFactory implementation
-    opts.httpPort = 8080;                         // Listening port
-    opts.httpAddr = '127.0.0.1'                   // Listening address
-    opts.httpBaseUrl = 'http://127.0.0.1:8080';   // Base url for the http server
 
 The `dataFactory` option, if specified, *must* be an implementation of the
 `dataFactory` interface defined in the RDF/JS specification, such as: 
@@ -308,12 +298,6 @@ The `dataFactory` option, if specified, *must* be an implementation of the
 
 The `contextKey` option from the `QuadStore` class is set to `graph` and cannot
 be changed.
-
-The `httpAddr` and `httpPort` options specify the address and port that the
-internal `HTTP` server should listen to.
-
-The `httpBaseUrl` option is used by the internal `HTTP` server to render URLs
-correctly.
 
 #### Graph API, Quad and Term instances
 
@@ -333,6 +317,11 @@ The conditions used in `getByIndex()`, `getByIndexStream()` and the key
 generation function used in `registerIndex()` **must** use the serialization 
 format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
+#### SPARQL Queries
+
+SPARQL queries are supported via the additional package 
+[`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore).
+
 #### RdfStore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
@@ -346,28 +335,6 @@ format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
       .on('end', () => {});
 
 Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided terms.
-
-#### RdfStore.prototype.sparql()
-
-    const query = 'SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }';
-    const resultsStream = await store.sparql(query, 'application/sparql-results+xml);
-    resultsStream.on('data', (chunk) => { /* ... */ });
-
-Returns a `stream.Readable` that outputs the results of the query, formatted
-according to the data format specified as the second argument. 
-
-| Format                            | Datatype of emitted chunks                                  |
-| --------------------------------- | ----------------------------------------------------------- |
-| *nil*                             | dictionary of bindings as RDF/JS' `Term` instances          |
-| `comunica`                        | `@comunica/actor-init-sparql-rdfjs`' `result` object        |     
-| `application/json`                | simple JSON serialization                                   |
-| `application/sparql-results+xml`  | [SPARQL-XML](https://www.w3.org/TR/rdf-sparql-XMLres/)      |
-| `application/sparql-results+json` | [SPARQL-JSON](https://www.w3.org/TR/sparql11-results-json/) |
-| `application/trig`                | [Trig](https://www.w3.org/TR/trig/)                         |
-| `application/n-quads`             | [N-Quads](https://www.w3.org/TR/n-quads/)                   |
-
-RdfStore's SPARQL capabilities are powered by the 
-[Comunica](https://github.com/comunica/comunica) query engine platform. 
 
 #### RdfStore.prototype.import()
 
@@ -400,68 +367,26 @@ Consumes the stream removing each incoming quad.
 
 Removes all quad  matching the provided terms.
 
-### RdfStore HTTP API
-
-The following endpoints are made avaible by the internal `HTTP` server:
-
-#### `GET /match`
-
-Mirrors `RDF/JS`'s `Source.match()` method. Returns quads serialized either in 
-`application/n-quads` or `application/trig` matching the specified query 
-parameters. 
-
-Supported parameters are `subject`, `predicate`, `object`, `graph`, `offset` 
-and `limit`.
-
-    GET http://127.0.0.1:8080/match?subject=<value>&offset=10&limit=10
-    
-Values for the `subject`, `predicate`, `object` and `graph` parameters **must**
-be serialized using 
-[Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3) and **must** 
-be urlencoded.
-
-#### `POST /import`
-
-Mirrors `RDF/JS`'s `Sink.import()` method. Accepts a payload of quads serialized 
-either in `application/n-quads` or `application/trig` and imports them into 
-the store.
-
-    POST http://127.0.0.1:8080/import
- 
-#### `POST /delete`
-
-Mirrors `RDF/JS`'s `Store.delete()` method. Accepts a payload of quads 
-serialized either in `application/n-quads` or `application/trig` and deletes 
-them from the store.
-
-    POST http://127.0.0.1:8080/delete
-
-#### `GET /ldf`
-
-Provides a [Linked Data Fragments](http://linkeddatafragments.org/) endpoint 
-implementing the 
-[Triple Pattern Fragments](https://www.hydra-cg.com/spec/latest/triple-pattern-fragments/)
-(TPF) interface for use with suitable clients.
-
-    GET http://127.0.0.1:8080/ldf?page=2
-    
-In order to support quads instead of triples, this endpoint is tested using 
-[our own fork](https://github.com/beautifulinteractions/Client.js/tree/bi)
-of the [Client.js](https://github.com/LinkedDataFragments/Client.js) library.
-The fork tracks the `feature-qpf-latest` branch of the upstream repository
-and merges in fixes from other branches. We will switch to the NPM version of 
-Client.js (`ldf-client`) in the near future.
-
-#### `GET,POST /sparql`
-
-Provides a [SPARQL 1.1 Protocol](https://www.w3.org/TR/2013/REC-sparql11-protocol-20130321/)
-endpoint be used with suitable clients.
-
 ### Browser
 
-Browser use is currently not supported but being tracked in 
-[issue #4](https://github.com/beautifulinteractions/node-quadstore/issues/4)
-and could use some help from interested parties.
+`quadstore` can be used in browsers via bundling tools such as `rollup`, 
+`webpack`, `browserify` and their plugins.
+
+The pre-assembled [`quadstore.umd-bundle.js`](./quadstore.umd-bundle.js) UMD 
+bundle can be directly included into client-side projects and comes with 
+`leveljs` (leveldb's backend for browsers) and `@rdfjs/data-model`.
+
+```
+<script src="./quadstore.umd-bundle.js"></script>
+<script>
+    const db = quadstore.leveljs('db');
+    const store = new quadstore.RdfStore(db);
+    const dataFactory = quadstore.dataFactory;
+</script>
+```
+
+The bundle is created with `webpack` (bundler), `babel` (translation to ES5) 
+and `uglifyjs` (minifier).
 
 ## Performance
 
@@ -470,7 +395,6 @@ file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013
 MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
 second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
  
-
 ## LICENSE
 
 See [LICENSE.md](./LICENSE.md).

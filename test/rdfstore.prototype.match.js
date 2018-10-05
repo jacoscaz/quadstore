@@ -1,10 +1,10 @@
 
 'use strict';
 
-const _ = require('lodash');
+const _ = require('../lib/lodash');
 const utils = require('../lib/utils');
 const should = require('should');
-const factory = require('n3').DataFactory;
+const factory = require('@rdfjs/data-model');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];

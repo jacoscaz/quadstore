@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## v5.0.2
+
+- **[breaking]** extracts sparql and http support into separate packages
+
 ## v4.0.1
 
 - **[breaking]** updates leveldown, levelup

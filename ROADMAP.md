@@ -9,4 +9,3 @@
     - Extend the RDF/JS `Source` interface to support filtering in `.match()` and implement such an extension in `Quadstore` and `RdfStore`
     - Extend the SPARQL engine to support passing filtering options to the backing `Source` instance if supported
 - Support for SPARQL UPDATE queries
-- Repackage HTTP layer into separate package, working alongside the RDF/JS community to make something useful

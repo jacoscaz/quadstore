@@ -372,7 +372,7 @@ Removes all quad  matching the provided terms.
 `quadstore` can be used in browsers via bundling tools such as `rollup`, 
 `webpack`, `browserify` and their plugins.
 
-The pre-assembled [`quadstore.umd-bundle.js`](./quadstore.umd-bundle.js) UMD 
+The pre-assembled [`quadstore.umd-bundle.js`](https://github.com/beautifulinteractions/node-quadstore/blob/master/quadstore.umd-bundle.js) UMD 
 bundle can be directly included into client-side projects and comes with 
 `leveljs` (leveldb's backend for browsers) and `@rdfjs/data-model`.
 

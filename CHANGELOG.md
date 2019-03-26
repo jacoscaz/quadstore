@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## v5.1.0
+
+- *[internal]* switches to `readable-stream` module as a substitute for the
+  native `stream` module.
+
 ## v5.0.2
 
 - **[breaking]** extracts sparql and http support into separate packages

@@ -78,7 +78,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v5.0.4** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v5.1.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
 - Supports both Promise(s) and callbacks

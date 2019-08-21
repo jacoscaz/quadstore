@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## v5.2.0
+
+- *[internal]* updates outdated dependencies.
+
 ## v5.1.0
 
 - *[internal]* switches to `readable-stream` module as a substitute for the

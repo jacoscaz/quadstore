@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## v6.0.1
+
+- **[breaking]** drops pre-assembled browser bundle.
+- *[internal]* adds node.js 12 to Travis config.
+
 ## v5.2.0
 
 - *[internal]* updates outdated dependencies.

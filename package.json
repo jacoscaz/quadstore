@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "5.2.0",
+  "version": "6.0.1",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -14,12 +14,10 @@
     "browser"
   ],
   "main": "index.js",
-  "browser": "./index-browser.js",
   "scripts": {
     "precommit": "npm test",
     "prepush": "npm test",
-    "test": "nyc mocha",
-    "browserify": "webpack-cli --config webpack.config.js --mode production"
+    "test": "nyc mocha"
   },
   "files": [
     "index.js",
@@ -31,26 +29,17 @@
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-syntax-object-rest-spread": "^7.2.0",
-    "@babel/plugin-transform-async-to-generator": "^7.5.0",
-    "@babel/polyfill": "^7.4.4",
-    "@babel/preset-env": "^7.5.5",
-    "babel-loader": "^8.0.6",
     "benchmark": "^2.1.4",
     "fs-extra": "^8.1.0",
-    "husky": "^3.0.4",
-    "level-js": "^4.0.1",
+    "husky": "^3.0.5",
     "leveldown": "^5.1.1",
     "memdown": "^5.0.0",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1",
-    "rdflib": "^1.0.3",
+    "rdflib": "^1.0.4",
     "should": "^13.2.3",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "uuid": "^3.3.3",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7"
+    "simple-git": "^1.126.0",
+    "uuid": "^3.3.3"
   },
   "dependencies": {
     "@rdfjs/data-model": "^1.1.2",
@@ -69,7 +58,7 @@
     "lodash.isstring": "^4.0.1",
     "lodash.mapvalues": "^4.6.0",
     "n3": "^1.2.0",
-    "nanoid": "^2.0.3",
+    "nanoid": "^2.1.0",
     "readable-stream": "^3.4.0"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",

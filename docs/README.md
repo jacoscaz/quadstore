@@ -78,7 +78,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v5.2.0** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
 - Supports both Promise(s) and callbacks
@@ -98,15 +98,15 @@ Current version: **v5.2.0** [[See on NPM](https://www.npmjs.com/package/quadstor
 
 ### Storage
 
-`quadstore` uses the [LevelUP](https://github.com/level/levelup) package to 
+`quadstore` uses the [`levelup`](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
 We test `quadstore` using the following backends:
 
-- `leveldown` - The [LevelDOWN](https://github.com/level/leveldown/) package 
-  offers persistent storage backed by LevelDB itself.
-- `memdown` - The [MemDOWN](https://github.com/level/memdown) package offers
-  volatile in-memory storage.
+- [`leveldown`](https://github.com/level/leveldown/) offers persistent storage
+  backed by LevelDB itself
+- [`memdown`](https://github.com/level/memdown) package offers volatile 
+  in-memory storage
 
 ### Graph API
 
@@ -369,24 +369,14 @@ Removes all quad  matching the provided terms.
 
 ### Browser
 
-`quadstore` can be used in browsers via bundling tools such as `rollup`, 
-`webpack`, `browserify` and their plugins.
+`quadstore` can be used in browsers via build systems such as:
 
-The pre-assembled [`quadstore.umd-bundle.js`](./quadstore.umd-bundle.js) UMD 
-bundle can be directly included into client-side projects and comes with 
-`leveljs` (leveldb's backend for browsers) and `@rdfjs/data-model`.
+- [`rollup`](https://rollupjs.org/guide/en/)
+- [`webpack`](https://webpack.js.org)
+- [`browserify`](http://browserify.org)
 
-```
-<script src="./quadstore.umd-bundle.js"></script>
-<script>
-    const db = quadstore.leveljs('db');
-    const store = new quadstore.RdfStore(db);
-    const dataFactory = quadstore.dataFactory;
-</script>
-```
-
-The bundle is created with `webpack` (bundler), `babel` (translation to ES5) 
-and `uglifyjs` (minifier).
+Persistent, in-browser storage is supported using the 
+[`level-js`](https://github.com/Level/level-js) backend for levelDB.
 
 ## Performance
 

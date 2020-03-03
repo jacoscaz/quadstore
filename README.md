@@ -91,7 +91,7 @@ Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstor
 - Uses [Semantic Versioning](https://semver.org). 
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
-  on the `devel` branch and/or issue-specific branches.
+  on the `devel` branch and/or issue-specific branches.f
 - Requires Node.js >= 8.0.0.
 
 ## Usage
@@ -320,7 +320,7 @@ format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 #### SPARQL Queries
 
 SPARQL queries are supported via the additional package 
-[`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore).
+[`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore-sparql).
 
 #### RdfStore.prototype.match()
 

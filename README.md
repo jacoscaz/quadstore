@@ -91,7 +91,7 @@ Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstor
 - Uses [Semantic Versioning](https://semver.org). 
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
-  on the `devel` branch and/or issue-specific branches.f
+  on the `devel` branch and/or issue-specific branches.
 - Requires Node.js >= 8.0.0.
 
 ## Usage

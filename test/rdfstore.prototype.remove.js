@@ -1,10 +1,11 @@
 
 'use strict';
 
-const _ = require('../lib/lodash');
+const _ = require('../lib/utils/lodash');
 const utils = require('../lib/utils');
 const should = require('should');
 const factory = require('n3').DataFactory;
+const AsyncIterator = require('asynciterator');
 
 module.exports = () => {
 
@@ -46,8 +47,8 @@ module.exports = () => {
           factory.namedNode('http://ex.com/g3')
         )
       ];
-      const importStream = utils.createArrayStream(importQuads);
-      const removeStream = utils.createArrayStream(removeQuads);
+      const importStream = new AsyncIterator.ArrayIterator(importQuads);
+      const removeStream = new AsyncIterator.ArrayIterator(removeQuads);
       await utils.waitForEvent(store.import(importStream), 'end', true);
       await utils.waitForEvent(store.remove(removeStream), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());

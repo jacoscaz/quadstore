@@ -5,9 +5,8 @@ const n3 = require('n3');
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
+const util = require('util');
 const utils = require('../lib/utils');
-const Promise = require('bluebird');
-const shortid = require('shortid');
 const RdfStore = require('..').RdfStore;
 const leveldown = require('leveldown');
 const dataFactory = require('n3').DataFactory;
@@ -22,7 +21,7 @@ function du(absPath) {
   });
 }
 
-const remove = Promise.promisify(fs.remove, { context: 'fs' });
+const remove = util.promisify(fs.remove.bind(fs));
 
 (async () => {
 
@@ -32,11 +31,12 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
   const format = args[1] || 'text/turtle';
 
   if (!filePath) {
-    console.log('\n\n  USAGE: node scripts/perf/loadfile.js <filePath>\n\n');
+    console.log('\n\n  USAGE: node loadfile.js <filePath> [mimeType]\n\n');
     return;
   }
 
-  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${shortid.generate()}`);
+  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${utils.nanoid()}`);
+  console.log(absStorePath);
 
   const store = new RdfStore(leveldown(absStorePath), { dataFactory });
 
@@ -45,7 +45,7 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
   const absFilePath = path.resolve(process.cwd(), filePath);
 
   const fileReader = fs.createReadStream(absFilePath);
-  const streamParser = n3.StreamParser({ format });
+  const streamParser = new n3.StreamParser({ format });
 
   const beforeTime = Date.now();
   await store.putStream(fileReader.pipe(streamParser));

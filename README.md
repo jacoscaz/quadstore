@@ -1,4 +1,5 @@
 
+
 # QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg?branch=master)](https://travis-ci.org/beautifulinteractions/node-quadstore)
 
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
@@ -20,15 +21,12 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
-        - [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
-        - [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
-        - [QuadStore.prototype.registerIndex](#quadstoreprototyperegisterindex)
     - [RDF Interface](#rdf-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
@@ -43,26 +41,71 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
 
 ## Introduction
 
-A quad is a triple with an added `graph` term.
+In the context of knowledge representation, a statement can often be 
+represented as a 3-dimensional `(subject, predicate, object)` tuple,
+normally referred to as a `triple`.
+
+```
+subject             predicate           object
+BOB                 KNOWS               ALICE
+BOB                 KNOWS               PAUL
+```
+
+A set of statements / triples can also be thought of as a graph:
+
+```
+                                        ┌────────┐
+              KNOWS (predicate)         │ ALICE  │
+     ┌─────────────────────────────────▶│(object)│
+     │                                  └────────┘
+┌─────────┐                                       
+│   BOB   │                                       
+│(subject)│                                       
+└─────────┘                             ┌────────┐
+     │                                  │  PAUL  │
+     └─────────────────────────────────▶│(object)│
+              KNOWS (predicate)         └────────┘
+```                                                      
+
+A `quad` is a triple with an additional term, usually called `graph` or
+`context`.
 
     (subject, predicate, object, graph)
 
-Such additional term facilitates the representation of metadata, such as 
-provenance, in the form of other quads having the `graph` of the former 
-quads as their subject or object.
+On a semantic level, the `graph` term identifies the graph to which a triple 
+belongs. Each identifier can then be used as the `subject` or `object` of 
+additional triples, facilitating the representation of metadata such as 
+provenance and temporal validity. 
 
-Quadstore heavily borrows from LevelGraph's approach to storing tuples but 
-employs a different indexing strategy that requires the same number of indexes
-to handle the additional dimension and efficiently store and query quads.
+```
+subject             predicate           object          graph
+BOB                 KNOWS               ALICE           GRAPH-1
+BOB                 KNOWS               PAUL            GRAPH-2
+GRAPH-1             SOURCE              FACEBOOK
+GRAPH-2             SOURCE              LINKEDIN
+```
 
-LevelGraph's approach to storing tuples is described in this presentation
-[How to Cook a Graph Database in a Night](http://nodejsconfit.levelgraph.io/)
-by LevelGraph's creator Matteo Collina.
+Quadstore is a LevelDB-backed graph database for Node.js and the browser 
+with native support for quads and the RDF/JS interface specification.
+Additional features, such as SPARQL queries, are made available through 
+separate modules.
 
-Quadstore's indexing strategy has been developed by 
-[Sarra Abbassi](mailto:abbassy.sarra@gmail.com) and 
-[Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper
-[RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
+Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
+maintaining multiple indexes each of which deals with a different permutation
+of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
+that strikes a different compromise between expressiveness and performance, 
+opting to natively supporting quads while working towards minimizing 
+[the performance penalty][i4] that comes with the fourth term. 
+
+Whereas previous versions of Quadstore used to maintain a pre-defined set of 
+indexes based on the paper [RDF-4X][i2], newer versions allow users to
+configure custom set of indexes according to the usage and query patterns 
+specific to each use case.
+
+[i1]: http://nodejsconfit.levelgraph.io
+[i2]: http://dl.acm.org/citation.cfm?id=3012104
+[i3]: https://github.com/levelgraph/levelgraph
+[i4]: https://github.com/levelgraph/levelgraph/issues/43#issuecomment-29519727
 
 ## Status
 
@@ -70,7 +113,14 @@ Active, under development.
 
 ### Roadmap
 
-See [ROADMAP.md](./ROADMAP.md).
+We're looking at the following features:
+
+- Adding support for complex queries, see [searches in LevelGraph][r1]
+- Adding support for quad generation, see [generation in LevelGraph][r2]
+- Refactoring support for SPARQL queries around something lighter than Comunica
+
+[r1]: https://github.com/levelgraph/levelgraph#searches
+[r2]: https://github.com/levelgraph/levelgraph#triple-generation
 
 ### Changelog
 
@@ -78,7 +128,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
 - Supports both Promise(s) and callbacks
@@ -92,7 +142,7 @@ Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstor
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
   on the `devel` branch and/or issue-specific branches.
-- Requires Node.js >= 8.0.0.
+- Requires Node.js >= 10.0.0.
 
 ## Usage
 
@@ -113,19 +163,49 @@ We test `quadstore` using the following backends:
 #### QuadStore class
 
     const QuadStore = require('quadstore').QuadStore;
-    const store = new QuadStore(abstractLevelDOWN, opts);
+    const store = new QuadStore(opts);
 
-Instantiates a new store. The `abstractLevelDOWN` argument **must** be an 
-instance of a leveldb backend. Supported properties for the `opts` argument 
+Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
-    opts.contextKey = 'graph';        // Name of fourth term
+    opts.backend = require('memdown')();    // REQUIRED: level instance 
+    opts.contextKey = 'graph';              // OPTIONAL: name of fourth term
+    opts.indexes = [                        // OPTIONAL: custom indexes
+        ['subject', 'predicate', 'object', 'graph'],
+    ];
+    
+The `opts.backend` option **must** be an instance of a leveldb backend.
 
-The `contextKey` option determines which key the store will use to read and
+The `opts.contextKey` option determines which key the store will use to read and
 write the fourth term of each quad. The default value `graph` requires all 
 quads to be formatted as `{ subject, predicate, object, graph }` objects. 
 Similarly, the value `context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
+
+##### Custom indexes
+
+The `opts.indexes` option allows users to configure which indexes will be used
+by the store. If not set, the store will default to the following indexes:
+
+```
+[
+  ['subject', 'predicate', 'object', contextKey],
+  ['object', contextKey, 'subject', 'predicate'],
+  [contextKey, 'subject', 'predicate', 'object'],
+  ['object', 'subject', 'predicate', contextKey],
+  ['predicate', 'object', contextKey, 'subject'],
+  [contextKey, 'predicate', 'object', 'subject'],
+]; 
+```
+
+This option, if present, **must** be set to an array of terms array, each of 
+which **must** represent one of the 24 possible permutations of the four terms 
+`subject`, `predicate`, `object` and `[context]`. Partial indexes are not 
+supported.
+
+The store will automatically select which index(es) to use for a given query 
+based on the available indexes and the query itself. **If no suitable index is
+found for a given query, the store will throw an error**.
 
 #### QuadStore.prototype.get()
 
@@ -136,22 +216,16 @@ Similarly, the value `context` would require all quads to be formatted as
 
 Returns an array of all quads within the store matching the specified terms.
 
-#### QuadStore.prototype.getByIndex()
+##### Range matching
 
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
+Quadstore supports range-based matching in addition to value-based matching. 
+Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
-    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
-    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
+    const matchTerms = {graph: { gt: 'g' } };
 
-Returns an array of all quads within the store matching the specified 
-conditions as tested against the specified index. Options available are `lt`,
-`lte`, `gt`, `gte`, `limit`, `reverse`.
+    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
+    store.get(matchTerms).then((matchingQuads) => {}); // promise
 
-For standard prefix-matching queries, append the boundary character 
-`store.boundary` to the `lte` value:
-
-    { gte: 's', lte: 's' + store.boundary }
 
 #### QuadStore.prototype.put()
 
@@ -186,6 +260,9 @@ quads matching such terms from the store.
 
     store.del(matchTerms, (delErr) => {}); // callback
     store.del(matchTerms).then(() => {}); // promise
+    
+In the latter case, this method supports [range matching](#range-matching). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.patch()
 
@@ -219,6 +296,9 @@ quads matching such terms from the store.
     store.patch(matchTerms, newQuads, (delputErr) => {}); // callback
     store.patch(matchTerms, newQuads).then(() => {}); // promise
 
+In the latter case, this method supports [range matching](#range-matching). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
+
 #### QuadStore.prototype.getStream()
 
     const matchTerms = {graph: 'c'};
@@ -228,21 +308,8 @@ quads matching such terms from the store.
 *Synchronously* returns a `stream.Readable` of all quads matching the terms in 
 the specified query.
 
-#### QuadStore.prototype.getByIndexStream()
-
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
-
-    const readableStream = store.getStream(name, opts);
-
-*Synchronously* returns a `stream.Readable` of all quads within the store 
-matching the specified conditions as tested against the specified index. 
-Options available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
-
-For standard prefix-matching queries, append the boundary character 
-`store.boundary` to the `lte` value:
-
-    { gte: 's', lte: 's' + store.boundary }
+This method supports [range matching](#range-matching). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.putStream()
 
@@ -257,14 +324,6 @@ Imports all quads coming through the specified `stream.Readable` into the store.
     store.delStream(readableStream).then(() => {});
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
-
-#### QuadStore.prototype.registerIndex()
-
-    store.registerIndex('updatedAt', function (quad) {
-      return quad.subject.split('').reverse().join('');
-    });
-
-Creates a new index that uses the provided function to compute index keys.
 
 ### RDF Interface
 
@@ -281,16 +340,16 @@ Additionally, the `RdfStore` class also supports `SPARQL` queries and provides
 #### RdfStore class
 
     const RdfStore = require('quadstore').RdfStore;
-    const store = new RdfStore(abstractLevelDOWN, opts);
+    const store = new RdfStore(opts);
 
 Instantiates a new store. The `RdfStore` class extends `QuadStore` and requires
-an instance of a leveldb backend as the `abstractLevelDOWN` argument. In 
+an instance of a leveldb backend as the `opts.backend` argument. In 
 addition to all options supported by `QuadStore`, `RdfStore` supports the 
 following:
 
-    opts.dataFactory = require('@rdf-data-model'); // RDFJS dataFactory implementation
+    opts.dataFactory = require('@rdf-data-model');  // REQUIRED: instance of RDF/JS' dataFactory 
 
-The `dataFactory` option, if specified, *must* be an implementation of the
+The `dataFactory` option *must* be an implementation of the
 `dataFactory` interface defined in the RDF/JS specification, such as: 
 
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
@@ -306,21 +365,38 @@ the `get`, `put`, `del`, `patch`, `query`, `getStream`, `putStream` and
 `delStream` methods accept and return (streams of and/or arrays of) `Quad` 
 objects as produced by the `dataFactory.quad` method. 
 
-Matching terms, such as those used in the `query`, `get` and `createReadStream`
-methods, must be `Term` objects as produced by the `dataFactory.namedNode`, 
+Matching terms, such as those used in the `get` and `getStream` methods,
+must be `Term` objects as produced by the `dataFactory.namedNode`, 
 `dataFactory.blankNode` or `dataFactory.literal` methods. 
 
 The same rules apply for the `match`, `import`, `remove` and `removeMatches` 
 methods inherited from the RDF/JS interface.
 
-The conditions used in `getByIndex()`, `getByIndexStream()` and the key 
-generation function used in `registerIndex()` **must** use the serialization 
-format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
-
 #### SPARQL Queries
 
 SPARQL queries are supported via the additional package 
 [`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore).
+
+#### RDF range matching
+
+The RdfStore class inherits support  for [range-based matching](#range-matching), 
+with ranges defined using `Term` instances as produced by `dataFactory.namedNode`, 
+`dataFactory.literal` and `dataFactory.blankNode`.
+
+Furthermore, values for literal terms with the following numeric datatypes are
+expressed and matched according to their numerical values rather than their 
+string representations:
+
+```
+http://www.w3.org/2001/XMLSchema#integer
+http://www.w3.org/2001/XMLSchema#double
+```
+
+This is also the case for terms with the following date/time datatypes:
+
+```
+http://www.w3.org/2001/XMLSchema#dateTime
+```
 
 #### RdfStore.prototype.match()
 
@@ -335,6 +411,9 @@ SPARQL queries are supported via the additional package
       .on('end', () => {});
 
 Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided terms.
+Supports [range-based matching](#rdf-range-matching).
+   
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### RdfStore.prototype.import()
 
@@ -366,6 +445,7 @@ Consumes the stream removing each incoming quad.
       .on('end', () => {});
 
 Removes all quad  matching the provided terms.
+Supports [range-based matching](#rdf-range-matching).
 
 ### Browser
 
@@ -381,9 +461,11 @@ Persistent, in-browser storage is supported using the
 ## Performance
 
 We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
-file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
-MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
-second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
+file into an instance of `RdfStore` on Node v12.14.0 running on a 2018 
+MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~15k quads per 
+second** and **~4k quads per MB**.
+
+    node perf/loadfile.js /Users/jacoscaz/Downloads/1million.rdf 
  
 ## LICENSE
 

@@ -1,10 +1,11 @@
 
 'use strict';
 
-const _ = require('../lib/lodash');
+const _ = require('../lib/utils/lodash');
 const utils = require('../lib/utils');
 const should = require('should');
 const factory = require('n3').DataFactory;
+const AsyncIterator = require('asynciterator');
 
 module.exports = () => {
   describe('RdfStore.prototype.removeMatches()', () => {
@@ -30,7 +31,7 @@ module.exports = () => {
           factory.namedNode('http://ex.com/g1')
         )
       ];
-      const importStream = utils.createArrayStream(importQuads);
+      const importStream = new AsyncIterator.ArrayIterator(importQuads);
       await utils.waitForEvent(store.import(importStream), 'end', true);
       await utils.waitForEvent(store.removeMatches(null, null, null, factory.namedNode('http://ex.com/g1')), 'end', true);
       const matchedQuads = await utils.streamToArray(store.match());

@@ -1,6 +1,20 @@
 
 # CHANGELOG
 
+## v7.0.1
+
+- **[new]** added support for range queries
+- **[new]** added support for multiple matching criterias
+- **[new]** added support for user-defined indexes
+- **[breaking]** refactored streaming API to use AsyncIterator
+- **[breaking]** dropped support for `getApproximateCount()` 
+- **[breaking]** dropped support for previous implementation of custom indexes
+- **[breaking]** refactored constructors to only use a single `opts` argument,
+  passing the leveldb backend instance via the `opts.backend` property
+- *[internal]* dropped a few dependencies by pulling in the relevant code
+- *[internal]* added index-specific test suites
+- *[internal]* refactored folder structure
+
 ## v6.0.1
 
 - **[breaking]** drops pre-assembled browser bundle.

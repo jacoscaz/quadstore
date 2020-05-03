@@ -6,7 +6,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.getApproximateCount()', () => {
+  describe('QuadStore.prototype.getApproximateSize()', () => {
 
     beforeEach(async function () {
       const genQuad = (i) => ({
@@ -23,7 +23,7 @@ module.exports = () => {
     describe('Count by value', () => {
 
       it('should count quads by subject', async function () {
-        const count = await this.store.getApproximateCount({ subject: { lte: 's500' } });
+        const count = await this.store.getApproximateSize({ subject: { lte: 's500' } });
         // TODO: check count
       });
 

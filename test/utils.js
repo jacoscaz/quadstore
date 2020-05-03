@@ -89,3 +89,27 @@ async function postQuads(targetUrl, quads, format) {
 }
 
 module.exports.postQuads = postQuads;
+
+const iteratorToArray = (iterator, cb) => {
+  const arr = [];
+  iterator.on('data', (item) => {
+    arr.push(item);
+  });
+  iterator.on('end', () => {
+    cb(null, arr);
+  });
+};
+
+module.exports.iteratorToArray = iteratorToArray;
+
+const delayIterator = (iterator, avgDelay = 5) => {
+  const delayed = iterator.transform(function (item, done) {
+    setTimeout(() => {
+      this._push(item);
+      done();
+    }, Math.round(Math.random() * avgDelay));
+  });
+  return delayed;
+};
+
+module.exports.delayIterator = delayIterator;

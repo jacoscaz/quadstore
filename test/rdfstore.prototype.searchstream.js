@@ -64,7 +64,6 @@ module.exports = () => {
       const filters = [];
       const iterator = this.store.searchStream(patterns, filters);
       const bindings = await utils.streamToArray(iterator);
-      console.log('BINDINGS', bindings);
     });
 
 

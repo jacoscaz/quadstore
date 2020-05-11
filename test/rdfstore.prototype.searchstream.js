@@ -48,7 +48,7 @@ module.exports = () => {
     });
 
 
-    it('should match quads by subject', async function () {
+    it.only('should match quads by subject', async function () {
       const patterns = [
         {
           subject: factory.variable('s'),
@@ -61,9 +61,12 @@ module.exports = () => {
           object: factory.variable('o'),
         },
       ];
-      const filters = [];
+      const filters = [
+        {type: 'lt', args: [factory.variable('o'), factory.variable('s')]}
+      ];
       const iterator = this.store.searchStream(patterns, filters);
       const bindings = await utils.streamToArray(iterator);
+      console.log('hello');
     });
 
 

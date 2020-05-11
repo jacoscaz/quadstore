@@ -48,25 +48,34 @@ module.exports = () => {
         await this.store.put(quads);
       });
 
+      it('should select with a single pattern', async function () {
+        const results = await this.store.sparql(`
+        SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
+      `);
+        should(results).have.length(2);
+      });
+
+      it('should select with multiple patterns', async function () {
+        const results = await this.store.sparql(`
+        SELECT ?s ?o {
+          ?s <http://ex.com/p> <http://ex.com/o>.
+          ?s <http://ex.com/p2> ?o.
+        }
+      `);
+        should(results).have.length(2);
+      });
+
+      it('should select with simple filter', async function () {
+        const results = await this.store.sparql(`
+        SELECT ?s {
+          ?s <http://ex.com/p> <http://ex.com/o> .
+          FILTER (?s < <http://ex.com/s2>)
+        }
+      `);
+        should(results).have.length(1);
+      });
+
     });
-    // it('should do stuff', async function () {
-    //   const iterator = this.store.sparqlStream(`
-    //     SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
-    //   `);
-    //   const results = await utils.streamToArray(iterator);
-    //   console.log(results);
-    // });
-    //
-    // it('should do stuff 2', async function () {
-    //   const iterator = this.store.sparqlStream(`
-    //     SELECT ?s ?o {
-    //       ?s <http://ex.com/p> <http://ex.com/o>.
-    //       ?s <http://ex.com/p2> ?o.
-    //     }
-    //   `);
-    //   const results = await utils.streamToArray(iterator);
-    //   console.log(results);
-    // });
 
     describe('INSERT DATA', () => {
 
@@ -117,6 +126,22 @@ module.exports = () => {
         `);
         const quads = await this.store.get({});
         should(quads).have.length(2);
+      });
+
+      it('should insert a new quad', async function () {
+        await this.store.sparql(`
+          INSERT DATA { 
+            GRAPH <ex://g3> { <ex://s3> <ex://p3> <ex://o3>. } . 
+            GRAPH <ex://g4> { <ex://s4> <ex://p4> <ex://o4>. } .
+          } 
+        `);
+        should(await this.store.get({})).have.length(2);
+        await this.store.sparql(`
+          INSERT { GRAPH <ex://g5> { ?s <ex://p5> <ex://o5> } }
+          WHERE  { GRAPH ?g { ?s <ex://p3> <ex://o3> } }
+        `);
+        const quads = await this.store.get({});
+        should(quads).have.length(3);
       });
 
     });

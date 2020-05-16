@@ -31,7 +31,7 @@ module.exports = () => {
       await store.put(quadsArray);
       await store.del({ subject: 's2' });
       const quads = await store.get({});
-      quads.sort(store._createQuadComparator());
+      quads.sort(store._getQuadComparator());
       should(quads).have.length(2);
       should(quads).be.deepEqual(quadsArray.slice(0, 2));
     });

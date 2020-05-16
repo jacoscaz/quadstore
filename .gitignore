@@ -69,3 +69,4 @@ typings/
 # NPM lockfile
 package-lock.json
 
+.rdf-test-suite-cache/

@@ -4,6 +4,7 @@
 const _ = require('../lib/utils/lodash');
 const should = require('should');
 const utils = require('../lib/utils');
+const enums = require('../lib/utils/enums');
 
 module.exports = () => {
 
@@ -27,8 +28,9 @@ module.exports = () => {
           { subject: '?s', predicate: 'p2', object: '?o'},
         ];
         const filters = [];
-        const iterator = this.store.searchStream(patterns, filters);
-        const bindings = await utils.streamToArray(iterator);
+        const results = await this.store.searchStream(patterns, filters);
+        should(results.type).equal(enums.resultType.BINDINGS);
+        const bindings = await utils.streamToArray(results.iterator);
       });
 
     });

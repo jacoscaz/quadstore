@@ -31,10 +31,10 @@ module.exports = () => {
       await store.put(quadsArray);
       await store.patch(oldQuads, newQuads);
       const quads = await store.get({});
-      newQuads.sort(store._createQuadComparator());
-      quads.sort(store._createQuadComparator());
+      newQuads.sort(store._getQuadComparator());
+      quads.sort(store._getQuadComparator());
       should(quads).have.length(expected.length);
-      should(quads).be.deepEqual(expected.sort(store._createQuadComparator()));
+      should(quads).be.deepEqual(expected.sort(store._getQuadComparator()));
     });
 
     it('should delete matching quads and do an insert (cb)', async function () {
@@ -47,8 +47,8 @@ module.exports = () => {
       await store.put(quadsArray);
       await store.patch({ subject: 's2' }, newQuads);
       const quads = await store.get({});
-      newQuads.sort(store._createQuadComparator());
-      quads.sort(store._createQuadComparator());
+      newQuads.sort(store._getQuadComparator());
+      quads.sort(store._getQuadComparator());
       should(quads).have.length(4);
       should(quads).be.deepEqual(quadsSamples.slice(0, 2).concat(newQuads));
     });

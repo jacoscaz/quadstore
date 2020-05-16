@@ -52,7 +52,7 @@ module.exports = () => {
         const results = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
       `);
-        should(results).have.length(2);
+        should(results.items).have.length(2);
       });
 
       it('should select with multiple patterns', async function () {
@@ -62,7 +62,7 @@ module.exports = () => {
           ?s <http://ex.com/p2> ?o.
         }
       `);
-        should(results).have.length(2);
+        should(results.items).have.length(2);
       });
 
       it('should select with simple filter', async function () {
@@ -72,7 +72,7 @@ module.exports = () => {
           FILTER (?s < <http://ex.com/s2>)
         }
       `);
-        should(results).have.length(1);
+        should(results.items).have.length(1);
       });
 
     });

@@ -3,6 +3,7 @@
 
 const _ = require('../lib/utils/lodash');
 const should = require('should');
+const enums = require('../lib/utils/enums');
 const utils = require('../lib/utils');
 const factory = require('@rdfjs/data-model');
 
@@ -64,8 +65,9 @@ module.exports = () => {
       const filters = [
         {type: 'lt', args: [factory.variable('o'), factory.variable('s')]}
       ];
-      const iterator = this.store.searchStream(patterns, filters);
-      const bindings = await utils.streamToArray(iterator);
+      const results = await this.store.searchStream(patterns, filters);
+      should(results.type).equal(enums.resultType.BINDINGS);
+      const bindings = await utils.streamToArray(results.iterator);
       console.log(bindings);
     });
 

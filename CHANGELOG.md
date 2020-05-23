@@ -3,12 +3,16 @@
 
 ## v7.0.1
 
-- **[new]** added support for range queries
-- **[new]** added support for multiple matching criterias
-- **[new]** added support for user-defined indexes
-- **[breaking]** refactored streaming API to use AsyncIterator
+- *[new]* added support for range queries
+- *[new]* added support for multiple matching criterias
+- *[new]* added support for user-defined indexes
+- *[new]* added support for complex searches
+- *[new]* added support for basic SPARQL queries
+- **[breaking]** refactored all streaming APIs to use `AsyncIterator` and
+  asynchronous entrypoints with the exception of `RDF/JS` methods
 - **[breaking]** dropped support for `getApproximateCount()` 
 - **[breaking]** dropped support for previous implementation of custom indexes
+- **[breaking]** dropped support for callbacks
 - **[breaking]** refactored constructors to only use a single `opts` argument,
   passing the leveldb backend instance via the `opts.backend` property
 - *[internal]* dropped a few dependencies by pulling in the relevant code

@@ -21,16 +21,19 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
+        - [QuadStore.prototype.search](#quadstoreprototypesearch)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
+        - [QuadStore.prototype.searchStream](#quadstoreprototypesearchstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
     - [RDF Interface](#rdf-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
-        - [SPARQL queries](#sparqlqueries)
+        - [RdfStore.prototype.sparql](#rdfstoreprototypesparql)
+        - [RdfStore.prototype.sparqlStream](#rdfstoreprototypesparqlstream)
         - [RdfStore.prototype.match](#rdfstoreprototypematch)
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
@@ -113,14 +116,20 @@ Active, under development.
 
 ### Roadmap
 
-We're looking at the following features:
+We're currently working on the following features:
 
-- Adding support for complex queries, see [searches in LevelGraph][r1]
-- Adding support for quad generation, see [generation in LevelGraph][r2]
+- Adding support for complex searches, see [searches in LevelGraph][r1]
 - Refactoring support for SPARQL queries around something lighter than Comunica
+
+We're also evaluating the following features for future developments:
+
+- Adding support for quad generation, see [generation in LevelGraph][r2]
+- Adding support for [RDF*][rdfstar-blog] (see also [these slides][rdfstar-slides])
 
 [r1]: https://github.com/levelgraph/levelgraph#searches
 [r2]: https://github.com/levelgraph/levelgraph#triple-generation
+[rdfstar-blog]: https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
+[rdfstar-slides]: http://olafhartig.de/slides/W3CWorkshop2019RDFStarAndSPARQLStar.pdf
 
 ### Changelog
 
@@ -131,7 +140,6 @@ See [CHANGELOG.md](./CHANGELOG.md).
 Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
-- Supports both Promise(s) and callbacks
 - Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces
 - SPARQL queries are supported via the additional [`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore-sparql) package
 - HTTP endpoints are supported via the additional [`quadstore-http`](https://github.com/beautifulinteractions/node-quadstore-http) package.
@@ -210,9 +218,7 @@ found for a given query, the store will throw an error**.
 #### QuadStore.prototype.get()
 
     const matchTerms = {graph: 'g'};
-
-    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
-    store.get(matchTerms).then((matchingQuads) => {}); // promise
+    const quads = await store.get(matchTerms);
 
 Returns an array of all quads within the store matching the specified terms.
 
@@ -222,19 +228,27 @@ Quadstore supports range-based matching in addition to value-based matching.
 Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
     const matchTerms = {graph: { gt: 'g' } };
+    const quads = await store.get(matchTerms);
 
-    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
-    store.get(matchTerms).then((matchingQuads) => {}); // promise
+#### QuadStore.prototype.search()
 
+    const patterns = [
+        {subject: '?s', predicate: 'p1', object: '?o'},
+        {subject: '?s', predicate: 'p2', object: 'o2'},
+    ];
+    const filters = [
+        { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
+    ];
+    const quads = await store.search(patterns, filters);
+
+Returns an array of all quads within the store matching the specified terms.
 
 #### QuadStore.prototype.put()
 
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
-
-    store.put(quads, (putErr) => {}); // callback
-    store.put(quads).then(() => {}); // promise
+    await store.put(quads);
 
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
@@ -249,17 +263,13 @@ such quads from the store.
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
-
-    store.del(quads, (delErr) => {}); // callback
-    store.del(quads).then(() => {}); // promise
+    await store.del(quads)
 
 If the first argument is a set of matching terms, this method will delete all 
 quads matching such terms from the store.
 
     const matchTerms = {graph: 'g'};
-
-    store.del(matchTerms, (delErr) => {}); // callback
-    store.del(matchTerms).then(() => {}); // promise
+    await store.del(matchTerms);
     
 In the latter case, this method supports [range matching](#range-matching). 
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
@@ -276,25 +286,19 @@ be an array of quads to be deleted.
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
     ];
-
     const newQuads = [
         {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
-
-    store.patch(oldQuads, newQUads, (delputErr) => {}); // callback
-    store.patch(oldQuads, newQUads).then(() => {}); // promise
+    await store.patch(oldQuads, newQUads);
 
 If the first argument is a set of matching terms, this method will delete all 
 quads matching such terms from the store.
 
     const matchTerms = {subject: 'so', graph: 'go'}
-
     const newQuads = [
         {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
-
-    store.patch(matchTerms, newQuads, (delputErr) => {}); // callback
-    store.patch(matchTerms, newQuads).then(() => {}); // promise
+    await store.patch(matchTerms);
 
 In the latter case, this method supports [range matching](#range-matching). 
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
@@ -302,26 +306,39 @@ See [QuadStore.prototype.get()](#quadstoreprototypeget).
 #### QuadStore.prototype.getStream()
 
     const matchTerms = {graph: 'c'};
+    const readableStream = await store.getStream(matchTerms);
 
-    const readableStream = store.getStream(matchTerms);
-
-*Synchronously* returns a `stream.Readable` of all quads matching the terms in 
+Returns a `stream.Readable` of all quads matching the terms in 
 the specified query.
 
 This method supports [range matching](#range-matching). 
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
+#### QuadStore.prototype.searchStream()
+
+    const patterns = [
+        {subject: '?s', predicate: 'p1', object: '?o'},
+        {subject: '?s', predicate: 'p2', object: 'o2'},
+    ];
+    const filters = [
+        { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
+    ];
+    const readableStream = await store.search(patterns, filters);
+
+Returns a `stream.Readable` of all quads matching the terms in 
+the specified query.
+ 
+See [QuadStore.prototype.search()](#quadstoreprototypesearch).
+
 #### QuadStore.prototype.putStream()
 
-    store.putStream(readableStream, (err) => {});
-    store.putStream(readableStream).then(() => {});
+    await store.putStream(readableStream);
 
 Imports all quads coming through the specified `stream.Readable` into the store.
 
 #### QuadStore.prototype.delStream()
 
-    store.delStream(readableStream, (err) => {});
-    store.delStream(readableStream).then(() => {});
+    await store.delStream(readableStream);
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
@@ -402,7 +419,6 @@ http://www.w3.org/2001/XMLSchema#dateTime
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
-
     store.match(subject, null, null, graph)
       .on('error', (err) => {})
       .on('data', (quad) => {
@@ -418,7 +434,6 @@ See [QuadStore.prototype.get()](#quadstoreprototypeget).
 #### RdfStore.prototype.import()
 
     const readableStream; // A stream.Readable of Quad() instances
-
     store.import(readableStream)
       .on('error', (err) => {})
       .on('end', () => {});
@@ -428,7 +443,6 @@ Consumes the stream storing each incoming quad.
 #### RdfStore.prototype.remove()
 
     const readableStream; // A stream.Readable of Quad() instances
-
     store.remove(readableStream)
       .on('error', (err) => {})
       .on('end', () => {});
@@ -439,7 +453,6 @@ Consumes the stream removing each incoming quad.
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
-
     store.removeMatches(subject, null, null, graph)
       .on('error', (err) => {})
       .on('end', () => {});

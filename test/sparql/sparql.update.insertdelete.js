@@ -13,14 +13,15 @@ module.exports = () => {
               GRAPH <ex://g4> { <ex://s4> <ex://p4> <ex://o4>. } .
             } 
           `);
-      should(await this.store.get({})).have.length(2);
+      const first = await this.store.get({});
+      should(first.quads).have.length(2);
       await this.store.sparql(`
             DELETE { GRAPH ?g { ?s <ex://p3> <ex://o3> } }
             INSERT { GRAPH <ex://g5> { ?s <ex://p5> <ex://o5> } }
             WHERE  { GRAPH ?g { ?s <ex://p3> <ex://o3> } }
           `);
-      const quads = await this.store.get({});
-      should(quads).have.length(2);
+      const second = await this.store.get({});
+      should(second.quads).have.length(2);
     });
 
     it('should insert a new quad', async function () {
@@ -30,13 +31,14 @@ module.exports = () => {
               GRAPH <ex://g4> { <ex://s4> <ex://p4> <ex://o4>. } .
             } 
           `);
-      should(await this.store.get({})).have.length(2);
+      const first = await this.store.get({});
+      should(first.quads).have.length(2);
       await this.store.sparql(`
             INSERT { GRAPH <ex://g5> { ?s <ex://p5> <ex://o5> } }
             WHERE  { GRAPH ?g { ?s <ex://p3> <ex://o3> } }
           `);
-      const quads = await this.store.get({});
-      should(quads).have.length(3);
+      const second = await this.store.get({});
+      should(second.quads).have.length(3);
     });
 
   });

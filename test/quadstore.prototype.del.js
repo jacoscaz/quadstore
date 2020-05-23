@@ -12,10 +12,10 @@ module.exports = () => {
       const store = this.store;
       const quad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       await store.put(quad);
-      const quadsBefore = await store.get({});
+      const { quads: quadsBefore } = await store.get({});
       should(quadsBefore).have.length(1);
       await store.del(quadsBefore[0]);
-      const quadsAfter = await store.get({});
+      const { quads: quadsAfter } = await store.get({});
       should(quadsAfter).have.length(0);
     });
 
@@ -30,7 +30,7 @@ module.exports = () => {
       ];
       await store.put(quadsArray);
       await store.del({ subject: 's2' });
-      const quads = await store.get({});
+      const { quads } = await store.get({});
       quads.sort(store._getQuadComparator());
       should(quads).have.length(2);
       should(quads).be.deepEqual(quadsArray.slice(0, 2));

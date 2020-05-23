@@ -1,5 +1,5 @@
 const AsyncIterator = require('asynciterator');
-const NestedLoopJoinIterator = require('../lib/search/generic-iterators/nested-loop-join-iterator');
+const NestedLoopJoinIterator = require('../lib/search/iterators/nested-loop-join-iterator');
 const should = require('should');
 const utils = require('./utils');
 const { streamToArray } = require('../lib/utils');
@@ -9,7 +9,7 @@ module.exports = () => {
   describe('NestedLoopJoinIterator', () => {
 
     it('should do stuff', async function () {
-      const getNestedIterator = (base) => {
+      const getNestedIterator = async (base) => {
         return utils.delayIterator(new AsyncIterator.IntegerIterator({ start: 0, end: 2, step: 1 }));
       };
       const mergeItems = (outer, inner) => {

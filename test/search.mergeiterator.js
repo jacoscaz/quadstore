@@ -1,5 +1,5 @@
 const AsyncIterator = require('asynciterator');
-const MergeIterator = require('../lib/search/generic-iterators/merge-iterator');
+const MergeIterator = require('../lib/search/iterators/merge-iterator');
 const should = require('should');
 const utils = require('./utils');
 

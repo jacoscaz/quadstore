@@ -2,6 +2,7 @@
 const _ = require('../../lib/utils/lodash');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
+const enums = require('../../lib/utils/enums');
 
 module.exports = () => {
   describe('SELECT', () => {
@@ -46,7 +47,8 @@ module.exports = () => {
       const results = await this.store.sparql(`
       SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
     `);
-      should(results.items).have.length(2);
+      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.bindings).have.length(2);
     });
 
     it('should select with multiple patterns', async function () {
@@ -56,7 +58,8 @@ module.exports = () => {
         ?s <http://ex.com/p2> ?o.
       }
     `);
-      should(results.items).have.length(2);
+      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.bindings).have.length(2);
     });
 
     it('should select with simple filter', async function () {
@@ -66,7 +69,8 @@ module.exports = () => {
         FILTER (?s < <http://ex.com/s2>)
       }
     `);
-      should(results.items).have.length(1);
+      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.bindings).have.length(1);
     });
 
   });

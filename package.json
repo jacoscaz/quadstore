@@ -16,7 +16,9 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/"
+    "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/",
+    "ts:build": "tsc --project .",
+    "ts:watch": "tsc --watch --project ."
   },
   "files": [
     "index.js",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@rdfjs/data-model": "^1.1.2",
+    "@types/asynciterator": "^1.1.4",
     "benchmark": "^2.1.4",
     "fs-extra": "^8.1.0",
     "husky": "^3.1.0",
@@ -40,6 +43,7 @@
     "rdf-test-suite": "^1.13.1",
     "rdflib": "^1.0.7-2",
     "should": "^13.2.3",
+    "typescript": "^3.9.3",
     "uuid": "^3.3.3"
   },
   "dependencies": {

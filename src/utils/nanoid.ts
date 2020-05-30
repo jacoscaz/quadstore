@@ -8,7 +8,7 @@
 
 var url = 'sOwnPropMN49CEiq-hXvHJdSymlFURTag61GQfuD8YIWz2Zk5xKB7LV30_Abject';
 
-const nanoid = (size = 21) => {
+const nanoid = (size: number = 21): string => {
   let id = '';
   while (size--) {
     id += url[Math.random() * 64 | 0];

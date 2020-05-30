@@ -1,21 +1,45 @@
 
 'use strict';
 
+import {
+  IQuadstoreOpts, IQuadstoreQuadStream,
+  TEmptyOpts,
+  TQuadstoreIndex, TQuadstoreInternalIndex, TQuadstoreMatchTerms,
+  TQuadstoreQuad, TQuadstoreSearchFilter, TQuadstoreSearchPattern,
+  TQuadstoreTermName, TQuadstoreTermRange,
+  TQuadstoreTerms
+} from './types';
+import assert from 'assert';
+import events from 'events';
+import encode from 'encoding-down';
+import levelup from 'levelup';
+import ai from 'asynciterator';
+import {AbstractLevelDOWN} from 'abstract-leveldown';
+import LevelUp from 'levelup';
+
+
 const _ = require('./utils/lodash');
 const enums = require('./utils/enums');
 const utils = require('./utils');
-const assert = require('assert');
-const events = require('events');
-const encode = require('encoding-down');
-const levelup = require('levelup');
 const get = require('./get');
 const search = require('./search');
-const AsyncIterator = require('asynciterator');
+
 
 /**
  *
  */
 class QuadStore extends events.EventEmitter {
+
+  private _db: AbstractLevelDOWN;
+  private _abstractLevelDOWN: AbstractLevelDOWN;
+
+  private _contextKey: string;
+  private _defaultContextValue: string;
+  private _indexes: TQuadstoreInternalIndex[];
+  private _id: string;
+
+  public separator!: string;
+  public boundary!: string;
 
   /*
    * ==========================================================================
@@ -23,25 +47,24 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  constructor(opts) {
+  constructor(opts: IQuadstoreOpts) {
     super();
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(
       utils.isAbstractLevelDOWNInstance(opts.backend),
       'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN',
     );
-    const store = this;
-    store._abstractLevelDOWN = opts.backend;
-    store._db = levelup(encode(store._abstractLevelDOWN, {valueEncoding: 'json'}));
-    store._contextKey = opts.contextKey || 'graph';
-    store._defaultContextValue = opts.defaultContextValue || '_DEFAULT_CONTEXT_';
-    store._indexes = [];
-    store._id = utils.nanoid();
-    utils.defineReadOnlyProperty(store, 'boundary', opts.boundary || '\uDBFF\uDFFF');
-    utils.defineReadOnlyProperty(store, 'separator', opts.separator || '\u0000\u0000');
+    this._abstractLevelDOWN = opts.backend;
+    this._db = levelup(encode(this._abstractLevelDOWN, {valueEncoding: 'json'}));
+    this._contextKey = opts.contextKey || 'graph';
+    this._defaultContextValue = opts.defaultContextValue || '_DEFAULT_CONTEXT_';
+    this._indexes = [];
+    this._id = utils.nanoid();
+    utils.defineReadOnlyProperty(this, 'boundary', opts.boundary || '\uDBFF\uDFFF');
+    utils.defineReadOnlyProperty(this, 'separator', opts.separator || '\u0000\u0000');
     (opts.indexes || utils.genDefaultIndexes(this._contextKey))
-      .forEach((index) => this._addIndex(index));
-    setImmediate(() => { store._initialize(); });
+      .forEach((index: TQuadstoreIndex) => this._addIndex(index));
+    setImmediate(() => { this._initialize(); });
   }
 
   _initialize() {
@@ -49,6 +72,7 @@ class QuadStore extends events.EventEmitter {
   }
 
   close() {
+    // @ts-ignore
     return this._db.close();
   }
 
@@ -72,7 +96,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  _addIndex(terms) {
+  _addIndex(terms: TQuadstoreIndex) {
     assert(utils.hasAllTerms(terms, this._contextKey), 'Invalid index (bad terms).');
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this._indexes.push({
@@ -93,20 +117,22 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async put(quads, opts) {
+  async put(quads: TQuadstoreQuad|TQuadstoreQuad[], opts?: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(quads), 'The "quads" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await this._delput(null, quads, opts);
+    // @ts-ignore
+    return await this._delput([], quads, opts);
   }
 
-  async del(matchTermsOrOldQuads, opts) {
+  async del(matchTermsOrOldQuads: TQuadstoreTerms|TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTermsOrOldQuads), 'The "matchTermsOrOldQuads" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     return (Array.isArray(matchTermsOrOldQuads) || this._isQuad(matchTermsOrOldQuads))
-      ? await this._delput(matchTermsOrOldQuads, null, opts)
-      : await this._getdelput(matchTermsOrOldQuads, null, opts);
+      // @ts-ignore
+      ? await this._delput(matchTermsOrOldQuads, [], opts)
+      : await this._getdelput(matchTermsOrOldQuads, [], opts);
   }
 
   /**
@@ -114,7 +140,7 @@ class QuadStore extends events.EventEmitter {
    * @param matchTerms
    * @param cb
    */
-  async get(matchTerms, opts) {
+  async get(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     if (_.isNil(matchTerms)) matchTerms = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
@@ -124,7 +150,7 @@ class QuadStore extends events.EventEmitter {
     return { quads, sorting: results.sorting };
   }
 
-  async search(patterns, filters, opts) {
+  async search(patterns: TQuadstoreSearchPattern[], filters: TQuadstoreSearchFilter[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isArray(patterns), 'The "patterns" argument is not an array.');
     assert(_.isArray(filters), 'The "filters" argument is not an array.');
@@ -140,11 +166,12 @@ class QuadStore extends events.EventEmitter {
     }
   }
 
-  async patch(matchTermsOrOldQuads, newQuads, opts) {
+  async patch(matchTermsOrOldQuads: TQuadstoreTerms|TQuadstoreQuad|TQuadstoreQuad[], newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTermsOrOldQuads), 'Invalid type of "matchTermsOrOldQuads" argument.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     return (Array.isArray(matchTermsOrOldQuads) || this._isQuad(matchTermsOrOldQuads))
+      // @ts-ignore
       ? await this._delput(matchTermsOrOldQuads, newQuads, opts)
       : await this._getdelput(matchTermsOrOldQuads, newQuads, opts);
   }
@@ -155,7 +182,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async getApproximateSize(matchTerms, opts) {
+  async getApproximateSize(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not a function..');
@@ -169,7 +196,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async getStream(matchTerms, opts) {
+  async getStream(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
@@ -177,7 +204,7 @@ class QuadStore extends events.EventEmitter {
     return await get.getStream(this, matchTerms, opts);
   }
 
-  async searchStream(patterns, filters, opts) {
+  async searchStream(patterns: TQuadstoreSearchPattern[], filters: TQuadstoreSearchFilter[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isArray(patterns), 'The "patterns" argument is not an array.');
     assert(_.isArray(filters), 'The "filters" argument is not an array.');
@@ -185,33 +212,39 @@ class QuadStore extends events.EventEmitter {
     return await search.searchStream(this, patterns, filters, opts);
   }
 
-  async putStream(source, opts, cb) {
+  async putStream(source: IQuadstoreQuadStream, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const iterator = AsyncIterator.wrap(source).transform((quad, cb) => {
-      this._delput(null, [quad], opts)
-        .then(cb.bind(null, null))
-        .catch(cb);
-    });
+    const transformOpts = {
+      transform: (quad: TQuadstoreQuad, cb: () => void) => {
+        this._delput([], [quad], opts)
+          .then(cb.bind(null, null))
+          .catch(cb);
+      },
+    };
+    const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
 
-  async delStream(source, opts) {
+  async delStream(source: IQuadstoreQuadStream, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const iterator = AsyncIterator.wrap(source).transform((quad, cb) => {
-      this._delput([quad], null, opts)
-        .then(cb.bind(null, null))
-        .catch(cb);
-    });
+    const transformOpts = {
+      transform: (quad: TQuadstoreQuad, cb: () => void) => {
+        this._delput([quad], [], opts)
+          .then(cb.bind(null, null))
+          .catch(cb);
+      },
+    };
+    const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
 
 
 
-  _isQuad(obj) {
+  _isQuad(obj: any): boolean {
     return _.isString(obj.subject)
       && _.isString(obj.predicate)
       && _.isString(obj.object)
@@ -224,26 +257,30 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async _delput(oldQuads, newQuads, opts) {
+  async _delput(oldQuads: TQuadstoreQuad|TQuadstoreQuad[], newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
     if (oldQuads !== null) {
       if (Array.isArray(oldQuads)) {
+        // @ts-ignore
         await this._db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
       } else {
+        // @ts-ignore
         await this._db.batch(this._quadToBatch(oldQuads, 'del'));
       }
     }
     if (newQuads !== null) {
       if (Array.isArray(newQuads)) {
+        // @ts-ignore
         await this._db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
       } else {
+        // @ts-ignore
         await this._db.batch(this._quadToBatch(newQuads, 'put'));
       }
     }
   }
 
-  async _getdelput(matchTerms, newQuads, opts) {
+  async _getdelput(matchTerms: TQuadstoreTerms, newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
     const oldQuads = (await this.get(matchTerms, opts)).quads;
-    await this._delput(oldQuads, newQuads);
+    await this._delput(oldQuads, newQuads, {});
   }
 
   /**
@@ -253,10 +290,12 @@ class QuadStore extends events.EventEmitter {
    * @param type
    * @returns {}
    */
-  _quadToBatch(quad, type) {
+  _quadToBatch(quad: TQuadstoreQuad, type: 'del'|'put') {
     const indexes = this._indexes;
     const contextKey = this._contextKey;
+    // @ts-ignore
     if (!quad[contextKey]) {
+      // @ts-ignore
       quad = {
         subject: quad.subject,
         predicate: quad.predicate,
@@ -271,22 +310,23 @@ class QuadStore extends events.EventEmitter {
     }));
   }
 
-  _getTermNames() {
+  _getTermNames(): TQuadstoreTermName[] {
+    // @ts-ignore
     return ['subject', 'predicate', 'object', this._contextKey];
   }
 
   _getTermValueComparator() {
-    return (a, b) => {
+    return (a: string, b: string) => {
       if (a < b) return -1;
       else if (a === b) return 0;
       else return 1;
     }
   }
 
-  _getQuadComparator(termNames) {
+  _getQuadComparator(termNames: TQuadstoreTermName[]) {
     if (!termNames) termNames = this._getTermNames();
     const valueComparator = this._getTermValueComparator();
-    return (a, b) => {
+    return (a: TQuadstoreQuad, b: TQuadstoreQuad) => {
       for (let i = 0, n = termNames.length, r; i <= n; i += 1) {
         r = valueComparator(a[termNames[i]], b[termNames[i]]);
         if (r !== 0) return r;
@@ -295,10 +335,11 @@ class QuadStore extends events.EventEmitter {
     };
   }
 
-  _mergeTermRanges(a, b) {
+  _mergeTermRanges(a: TQuadstoreTermRange, b: TQuadstoreTermRange): TQuadstoreTermRange {
     const c = {...b};
     if (!_.isNil(a.lt)) {
       if (!_.isNil(c.lt)) {
+        // @ts-ignore
         if (a.lt < c.lt) {
           c.lt = a.lt;
         }
@@ -308,6 +349,7 @@ class QuadStore extends events.EventEmitter {
     }
     if (!_.isNil(a.lte)) {
       if (!_.isNil(c.lte)) {
+        // @ts-ignore
         if (a.lte < c.lte) {
           c.lte = a.lte;
         }
@@ -317,6 +359,7 @@ class QuadStore extends events.EventEmitter {
     }
     if (!_.isNil(a.gt)) {
       if (!_.isNil(c.gt)) {
+        // @ts-ignore
         if (a.gt > c.gt) {
           c.gt = a.gt;
         }
@@ -326,6 +369,7 @@ class QuadStore extends events.EventEmitter {
     }
     if (!_.isNil(a.gte)) {
       if (!_.isNil(c.gte)) {
+        // @ts-ignore
         if (a.gte > c.gte) {
           c.gte = a.gte;
         }
@@ -333,9 +377,10 @@ class QuadStore extends events.EventEmitter {
         c.gte = a.gte;
       }
     }
+    return c;
   }
 
-  _mergeMatchTerms(a, b, termNames) {
+  _mergeMatchTerms(a: TQuadstoreMatchTerms, b: TQuadstoreMatchTerms, termNames: TQuadstoreTermName[]): TQuadstoreMatchTerms {
     if (!termNames) {
       termNames = this._getTermNames();
     }
@@ -348,6 +393,7 @@ class QuadStore extends events.EventEmitter {
       } else {
         if (!_.isNil(a[termName])) {
           if (_.isObject(a[termName]) && _.isObject(c[termName])) {
+            // @ts-ignore
             c[termName] = this._mergeTermRanges(a[termName], c[termName]);
           } else {
             throw new Error(`Cannot merge match terms`);
@@ -360,4 +406,4 @@ class QuadStore extends events.EventEmitter {
 
 }
 
-module.exports = QuadStore;
+export default QuadStore;

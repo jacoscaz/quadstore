@@ -31,7 +31,11 @@
   },
   "devDependencies": {
     "@rdfjs/data-model": "^1.1.2",
+    "@types/abstract-leveldown": "^5.0.1",
     "@types/asynciterator": "^1.1.4",
+    "@types/encoding-down": "^5.0.0",
+    "@types/levelup": "^4.3.0",
+    "abstract-leveldown": "^6.3.0",
     "benchmark": "^2.1.4",
     "fs-extra": "^8.1.0",
     "husky": "^3.1.0",

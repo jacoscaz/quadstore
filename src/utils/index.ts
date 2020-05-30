@@ -142,15 +142,15 @@ function hasAllTerms(coll, contextKey) {
 
 module.exports.hasAllTerms = hasAllTerms;
 
-function genDefaultIndexes(contextKey) {
+function genDefaultIndexes() {
   return [
-    ['subject', 'predicate', 'object', contextKey],
-    ['object', contextKey, 'subject', 'predicate'],
-    [contextKey, 'subject', 'predicate', 'object'],
-    ['object', 'subject', 'predicate', contextKey],
-    ['predicate', 'object', contextKey, 'subject'],
-    [contextKey, 'predicate', 'object', 'subject'],
-    // ['predicate', 'object', 'subject', contextKey], // TODO remove
+    ['subject', 'predicate', 'object', 'graph'],
+    ['object', 'graph', 'subject', 'predicate'],
+    ['graph', 'subject', 'predicate', 'object'],
+    ['object', 'subject', 'predicate', 'graph'],
+    ['predicate', 'object', 'graph', 'subject'],
+    ['graph', 'predicate', 'object', 'subject'],
+    // ['predicate', 'object', 'subject', 'graph'], // TODO remove
   ];
 }
 

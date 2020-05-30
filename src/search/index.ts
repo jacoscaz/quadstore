@@ -9,6 +9,7 @@ import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator';
 import { ParsedPattern, Quad, GetStreamResults, Binding } from './types';
 
 import QuadStore from '../quadstore';
+import {TQuadstoreTermName} from '../types';
 
 
 const getBindingsIterator = async (store: QuadStore, parsedPattern: ParsedPattern): Promise<GetStreamResults> => {
@@ -47,7 +48,7 @@ const nestedLoopJoin = async (store: QuadStore, prev: GetStreamResults, next: Pa
 
   const nextCommonVarsToTermsMap: { [key: string]: string } = {};
 
-  const nextAdditionalSortingTerms = [];
+  const nextAdditionalSortingTerms: TQuadstoreTermName[] = [];
 
   for (const variableName in next.variables) {
     if (next.varsToTermsMap.hasOwnProperty(variableName)) {
@@ -59,7 +60,7 @@ const nestedLoopJoin = async (store: QuadStore, prev: GetStreamResults, next: Pa
     }
   }
 
-  const joinedSorting = [...prev.sorting, ...nextAdditionalSortingTerms];
+  const joinedSorting: TQuadstoreTermName[] = [...prev.sorting, ...nextAdditionalSortingTerms];
   const nextSorting = joinedSorting.filter(variableName => next.variables.hasOwnProperty(variableName));
 
   const getInnerIterator = async (outerBinding: Binding): Promise<ai.AsyncIterator<Binding>> => {

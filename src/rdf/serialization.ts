@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('../utils/lodash');
+import _ from '../utils/lodash';
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
 const xsdInteger = xsd + 'integer';

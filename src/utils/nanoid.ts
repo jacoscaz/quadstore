@@ -6,7 +6,7 @@
  * @see https://github.com/ai/nanoid/blob/14612714d8bf719987c9e47a78a682e342f56788/non-secure/index.js
  */
 
-var url = 'sOwnPropMN49CEiq-hXvHJdSymlFURTag61GQfuD8YIWz2Zk5xKB7LV30_Abject';
+const url = 'sOwnPropMN49CEiq-hXvHJdSymlFURTag61GQfuD8YIWz2Zk5xKB7LV30_Abject';
 
 const nanoid = (size: number = 21): string => {
   let id = '';
@@ -16,4 +16,5 @@ const nanoid = (size: number = 21): string => {
   return id;
 };
 
-module.exports = nanoid;
+export default nanoid;
+

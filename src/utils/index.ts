@@ -1,19 +1,18 @@
 
-'use strict';
+import { isFunction, isObject } from './lodash';
+import {IReadable} from '../types';
+import { EventEmitter} from 'events';
+import nanoid from './nanoid';
 
-const _ = require('./lodash');
-
-function wait(delay) {
+export const wait = (delay: number): Promise<void> => {
   return new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
 }
 
-module.exports.wait = wait;
-
-function streamToArray(readStream) {
+export const streamToArray = <T>(readStream: IReadable<T>): Promise<T[]> => {
   return new Promise((resolve, reject) => {
-    const chunks = [];
+    const chunks: T[] = [];
     readStream
       .on('data', (chunk) => { chunks.push(chunk); })
       .on('end', () => { resolve(chunks); })
@@ -21,66 +20,61 @@ function streamToArray(readStream) {
   });
 }
 
-module.exports.streamToArray = streamToArray;
-
-function streamToString(readStream) {
+export const streamToString = <T>(readStream: IReadable<T>): Promise<string> => {
   return new Promise((resolve, reject) => {
     let buffer = '';
     readStream
-      .on('data', (chunk) => { buffer += chunk.toString(); })
-      .on('end', () => { resolve(buffer); })
-      .on('error', (err) => { reject(err); });
+      .on('data', (chunk) => {
+        // @ts-ignore
+        buffer += chunk.toString();
+      })
+      .on('end', () => {
+        resolve(buffer);
+      })
+      .on('error', (err) => {
+        reject(err);
+      });
   });
 }
 
-module.exports.streamToString = streamToString;
-
-function isReadableStream(obj) {
-  return _.isObject(obj)
-    && _.isFunction(obj.on)
-    && _.isFunction(obj.read);
+export const isReadableStream = (obj: any): boolean => {
+  return isObject(obj)
+    && isFunction(obj.on)
+    && isFunction(obj.read);
 }
 
-module.exports.isReadableStream = isReadableStream;
-
-function isPromise(obj) {
-  return _.isObject(obj)
-    && _.isFunction(obj.then);
+export const isPromise = (obj: any): boolean => {
+  return isObject(obj)
+    && isFunction(obj.then);
 }
 
-module.exports.isPromise = isPromise;
 
-function isAbstractLevelDownClass(obj) {
-  return _.isFunction(obj)
-    && _.isFunction(obj.prototype.batch)
-    && _.isFunction(obj.prototype.iterator);
+export const isAbstractLevelDownClass = (obj: any): boolean => {
+  return isFunction(obj)
+    && isFunction(obj.prototype.batch)
+    && isFunction(obj.prototype.iterator);
 }
 
-module.exports.isAbstractLevelDownClass = isAbstractLevelDownClass;
 
-function isAbstractLevelDOWNInstance(obj) {
-  return _.isObject(obj)
-    && _.isFunction(obj.put)
-    && _.isFunction(obj.del)
-    && _.isFunction(obj.batch);
+export const isAbstractLevelDOWNInstance = (obj: any): boolean => {
+  return isObject(obj)
+    && isFunction(obj.put)
+    && isFunction(obj.del)
+    && isFunction(obj.batch);
 }
 
-module.exports.isAbstractLevelDOWNInstance = isAbstractLevelDOWNInstance;
-
-function isDataFactory(obj) {
-  return (_.isObject(obj) || _.isFunction(obj))
-    && _.isFunction(obj.literal)
-    && _.isFunction(obj.defaultGraph)
-    && _.isFunction(obj.blankNode)
-    && _.isFunction(obj.namedNode)
-    && _.isFunction(obj.variable)
-    && _.isFunction(obj.triple)
-    && _.isFunction(obj.quad);
+export const isDataFactory = (obj: any): boolean => {
+  return (isObject(obj) || isFunction(obj))
+    && isFunction(obj.literal)
+    && isFunction(obj.defaultGraph)
+    && isFunction(obj.blankNode)
+    && isFunction(obj.namedNode)
+    && isFunction(obj.variable)
+    && isFunction(obj.triple)
+    && isFunction(obj.quad);
 }
 
-module.exports.isDataFactory = isDataFactory;
-
-function resolveOnEvent(emitter, event, rejectOnError) {
+export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnError: boolean): Promise<any> => {
   return new Promise((resolve, reject) => {
     emitter.on(event, resolve);
     if (rejectOnError) {
@@ -89,18 +83,15 @@ function resolveOnEvent(emitter, event, rejectOnError) {
   });
 }
 
-module.exports.resolveOnEvent = resolveOnEvent;
-module.exports.waitForEvent = resolveOnEvent;
+export const waitForEvent = resolveOnEvent;
 
-function wrapError(err, message) {
+export const wrapError = (err: Error, message: string): Error => {
   const wrapperError = new Error(message);
   wrapperError.stack += '\nCaused by:' + err.stack;
   return wrapperError;
 }
 
-module.exports.wrapError = wrapError;
-
-function defineReadOnlyProperty(obj, key, value) {
+export const defineReadOnlyProperty = (obj: object, key: string, value: any): void => {
   Object.defineProperty(obj, key, {
     value,
     writable: false,
@@ -109,15 +100,11 @@ function defineReadOnlyProperty(obj, key, value) {
   });
 }
 
-module.exports.defineReadOnlyProperty = defineReadOnlyProperty;
+export const noop = () => {};
 
-function noop() {}
-
-module.exports.noop = noop;
-
-function hasAllTerms(coll, contextKey) {
+export const hasAllTerms = (coll: object): boolean => {
   if (typeof(coll) !== 'object') throw new Error('not an object');
-  const found = {};
+  const found: { [key: string]: boolean } = {};
   const terms = Array.isArray(coll) ? coll : Object.keys(coll);
   if (terms.length !== 4) {
     return false;
@@ -127,7 +114,7 @@ function hasAllTerms(coll, contextKey) {
       case 'subject':
       case 'predicate':
       case 'object':
-      case contextKey:
+      case 'graph':
         if (found[terms[t]]) {
           return false;
         }
@@ -140,9 +127,7 @@ function hasAllTerms(coll, contextKey) {
   return true;
 }
 
-module.exports.hasAllTerms = hasAllTerms;
-
-function genDefaultIndexes() {
+export const genDefaultIndexes = () => {
   return [
     ['subject', 'predicate', 'object', 'graph'],
     ['object', 'graph', 'subject', 'predicate'],
@@ -154,16 +139,4 @@ function genDefaultIndexes() {
   ];
 }
 
-module.exports.genDefaultIndexes = genDefaultIndexes;
-
-module.exports.nanoid = require('./nanoid');
-
-const createIteratorMeta = (bindings, sorting, approximateCount) => {
-  return {
-    sorting,
-    bindings,
-    approximateCount,
-  };
-};
-
-module.exports.createIteratorMeta = createIteratorMeta;
+export { nanoid };

@@ -92,3 +92,32 @@ export type TGetSearchOpts = {
   limit: number,
   offset: number,
 }
+
+
+
+
+
+
+type EventMap = Record<string, any>;
+
+type EventKey<T extends EventMap> = string & keyof T;
+type EventReceiver<T> = (params: T) => void;
+
+interface Emitter<T extends EventMap> {
+  on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void;
+
+  off<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void;
+  emit<K extends EventKey<T>>(eventName: K, params: T[K]): void;
+}
+
+
+/**
+ * As we're using asynciterator.AsyncIterator AND stream.Readable instances,
+ * we need a generic type that covers both of those.
+ */
+export interface IReadable<T> extends EventEmitter {
+  on(eventName: 'data', fn: (chunk: T) => void): this;
+  on(eventName: 'end', fn: () => void): this;
+  on(eventName: 'error', fn: (err: Error) => void): this;
+  read(): T|null;
+}

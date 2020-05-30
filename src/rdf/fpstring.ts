@@ -41,19 +41,19 @@
  * 5. Positive mantissa and positive exponent ==> NOTHING TO FLIP
  */
 
-const joinParts = (encodingCase, exponentChars, mantissaChars) => {
+const joinParts = (encodingCase: number, exponentChars: string, mantissaChars: string): string => {
   return `${encodingCase}${exponentChars}${mantissaChars.charAt(0)}${mantissaChars.slice(2)}`;
 };
 
-const flipExponent = (exponentChars) => {
+const flipExponent = (exponentChars: string): string => {
   return (999 - parseInt(exponentChars)).toString().padStart(3, '0');
 };
 
-const flipMantissa = (mantissaChars) => {
+const flipMantissa = (mantissaChars: string): string => {
   return (10 - parseFloat(mantissaChars)).toPrecision(17).slice(0, 18);
 };
 
-const encode = (n) => {
+const encode = (n: string|number): string => {
 
   if (typeof(n) !== 'number') {
     n = parseFloat(n);

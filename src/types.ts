@@ -1,16 +1,21 @@
 import { EventEmitter } from 'events';
 import { AbstractLevelDOWN } from 'abstract-leveldown'
 import ai from 'asynciterator';
+import {DataFactory} from 'rdf-js';
 
 export type TEmptyOpts = {}
 
-export interface IQuadstoreOpts {
+export interface TSQuadstoreOpts {
   backend: AbstractLevelDOWN,
   contextKey: string,
   defaultContextValue: string,
   boundary?: string,
   separator?: string,
   indexes?: TQuadstoreIndex,
+}
+
+export interface TSRdfstoreOpts extends TSQuadstoreOpts {
+  dataFactory: DataFactory
 }
 
 export type TQuadstoreTermName = 'subject' | 'predicate' | 'object' | 'graph';
@@ -38,7 +43,7 @@ export type TQuadstoreQuad = {
 
 export type TQuadstoreIndex = TQuadstoreTermName[];
 
-export interface IRdfstoreOpts extends IQuadstoreOpts {
+export interface IRdfstoreOpts extends TSQuadstoreOpts {
 
 }
 
@@ -94,23 +99,6 @@ export type TGetSearchOpts = {
 }
 
 
-
-
-
-
-type EventMap = Record<string, any>;
-
-type EventKey<T extends EventMap> = string & keyof T;
-type EventReceiver<T> = (params: T) => void;
-
-interface Emitter<T extends EventMap> {
-  on<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void;
-
-  off<K extends EventKey<T>>(eventName: K, fn: EventReceiver<T[K]>): void;
-  emit<K extends EventKey<T>>(eventName: K, params: T[K]): void;
-}
-
-
 /**
  * As we're using asynciterator.AsyncIterator AND stream.Readable instances,
  * we need a generic type that covers both of those.
@@ -121,3 +109,65 @@ export interface IReadable<T> extends EventEmitter {
   on(eventName: 'error', fn: (err: Error) => void): this;
   read(): T|null;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export type TBinding = {
+  [key: string]: string,
+};
+
+export type TGetStreamResults = {
+  iterator: ai.AsyncIterator<TBinding>,
+  variables: TVariables,
+  sorting: TQuadstoreTermName[],
+  type: string,
+};
+
+export type TVariables = {
+  [key: string]: true,
+};
+
+export type TMatchTerms = {
+  [key: string]: any,
+};
+
+export type TTermsToVarsMap = {
+  [key in TQuadstoreTermName]?: string;
+};
+
+export type TVarsToTermsMap = {
+  [key: string]: string,
+};
+
+export type TPattern = {
+  [key in TQuadstoreTermName]?: string
+};
+
+export type TParsedPattern = {
+  variables: TVariables,
+  matchTerms: TMatchTerms,
+  termsToVarsMap: TTermsToVarsMap,
+  varsToTermsMap: TVarsToTermsMap,
+};
+
+export type TFilter = {
+  type: string,
+  args: any[],
+};
+
+export type TParsedFilter = TFilter & {
+  variables: { [key: string]: true },
+};

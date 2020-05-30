@@ -1,40 +1,36 @@
 
 'use strict';
 
-const _ = require('./utils/lodash');
-const enums = require('./utils/enums');
-const utils = require('./utils');
-const assert = require('assert');
-const EventEmitter = require('events').EventEmitter;
-const QuadStore = require('./quadstore');
-const serialization = require('./rdf/serialization');
-const sparql = require('./sparql');
-const AsyncIterator = require('asynciterator');
+import _ from './utils/lodash';
+import enums from './utils/enums';
+import utils from './utils';
+import assert from 'assert';
+import {EventEmitter} from 'events';
+import QuadStore from './quadstore';
+import serialization from './rdf/serialization';
+import sparql from './sparql';
+import AsyncIterator from 'asynciterator';
+import { DataFactory, Term } from 'rdf-js';
+import {TSRdfstoreOpts} from './types';
 
 class RdfStore extends QuadStore {
 
-  constructor(opts) {
+  public _dataFactory: DataFactory;
+
+  constructor(opts: TSRdfstoreOpts) {
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(utils.isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     opts = {
+      // @ts-ignore
       defaultContextValue: 'urn:quadstore:dg',
       ...opts,
       ...{ contextKey: 'graph' },
     };
     super(opts);
-    const store = this;
-    store._dataFactory = opts.dataFactory;
+    this._dataFactory = opts.dataFactory;
   }
 
-  /**
-   * RDF/JS.Source.match()
-   * @param subject
-   * @param predicate
-   * @param object
-   * @param graph
-   * @returns {*}
-   */
-  match(subject, predicate, object, graph) {
+  match(subject?: Term|null, predicate?: Term|null, object?: Term|null, graph?: Term|null) {
     // if (!_.isNil(subject)) assert(_.isString(subject.termType), 'The "subject" argument is not an Term.');
     // if (!_.isNil(predicate)) assert(_.isString(predicate.termType), 'The "predicate" argument is not an Term.');
     // if (!_.isNil(object)) assert(_.isString(object.termType), 'The "object" argument is not an Term.');

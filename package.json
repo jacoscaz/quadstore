@@ -38,6 +38,7 @@
     "@types/lodash.flatmap": "^4.5.6",
     "@types/lodash.groupby": "^4.6.6",
     "@types/lodash.mapvalues": "^4.6.6",
+    "@types/sparqljs": "^3.0.0",
     "abstract-leveldown": "^6.3.0",
     "benchmark": "^2.1.4",
     "fs-extra": "^8.1.0",

@@ -1,8 +1,8 @@
 
-const _ = require('../utils/lodash');
-const { Parser: SparqlParser } = require('sparqljs');
-const { handleSparqlUpdate } = require('./update');
-const { handleSparqlQuery } = require('./query');
+import _ = require('../utils/lodash');
+import { Parser as SparqlParser } from 'sparqljs';
+import { handleSparqlUpdate } from './update';
+import { handleSparqlQuery } from './query';
 
 const sparqlParser = new SparqlParser();
 

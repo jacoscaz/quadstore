@@ -2,7 +2,7 @@
 'use strict';
 
 import {
-  IQuadstoreOpts, IQuadstoreQuadStream,
+  TSQuadstoreOpts, IQuadstoreQuadStream,
   TEmptyOpts,
   TQuadstoreIndex, TQuadstoreInternalIndex, TQuadstoreMatchTerms,
   TQuadstoreQuad, TQuadstoreSearchFilter, TQuadstoreSearchPattern,
@@ -47,7 +47,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  constructor(opts: IQuadstoreOpts) {
+  constructor(opts: TSQuadstoreOpts) {
     super();
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(

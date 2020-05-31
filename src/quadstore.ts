@@ -2,12 +2,13 @@
 'use strict';
 
 import {
-  TSQuadstoreOpts, IQuadstoreQuadStream,
+  TSQuadstoreOpts,
   TEmptyOpts,
-  TQuadstoreIndex, TQuadstoreInternalIndex, TQuadstoreMatchTerms,
-  TQuadstoreQuad, TQuadstoreSearchFilter, TQuadstoreSearchPattern,
-  TQuadstoreTermName, TQuadstoreTermRange,
-  TQuadstoreTerms
+  TSIndex,
+  TQuadstoreSearchFilter, TQuadstoreSearchPattern,
+  TSTermName, TSRange,
+  TSQuad,
+  TSTerms, TSReadable, TSBaseQuad, TSBaseTerms, TSBaseRange,
 } from './types';
 import assert from 'assert';
 import events from 'events';
@@ -24,18 +25,18 @@ const utils = require('./utils');
 const get = require('./get');
 const search = require('./search');
 
-
-/**
- *
- */
-class QuadStore extends events.EventEmitter {
+class QuadStore<
+  QT extends TSBaseQuad = TSQuad<string>,
+  RT extends TSBaseRange = TSRange<string>,
+  TT extends TSBaseTerms = TSTerms<string|RT>,
+> extends events.EventEmitter {
 
   private _db: AbstractLevelDOWN;
   private _abstractLevelDOWN: AbstractLevelDOWN;
 
   private _contextKey: string;
-  private _defaultContextValue: string;
-  private _indexes: TQuadstoreInternalIndex[];
+  private _defaultContextValue: QT;
+  private _indexes: TSIndex<QT>[];
   private _id: string;
 
   public separator!: string;
@@ -47,7 +48,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  constructor(opts: TSQuadstoreOpts) {
+  constructor(opts: TSQuadstoreOpts<QT>) {
     super();
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(
@@ -63,7 +64,7 @@ class QuadStore extends events.EventEmitter {
     utils.defineReadOnlyProperty(this, 'boundary', opts.boundary || '\uDBFF\uDFFF');
     utils.defineReadOnlyProperty(this, 'separator', opts.separator || '\u0000\u0000');
     (opts.indexes || utils.genDefaultIndexes(this._contextKey))
-      .forEach((index: TQuadstoreIndex) => this._addIndex(index));
+      .forEach((index: TSTermName[]) => this._addIndex(index));
     setImmediate(() => { this._initialize(); });
   }
 
@@ -96,7 +97,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  _addIndex(terms: TQuadstoreIndex) {
+  _addIndex(terms: TSTermName[]): void {
     assert(utils.hasAllTerms(terms, this._contextKey), 'Invalid index (bad terms).');
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this._indexes.push({
@@ -117,7 +118,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async put(quads: TQuadstoreQuad|TQuadstoreQuad[], opts?: TEmptyOpts) {
+  async put(quads: TSQuad<QT>|TSQuad<QT>[], opts?: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(quads), 'The "quads" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -125,13 +126,16 @@ class QuadStore extends events.EventEmitter {
     return await this._delput([], quads, opts);
   }
 
-  async del(matchTermsOrOldQuads: TQuadstoreTerms|TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
+  async del(matchTermsOrOldQuads: TSTerms<TT>|TSQuad<QT>|TSQuad<QT>[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTermsOrOldQuads), 'The "matchTermsOrOldQuads" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     return (Array.isArray(matchTermsOrOldQuads) || this._isQuad(matchTermsOrOldQuads))
+      // TODO: type checks not being understood by TS
       // @ts-ignore
       ? await this._delput(matchTermsOrOldQuads, [], opts)
+      // TODO: type checks not being understood by TS
+      // @ts-ignore
       : await this._getdelput(matchTermsOrOldQuads, [], opts);
   }
 
@@ -140,7 +144,7 @@ class QuadStore extends events.EventEmitter {
    * @param matchTerms
    * @param cb
    */
-  async get(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
+  async get(matchTerms: TSTerms<TT>, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     if (_.isNil(matchTerms)) matchTerms = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
@@ -166,13 +170,16 @@ class QuadStore extends events.EventEmitter {
     }
   }
 
-  async patch(matchTermsOrOldQuads: TQuadstoreTerms|TQuadstoreQuad|TQuadstoreQuad[], newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
+  async patch(matchTermsOrOldQuads: TSTerms<TT>|TSQuad<QT>|TSQuad<QT>[], newQuads: TSQuad<QT>|TSQuad<QT>[], opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTermsOrOldQuads), 'Invalid type of "matchTermsOrOldQuads" argument.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     return (Array.isArray(matchTermsOrOldQuads) || this._isQuad(matchTermsOrOldQuads))
+      // TODO: fix type checks not being understood by TS
       // @ts-ignore
       ? await this._delput(matchTermsOrOldQuads, newQuads, opts)
+      // TODO: fix type checks not being understood by TS
+      // @ts-ignore
       : await this._getdelput(matchTermsOrOldQuads, newQuads, opts);
   }
 
@@ -182,7 +189,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async getApproximateSize(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
+  async getApproximateSize(matchTerms: TSTerms<TT>, opts: TEmptyOpts) {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not a function..');
@@ -196,7 +203,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async getStream(matchTerms: TQuadstoreTerms, opts: TEmptyOpts) {
+  async getStream(matchTerms: TSTerms<TT>, opts: TEmptyOpts) {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
@@ -212,32 +219,36 @@ class QuadStore extends events.EventEmitter {
     return await search.searchStream(this, patterns, filters, opts);
   }
 
-  async putStream(source: IQuadstoreQuadStream, opts: TEmptyOpts) {
+  async putStream(source: TSReadable<QT>, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
-      transform: (quad: TQuadstoreQuad, cb: () => void) => {
+      transform: (quad: TSQuad<QT>, cb: () => void) => {
         this._delput([], [quad], opts)
           .then(cb.bind(null, null))
           .catch(cb);
       },
     };
+    // TODO: address TS incompatible typings
+    // @ts-ignore
     const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
 
-  async delStream(source: IQuadstoreQuadStream, opts: TEmptyOpts) {
+  async delStream(source: TSReadable<QT>, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
-      transform: (quad: TQuadstoreQuad, cb: () => void) => {
+      transform: (quad: TSQuad<QT>, cb: () => void) => {
         this._delput([quad], [], opts)
           .then(cb.bind(null, null))
           .catch(cb);
       },
     };
+    // TODO: address TS incompatible typings
+    // @ts-ignore
     const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
@@ -257,7 +268,7 @@ class QuadStore extends events.EventEmitter {
    * ==========================================================================
    */
 
-  async _delput(oldQuads: TQuadstoreQuad|TQuadstoreQuad[], newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
+  async _delput(oldQuads: TSQuad<QT>|TSQuad<QT>[], newQuads: TSQuad<QT>|TSQuad<QT>[], opts: TEmptyOpts) {
     if (oldQuads !== null) {
       if (Array.isArray(oldQuads)) {
         // @ts-ignore
@@ -278,7 +289,7 @@ class QuadStore extends events.EventEmitter {
     }
   }
 
-  async _getdelput(matchTerms: TQuadstoreTerms, newQuads: TQuadstoreQuad|TQuadstoreQuad[], opts: TEmptyOpts) {
+  async _getdelput(matchTerms: TSTerms<TT>, newQuads: TSQuad<QT>|TSQuad<QT>[], opts: TEmptyOpts) {
     const oldQuads = (await this.get(matchTerms, opts)).quads;
     await this._delput(oldQuads, newQuads, {});
   }
@@ -290,7 +301,7 @@ class QuadStore extends events.EventEmitter {
    * @param type
    * @returns {}
    */
-  _quadToBatch(quad: TQuadstoreQuad, type: 'del'|'put') {
+  _quadToBatch(quad: TSQuad<QT>, type: 'del'|'put') {
     const indexes = this._indexes;
     const contextKey = this._contextKey;
     // @ts-ignore
@@ -300,7 +311,7 @@ class QuadStore extends events.EventEmitter {
         subject: quad.subject,
         predicate: quad.predicate,
         object: quad.object,
-        [contextKey]: this._defaultContextValue,
+        graph: this._defaultContextValue,
       };
     }
     return indexes.map(i => ({
@@ -310,23 +321,23 @@ class QuadStore extends events.EventEmitter {
     }));
   }
 
-  _getTermNames(): TQuadstoreTermName[] {
+  _getTermNames(): TSTermName[] {
     // @ts-ignore
     return ['subject', 'predicate', 'object', this._contextKey];
   }
 
   _getTermValueComparator() {
-    return (a: string, b: string) => {
+    return (a: QT, b: QT) => {
       if (a < b) return -1;
       else if (a === b) return 0;
       else return 1;
     }
   }
 
-  _getQuadComparator(termNames: TQuadstoreTermName[]) {
+  _getQuadComparator(termNames: TSTermName[]) {
     if (!termNames) termNames = this._getTermNames();
     const valueComparator = this._getTermValueComparator();
-    return (a: TQuadstoreQuad, b: TQuadstoreQuad) => {
+    return (a: TSQuad<QT>, b: TSQuad<QT>) => {
       for (let i = 0, n = termNames.length, r; i <= n; i += 1) {
         r = valueComparator(a[termNames[i]], b[termNames[i]]);
         if (r !== 0) return r;
@@ -335,7 +346,7 @@ class QuadStore extends events.EventEmitter {
     };
   }
 
-  _mergeTermRanges(a: TQuadstoreTermRange, b: TQuadstoreTermRange): TQuadstoreTermRange {
+  _mergeTermRanges(a: TSRange<RT>, b: TSRange<RT>): TSRange<RT> {
     const c = {...b};
     if (!_.isNil(a.lt)) {
       if (!_.isNil(c.lt)) {
@@ -380,7 +391,7 @@ class QuadStore extends events.EventEmitter {
     return c;
   }
 
-  _mergeMatchTerms(a: TQuadstoreMatchTerms, b: TQuadstoreMatchTerms, termNames: TQuadstoreTermName[]): TQuadstoreMatchTerms {
+  _mergeMatchTerms(a: TSTerms<TT>, b: TSTerms<TT>, termNames: TSTermName[]): TSTerms<TT> {
     if (!termNames) {
       termNames = this._getTermNames();
     }

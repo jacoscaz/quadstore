@@ -1,9 +1,9 @@
 import {
-  TQuadstoreInternalIndex,
+  TSIndex,
   TQuadstoreMatchTerms,
   TQuadstoreStrategy,
-  TQuadstoreTermName,
-  TQuadstoreTermRange
+  TSTermName,
+  TSRange
 } from '../types';
 import QuadStore from '../quadstore';
 
@@ -32,7 +32,7 @@ const last = (a: any[]) => {
   return a[a.length - 1];
 };
 
-const addIndexMatch = (strategy: TQuadstoreStrategy, term: TQuadstoreTermName, valueOrRange: string|TQuadstoreTermRange, store: QuadStore) => {
+const addIndexMatch = (strategy: TQuadstoreStrategy, term: TSTermName, valueOrRange: string|TSRange, store: QuadStore) => {
   switch (typeof(valueOrRange)) {
     case 'string':
     case 'number':
@@ -79,7 +79,7 @@ const canAddIndexMatch = (strategy: TQuadstoreStrategy) => {
   return true;
 };
 
-const populate = (query: TQuadstoreMatchTerms, indexTerms: TQuadstoreTermName[], strategy: TQuadstoreStrategy, store: QuadStore) => {
+const populate = (query: TQuadstoreMatchTerms, indexTerms: TSTermName[], strategy: TQuadstoreStrategy, store: QuadStore) => {
   if (Object.keys(query).length < 1) {
     return;
   }

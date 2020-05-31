@@ -17,13 +17,13 @@ import {
 } from '../types';
 
 import QuadStore from '../quadstore';
-import {TQuadstoreTermName} from '../types';
+import {TSTermName} from '../types';
 
 
 const getBindingsIterator = async (store: QuadStore, parsedPattern: TParsedPattern): Promise<TGetStreamResults> => {
   const {variables, matchTerms, termsToVarsMap} = parsedPattern;
   const results = await QuadStore.prototype.getStream.call(store, matchTerms, {});
-  const sorting = results.sorting.reduce((acc: string[], termName: TQuadstoreTermName) => {
+  const sorting = results.sorting.reduce((acc: string[], termName: TSTermName) => {
     if (termsToVarsMap[termName]) {
       // @ts-ignore
       acc.push(termsToVarsMap[termName]);
@@ -119,7 +119,7 @@ const objectContains = (outer: object, inner: object) => {
  * @param pattern
  * @returns {ParsedPattern}
  */
-const parsePattern = (termNames: TQuadstoreTermName[], pattern: TPattern) => {
+const parsePattern = (termNames: TSTermName[], pattern: TPattern) => {
   const variables: TVariables = {};
   const matchTerms: TMatchTerms = {};
   const varsToTermsMap: TVarsToTermsMap = {};

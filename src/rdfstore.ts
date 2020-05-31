@@ -10,18 +10,21 @@ import QuadStore from './quadstore';
 import serialization from './rdf/serialization';
 import sparql from './sparql';
 import AsyncIterator from 'asynciterator';
-import { DataFactory, Term } from 'rdf-js';
-import {TSRdfstoreOpts} from './types';
+import { DataFactory, Term, Store, Quad } from 'rdf-js';
+import {TEmptyOpts, TSQuad, TSRange, TSRdfstoreOpts, TSReadable, TSTerms} from './types';
 
-class RdfStore extends QuadStore {
+class RdfStore<
+  QT = TSQuad<Term>,
+  RT = TSRange<Term>,
+  TT = TSTerms<Term>,
+> extends QuadStore<QT, RT, TT> implements Store {
 
   public _dataFactory: DataFactory;
 
-  constructor(opts: TSRdfstoreOpts) {
+  constructor(opts: TSRdfstoreOpts<QT>) {
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(utils.isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     opts = {
-      // @ts-ignore
       defaultContextValue: 'urn:quadstore:dg',
       ...opts,
       ...{ contextKey: 'graph' },
@@ -30,16 +33,16 @@ class RdfStore extends QuadStore {
     this._dataFactory = opts.dataFactory;
   }
 
-  match(subject?: Term|null, predicate?: Term|null, object?: Term|null, graph?: Term|null) {
-    // if (!_.isNil(subject)) assert(_.isString(subject.termType), 'The "subject" argument is not an Term.');
-    // if (!_.isNil(predicate)) assert(_.isString(predicate.termType), 'The "predicate" argument is not an Term.');
-    // if (!_.isNil(object)) assert(_.isString(object.termType), 'The "object" argument is not an Term.');
-    // if (!_.isNil(graph)) assert(_.isString(graph.termType), 'The "graph" argument is not an Term.');
-    const iterator = new AsyncIterator.TransformIterator();
+  match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): TSReadable<Quad> {
+    const iterator = new AsyncIterator.TransformIterator<Quad, Quad>();
     const matchTerms = { subject, predicate, object, graph };
-    this.getStream(matchTerms)
+    this.getStream(matchTerms, {})
       .then((results) => { iterator.source = results.iterator; })
-      .catch((err) => { iterator.destroy(); });
+      .catch((err) => {
+        // TODO: is the destroy() method really suppored by AsyncIterator?
+        // @ts-ignore
+        iterator.destroy();
+      });
     return iterator;
   }
 
@@ -49,12 +52,10 @@ class RdfStore extends QuadStore {
    * @param opts
    * @returns {*|EventEmitter}
    */
-  import(source, opts) {
-    if (_.isNil(opts)) opts = {};
+  import(source: TSReadable<Quad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const emitter = new EventEmitter();
-    this.putStream(source, opts)
+    this.putStream(source, {})
       .then(() => { emitter.emit('end'); })
       .catch((err) => { emitter.emit('error', err); });
     return emitter;
@@ -195,8 +196,10 @@ class RdfStore extends QuadStore {
   }
 
   _getTermValueComparator() {
-    return (a, b) => {
+    return (a: Term, b: Term) => {
+      // @ts-ignore
       const aSerializedValue = a._serializedValue || serialization.importTerm(a, false, this._defaultContextValue, true, false);
+      // @ts-ignore
       const bSerializedValue = b._serializedValue || serialization.importTerm(b, false, this._defaultContextValue, true, false);
       if (aSerializedValue < bSerializedValue) return -1;
       else if (aSerializedValue === bSerializedValue) return 0;

@@ -5,56 +5,117 @@ import {DataFactory} from 'rdf-js';
 
 export type TEmptyOpts = {}
 
-export interface TSQuadstoreOpts {
+export interface TSQuadstoreOpts<QT> {
   backend: AbstractLevelDOWN,
   contextKey: string,
-  defaultContextValue: string,
+  defaultContextValue: QT,
   boundary?: string,
   separator?: string,
-  indexes?: TQuadstoreIndex,
+  indexes?: TSTermName[][],
 }
 
-export interface TSRdfstoreOpts extends TSQuadstoreOpts {
+export interface TSRdfstoreOpts<QT> extends TSQuadstoreOpts<QT> {
   dataFactory: DataFactory
 }
 
-export type TQuadstoreTermName = 'subject' | 'predicate' | 'object' | 'graph';
+export type TSTermName = 'subject' | 'predicate' | 'object' | 'graph';
 
-export type TQuadstoreTerms = {
-  subject?: string,
-  predicate?: string,
-  object?: string,
-  graph?: string,
-};
-
-export type TQuadstoreMatchTerms = {
-  subject?: string|TQuadstoreTermRange,
-  predicate?: string|TQuadstoreTermRange,
-  object?: string|TQuadstoreTermRange,
-  graph?: string|TQuadstoreTermRange,
-};
-
-export type TQuadstoreQuad = {
-  subject: string,
-  predicate: string,
-  object: string,
-  graph: string,
+export interface TSBaseQuad extends TSBaseTerms {
+  subject: any,
+  predicate: any,
+  object: any,
+  graph: any,
 }
 
-export type TQuadstoreIndex = TQuadstoreTermName[];
-
-export interface IRdfstoreOpts extends TSQuadstoreOpts {
-
+export interface TSBaseTerms {
+  subject?: any,
+  predicate?: any,
+  object?: any,
+  graph?: any,
 }
 
-export interface IQuadstoreQuadStream extends ai.AsyncIterator<TQuadstoreQuad> {}
-
-export type TQuadstoreTermRange = {
-  lt?: string,
-  lte?: string,
-  gt?: string,
-  gte?: string,
+export interface TSBaseRange {
+  lt?: any,
+  lte?: any,
+  gt?: any,
+  gte?: any,
 }
+
+export interface TSTerms<T> extends TSBaseTerms {
+  subject?: T,
+  predicate?: T,
+  object?: T,
+  graph?: T,
+}
+
+export interface TSQuad<T> extends TSTerms<T> {
+  subject: T,
+  predicate: T,
+  object: T,
+  graph: T,
+}
+
+export interface TSRange<T> extends TSBaseRange {
+  lt?: T,
+  lte?: T,
+  gt?: T,
+  gte?: T,
+}
+
+export type TSIndex<QT> = {
+  terms: TSTermName[],
+  name: string,
+  getKey: (quad: TSQuad<QT>) => string,
+}
+
+export type TQuadstoreStrategy<QT, TT> = {
+  index: TSIndex<QT>
+  query: TSTerms<TT>,
+  lt: string[],
+  gte: boolean,
+  gt: string[],
+  lte: boolean,
+  valid: boolean,
+}
+
+/**
+ * As we're using asynciterator.AsyncIterator AND stream.Readable instances,
+ * we need a generic type that covers both of those.
+ */
+export interface TSReadable<T> extends EventEmitter {
+  on(eventName: 'data', fn: (chunk: T) => void): this;
+  on(eventName: 'end', fn: () => void): this;
+  on(eventName: 'error', fn: (err: Error) => void): this;
+  // TODO: this should be T|null but adding null makes it incompatible with
+  //       the RDF/JS typings. Perhaps we should make a PR to the typings
+  //       repo
+  read(): T;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export type TQuadstoreSearchPattern = {
   subject?: string,
@@ -77,21 +138,7 @@ export type TQuadstoreSearchFilter = {
 }
 
 
-export type TQuadstoreInternalIndex = {
-  terms: TQuadstoreTermName[],
-  name: string,
-  getKey: (quad: TQuadstoreQuad) => string,
-}
 
-export type TQuadstoreStrategy = {
-  index: TQuadstoreInternalIndex
-  query: TQuadstoreMatchTerms,
-  lt: string[],
-  gte: boolean,
-  gt: string[],
-  lte: boolean,
-  valid: boolean,
-}
 
 export type TGetSearchOpts = {
   limit: number,
@@ -99,16 +146,7 @@ export type TGetSearchOpts = {
 }
 
 
-/**
- * As we're using asynciterator.AsyncIterator AND stream.Readable instances,
- * we need a generic type that covers both of those.
- */
-export interface IReadable<T> extends EventEmitter {
-  on(eventName: 'data', fn: (chunk: T) => void): this;
-  on(eventName: 'end', fn: () => void): this;
-  on(eventName: 'error', fn: (err: Error) => void): this;
-  read(): T|null;
-}
+
 
 
 
@@ -132,7 +170,7 @@ export type TBinding = {
 export type TGetStreamResults = {
   iterator: ai.AsyncIterator<TBinding>,
   variables: TVariables,
-  sorting: TQuadstoreTermName[],
+  sorting: TSTermName[],
   type: string,
 };
 
@@ -145,7 +183,7 @@ export type TMatchTerms = {
 };
 
 export type TTermsToVarsMap = {
-  [key in TQuadstoreTermName]?: string;
+  [key in TSTermName]?: string;
 };
 
 export type TVarsToTermsMap = {
@@ -153,7 +191,7 @@ export type TVarsToTermsMap = {
 };
 
 export type TPattern = {
-  [key in TQuadstoreTermName]?: string
+  [key in TSTermName]?: string
 };
 
 export type TParsedPattern = {

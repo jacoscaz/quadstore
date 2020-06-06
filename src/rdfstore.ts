@@ -10,30 +10,39 @@ import QuadStore from './quadstore';
 import serialization from './rdf/serialization';
 import sparql from './sparql';
 import AsyncIterator from 'asynciterator';
-import { DataFactory, Term, Store, Quad } from 'rdf-js';
-import {TEmptyOpts, TSQuad, TSRange, TSRdfstoreOpts, TSReadable, TSTerms} from './types';
+import { DataFactory, Term, Store, Quad, NamedNode, BlankNode, DefaultGraph } from 'rdf-js';
+import {
+  IRSQuad,
+  IRSQuadArrayResult,
+  IRSRange,
+  IRSStore,
+  IRSTerms,
+  TTermName,
+  EResultType,
+  IEmptyOpts,
+  IReadable,
+  IRSStoreOpts, IQSStoreOpts
+} from './types';
 
-class RdfStore<
-  QT = TSQuad<Term>,
-  RT = TSRange<Term>,
-  TT = TSTerms<Term>,
-> extends QuadStore<QT, RT, TT> implements Store {
+class RdfStore extends QuadStore implements IRSStore {
 
   public _dataFactory: DataFactory;
 
-  constructor(opts: TSRdfstoreOpts<QT>) {
+  constructor(opts: IRSStoreOpts) {
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(utils.isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
-    opts = {
-      defaultContextValue: 'urn:quadstore:dg',
+    const superOpts: IQSStoreOpts = {
       ...opts,
       ...{ contextKey: 'graph' },
+      defaultContextValue: opts.defaultContextValue
+        ? serialization.importTerm(opts.defaultContextValue)
+        : 'urn:quadstore:dg',
     };
-    super(opts);
+    super(superOpts);
     this._dataFactory = opts.dataFactory;
   }
 
-  match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): TSReadable<Quad> {
+  match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): IReadable<Quad> {
     const iterator = new AsyncIterator.TransformIterator<Quad, Quad>();
     const matchTerms = { subject, predicate, object, graph };
     this.getStream(matchTerms, {})
@@ -52,7 +61,7 @@ class RdfStore<
    * @param opts
    * @returns {*|EventEmitter}
    */
-  import(source: TSReadable<Quad>): EventEmitter {
+  import(source: IReadable<IRSQuad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     const emitter = new EventEmitter();
     this.putStream(source, {})
@@ -61,18 +70,10 @@ class RdfStore<
     return emitter;
   }
 
-  /**
-   * RDF/JS.Store.remove()
-   * @param source
-   * @param opts
-   * @returns {*|EventEmitter}
-   */
-  remove(source, opts) {
-    if (_.isNil(opts)) opts = {};
+  remove(source: IReadable<Quad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const emitter = new EventEmitter();
-    this.delStream(source, opts)
+    this.delStream(source, {})
       .then(() => emitter.emit('end'))
       .catch((err) => emitter.emit('error', err));
     return emitter;
@@ -86,7 +87,7 @@ class RdfStore<
    * @param graph
    * @returns {*}
    */
-  removeMatches(subject, predicate, object, graph) {
+  removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term) {
     const source = this.match(subject, predicate, object, graph);
     return this.remove(source);
   }
@@ -96,21 +97,21 @@ class RdfStore<
    * @param graph
    * @returns {*}
    */
-  deleteGraph(graph) {
-    return this.removeMatches(null, null, null, graph);
+  deleteGraph(graph: NamedNode|BlankNode|DefaultGraph) {
+    return this.removeMatches(undefined, undefined, undefined, graph);
   }
 
-  async getApproximateSize(matchTerms, opts) {
+  async getApproximateSize(matchTerms: IBaseTerms<Term>, opts: TEmptyOpts) {
     const importedTerms = serialization.importTerms(matchTerms, this._defaultContextValue, true, false);
     return await super.getApproximateSize(importedTerms, opts);
   }
 
-  async getStream(matchTerms, opts) {
+  async getStream(matchTerms: IBaseTerms<Term>, opts: TEmptyOpts) {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const importedMatchTerms = {};
+    const importedMatchTerms: IBaseTerms<string> = {};
     if (matchTerms.subject) {
       importedMatchTerms.subject = this._importTerm(matchTerms.subject, false, true, false);
     }
@@ -145,7 +146,7 @@ class RdfStore<
     return { type: results.type, variables: results.variables, iterator };
   }
 
-  async sparql(query, opts) {
+  async sparql(query: string, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isString(query), 'The "query" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -160,7 +161,7 @@ class RdfStore<
     }
   }
 
-  async sparqlStream(query, opts) {
+  async sparqlStream(query: string, opts: TEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     return await sparql.sparqlStream(this, query, opts);
   }

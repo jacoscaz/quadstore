@@ -1,5 +1,5 @@
 import QuadStore from '../quadstore';
-import {TEmptyOpts, TGetSearchOpts, TQuadstoreStrategy} from '../types';
+import {TEmptyOpts, TGetSearchOpts, IQSStrategy} from '../types';
 
 const _ = require('../utils/lodash');
 const AsyncIterator = require('asynciterator');
@@ -13,7 +13,7 @@ type TLevelOpts = {
   offset?: number,
 };
 
-const generateLevelOpts = (store: QuadStore, strategy: TQuadstoreStrategy, opts: TEmptyOpts) => {
+const generateLevelOpts = (store: QuadStore, strategy: IQSStrategy, opts: TEmptyOpts) => {
   const levelOpts: TLevelOpts = {};
   if (strategy.lt.length > 0) {
     if (strategy.lte) {
@@ -52,7 +52,7 @@ const generateLevelOpts = (store: QuadStore, strategy: TQuadstoreStrategy, opts:
   return levelOpts;
 };
 
-const executeApproximateSize = async (store: QuadStore, strategy: TQuadstoreStrategy, opts: TEmptyOpts) => {
+const executeApproximateSize = async (store: QuadStore, strategy: IQSStrategy, opts: TEmptyOpts) => {
   // @ts-ignore
   if (!store._db.approximateSize) {
     return Infinity;
@@ -71,7 +71,7 @@ const executeApproximateSize = async (store: QuadStore, strategy: TQuadstoreStra
 
 module.exports.executeApproximateSize = executeApproximateSize;
 
-const execute = async (store: QuadStore, strategy: TQuadstoreStrategy, opts: TGetSearchOpts) => {
+const execute = async (store: QuadStore, strategy: IQSStrategy, opts: TGetSearchOpts) => {
   const levelOpts: TLevelOpts = generateLevelOpts(store, strategy, opts);
   if (opts.offset) {
     levelOpts.offset = opts.offset;

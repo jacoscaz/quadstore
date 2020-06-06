@@ -1,6 +1,6 @@
 
 import { isFunction, isObject } from './lodash';
-import {TSReadable} from '../types';
+import {IReadable} from '../types';
 import { EventEmitter} from 'events';
 import nanoid from './nanoid';
 
@@ -10,7 +10,7 @@ export const wait = (delay: number): Promise<void> => {
   });
 }
 
-export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
+export const streamToArray = <T>(readStream: IReadable<T>): Promise<T[]> => {
   return new Promise((resolve, reject) => {
     const chunks: T[] = [];
     readStream
@@ -20,7 +20,7 @@ export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
   });
 }
 
-export const streamToString = <T>(readStream: TSReadable<T>): Promise<string> => {
+export const streamToString = <T>(readStream: IReadable<T>): Promise<string> => {
   return new Promise((resolve, reject) => {
     let buffer = '';
     readStream

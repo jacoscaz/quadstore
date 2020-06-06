@@ -1,47 +1,47 @@
-import {TBinding, TParsedFilter} from '../types';
+import {IBaseBinding, TParsedFilter} from '../types';
 
 const { filterType } = require('../utils/enums');
 
-const compileGtFilter = (parsedFilter: TParsedFilter): (binding: TBinding) => boolean => {
+const compileGtFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
   const variableCount = Object.keys(parsedFilter.variables).length;
   if (variableCount === 1) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] > parsedFilter.args[1];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] > parsedFilter.args[1];
   }
   if (variableCount === 2) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] > binding[parsedFilter.args[1]];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] > binding[parsedFilter.args[1]];
   }
   throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
 };
 
-const compileGteFilter = (parsedFilter: TParsedFilter): (binding: TBinding) => boolean => {
+const compileGteFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
   const variableCount = Object.keys(parsedFilter.variables).length;
   if (variableCount === 1) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] >= parsedFilter.args[1];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] >= parsedFilter.args[1];
   }
   if (variableCount === 2) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] >= binding[parsedFilter.args[1]];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] >= binding[parsedFilter.args[1]];
   }
   throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
 };
 
-const compileLtFilter = (parsedFilter: TParsedFilter): (binding: TBinding) => boolean => {
+const compileLtFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
   const variableCount = Object.keys(parsedFilter.variables).length;
   if (variableCount === 1) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] < parsedFilter.args[1];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] < parsedFilter.args[1];
   }
   if (variableCount === 2) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] < binding[parsedFilter.args[1]];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] < binding[parsedFilter.args[1]];
   }
   throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
 };
 
-const compileLteFilter = (parsedFilter: TParsedFilter): (binding: TBinding) => boolean => {
+const compileLteFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
   const variableCount = Object.keys(parsedFilter.variables).length;
   if (variableCount === 1) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] <= parsedFilter.args[1];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] <= parsedFilter.args[1];
   }
   if (variableCount === 2) {
-    return (binding: TBinding) => binding[parsedFilter.args[0]] <= binding[parsedFilter.args[1]];
+    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] <= binding[parsedFilter.args[1]];
   }
   throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
 };

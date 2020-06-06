@@ -9,28 +9,28 @@ import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator';
 import {
   TParsedPattern,
   TQuadstoreQuad,
-  TGetStreamResults,
-  TBinding,
+  IBaseStreamResults,
+  IBaseBinding,
   TVariables,
   TMatchTerms,
   TVarsToTermsMap, TTermsToVarsMap, TFilter, TPattern, TParsedFilter
 } from '../types';
 
 import QuadStore from '../quadstore';
-import {TSTermName} from '../types';
+import {TTermName} from '../types';
 
 
-const getBindingsIterator = async (store: QuadStore, parsedPattern: TParsedPattern): Promise<TGetStreamResults> => {
+const getBindingsIterator = async (store: QuadStore, parsedPattern: TParsedPattern): Promise<IBaseStreamResults> => {
   const {variables, matchTerms, termsToVarsMap} = parsedPattern;
   const results = await QuadStore.prototype.getStream.call(store, matchTerms, {});
-  const sorting = results.sorting.reduce((acc: string[], termName: TSTermName) => {
+  const sorting = results.sorting.reduce((acc: string[], termName: TTermName) => {
     if (termsToVarsMap[termName]) {
       // @ts-ignore
       acc.push(termsToVarsMap[termName]);
     }
     return acc;
   }, <string[]>[]);
-  let iterator: ai.AsyncIterator<TBinding> = results.iterator.transform({ transform: function (quad: TQuadstoreQuad, done: () => void) {
+  let iterator: ai.AsyncIterator<IBaseBinding> = results.iterator.transform({ transform: function (quad: TQuadstoreQuad, done: () => void) {
     const binding: {[key: string]: string} = {};
     for (const term in termsToVarsMap) {
       if (termsToVarsMap.hasOwnProperty(term)) {
@@ -54,7 +54,7 @@ const getBindingsIterator = async (store: QuadStore, parsedPattern: TParsedPatte
  * @returns {Promise<GetStreamResults>}
  */
 
-const nestedLoopJoin = async (store: QuadStore, prev: TGetStreamResults, next: TParsedPattern): Promise<TGetStreamResults> => {
+const nestedLoopJoin = async (store: QuadStore, prev: IBaseStreamResults, next: TParsedPattern): Promise<IBaseStreamResults> => {
 
   const nextCommonVarsToTermsMap: { [key: string]: string } = {};
 
@@ -73,7 +73,7 @@ const nestedLoopJoin = async (store: QuadStore, prev: TGetStreamResults, next: T
   const joinedSorting: string[] = [...prev.sorting, ...nextAdditionalSortingTerms];
   const nextSorting = joinedSorting.filter(variableName => next.variables.hasOwnProperty(variableName));
 
-  const getInnerIterator = async (outerBinding: TBinding): Promise<ai.AsyncIterator<TBinding>> => {
+  const getInnerIterator = async (outerBinding: IBaseBinding): Promise<ai.AsyncIterator<IBaseBinding>> => {
     const innerMatchTerms = {...next.matchTerms};
     for (const variableName in nextCommonVarsToTermsMap) {
       innerMatchTerms[nextCommonVarsToTermsMap[variableName]] = outerBinding[variableName];
@@ -87,14 +87,14 @@ const nestedLoopJoin = async (store: QuadStore, prev: TGetStreamResults, next: T
     // @ts-ignore
     const comparator = QuadStore.prototype._getQuadComparator.call(store, nextSorting);
     // @ts-ignore
-    return new SortIterator<TBinding>(<ai.AsyncIterator<TBinding>>iterator, comparator);
+    return new SortIterator<IBaseBinding>(<ai.AsyncIterator<IBaseBinding>>iterator, comparator);
   };
-  const mergeItems = (firstBinding: TBinding, secondBinding: TBinding) => ({
+  const mergeItems = (firstBinding: IBaseBinding, secondBinding: IBaseBinding) => ({
     ...firstBinding,
     ...secondBinding,
   });
   return {
-    iterator: new NestedLoopJoinIterator<TBinding>(prev.iterator, getInnerIterator, mergeItems),
+    iterator: new NestedLoopJoinIterator<IBaseBinding>(prev.iterator, getInnerIterator, mergeItems),
     variables: { ...prev.variables, ...next.variables },
     // @ts-ignore
     sorting: joinedSorting,
@@ -119,7 +119,7 @@ const objectContains = (outer: object, inner: object) => {
  * @param pattern
  * @returns {ParsedPattern}
  */
-const parsePattern = (termNames: TSTermName[], pattern: TPattern) => {
+const parsePattern = (termNames: TTermName[], pattern: TPattern) => {
   const variables: TVariables = {};
   const matchTerms: TMatchTerms = {};
   const varsToTermsMap: TVarsToTermsMap = {};
@@ -180,7 +180,7 @@ export const searchStream = async (store: QuadStore, patterns: TPattern[], filte
   //   });
   // });
 
-  return await p.reduce(parsedPatterns.slice(1), async (prev: TGetStreamResults, next: TParsedPattern): Promise<TGetStreamResults> => {
+  return await p.reduce(parsedPatterns.slice(1), async (prev: IBaseStreamResults, next: TParsedPattern): Promise<IBaseStreamResults> => {
     return await nestedLoopJoin(store, prev, next);
   }, await getBindingsIterator(store, parsedPatterns[0]));
 

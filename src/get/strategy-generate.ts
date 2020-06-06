@@ -1,9 +1,9 @@
 import {
-  TSIndex,
+  IQSIndex,
   TQuadstoreMatchTerms,
-  TQuadstoreStrategy,
-  TSTermName,
-  TSRange
+  IQSStrategy,
+  TTermName,
+  IBaseRange
 } from '../types';
 import QuadStore from '../quadstore';
 
@@ -17,7 +17,7 @@ const getCachedStrategy = (query: TQuadstoreMatchTerms) => {
   return strategyCache.get(query);
 };
 
-const setCachedStrategy = (query: TQuadstoreMatchTerms, strategy: TQuadstoreStrategy) => {
+const setCachedStrategy = (query: TQuadstoreMatchTerms, strategy: IQSStrategy) => {
   strategyCache.set(query, strategy);
 };
 
@@ -32,7 +32,7 @@ const last = (a: any[]) => {
   return a[a.length - 1];
 };
 
-const addIndexMatch = (strategy: TQuadstoreStrategy, term: TSTermName, valueOrRange: string|TSRange, store: QuadStore) => {
+const addIndexMatch = (strategy: IQSStrategy, term: TTermName, valueOrRange: string|IBaseRange, store: QuadStore) => {
   switch (typeof(valueOrRange)) {
     case 'string':
     case 'number':
@@ -66,7 +66,7 @@ const addIndexMatch = (strategy: TQuadstoreStrategy, term: TSTermName, valueOrRa
   }
 };
 
-const canAddIndexMatch = (strategy: TQuadstoreStrategy) => {
+const canAddIndexMatch = (strategy: IQSStrategy) => {
   if (strategy.lte !== strategy.gte) {
     return false;
   }
@@ -79,7 +79,7 @@ const canAddIndexMatch = (strategy: TQuadstoreStrategy) => {
   return true;
 };
 
-const populate = (query: TQuadstoreMatchTerms, indexTerms: TSTermName[], strategy: TQuadstoreStrategy, store: QuadStore) => {
+const populate = (query: TQuadstoreMatchTerms, indexTerms: TTermName[], strategy: IQSStrategy, store: QuadStore) => {
   if (Object.keys(query).length < 1) {
     return;
   }

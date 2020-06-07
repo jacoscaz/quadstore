@@ -9,36 +9,40 @@ import {EventEmitter} from 'events';
 import QuadStore from './quadstore';
 import * as serialization from './rdf/serialization';
 import * as sparql from './sparql';
-import AsyncIterator from 'asynciterator';
-import { DataFactory, Term, Store, Quad, NamedNode, BlankNode, DefaultGraph } from 'rdf-js';
+import ai from 'asynciterator';
+import {BlankNode, DataFactory, DefaultGraph, NamedNode, Quad, Term, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Store} from 'rdf-js';
 import {
-  IRSQuad,
-  IRSQuadArrayResult,
-  IRSRange,
-  IRSStore,
-  IRSTerms,
-  TTermName,
   EResultType,
   IEmptyOpts,
+  IQSQuad,
+  IQSStoreOpts,
+  IQSTerms,
   IReadable,
-  IRSStoreOpts, IQSStoreOpts
+  IRSQuad, IRSQuadArrayResult,
+  IRSQuadStreamResult,
+  IRSStore,
+  IRSStoreOpts,
+  IRSTerms
 } from './types';
+import { IBaseGetOpts } from './types/base';
 
-class RdfStore extends QuadStore implements IRSStore {
+class RdfStore extends EventEmitter implements IRSStore, Store {
 
-  public _dataFactory: DataFactory;
+  readonly quadstore: QuadStore;
+  readonly dataFactory: DataFactory;
 
   constructor(opts: IRSStoreOpts) {
+    super();
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(utils.isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
-    const superOpts: IQSStoreOpts = {
+    const quadstoreOpts: IQSStoreOpts = {
       ...opts,
       defaultGraph: opts.defaultGraph
         ? serialization.importSimpleTerm(opts.defaultGraph, true, 'urn:rdfstore:dg')
         : 'urn:quadstore:dg',
     };
-    super(superOpts);
-    this._dataFactory = opts.dataFactory;
+    this.quadstore = new QuadStore(quadstoreOpts);
+    this.dataFactory = opts.dataFactory;
   }
 
 
@@ -47,13 +51,15 @@ class RdfStore extends QuadStore implements IRSStore {
   // **************************************************************************
 
 
-  match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): IReadable<Quad> {
-    const iterator = new AsyncIterator.TransformIterator<Quad, Quad>();
-    const matchTerms = { subject, predicate, object, graph };
+  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): IReadable<Quad> {
+    const iterator = new ai.TransformIterator<Quad, Quad>();
+    const matchTerms: IRSTerms = { subject, predicate, object, graph };
     this.getStream(matchTerms, {})
-      .then((results) => { iterator.source = results.iterator; })
+      .then((results) => {
+        iterator.source = results.iterator;
+      })
       .catch((err) => {
-        // TODO: is the destroy() method really suppored by AsyncIterator?
+        // TODO: is the destroy() method really supported by AsyncIterator?
         // @ts-ignore
         iterator.destroy();
       });
@@ -92,7 +98,7 @@ class RdfStore extends QuadStore implements IRSStore {
    * @param graph
    * @returns {*}
    */
-  removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term) {
+  removeMatches(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph) {
     const source = this.match(subject, predicate, object, graph);
     return this.remove(source);
   }
@@ -102,7 +108,7 @@ class RdfStore extends QuadStore implements IRSStore {
    * @param graph
    * @returns {*}
    */
-  deleteGraph(graph: NamedNode|BlankNode|DefaultGraph) {
+  deleteGraph(graph: Quad_Graph) {
     return this.removeMatches(undefined, undefined, undefined, graph);
   }
 
@@ -110,12 +116,12 @@ class RdfStore extends QuadStore implements IRSStore {
   // ******************************* ARRAY API ********************************
   // **************************************************************************
 
-  async getApproximateSize(matchTerms: IBaseTerms<Term>, opts: TEmptyOpts) {
-    const importedTerms = serialization.importTerms(matchTerms, this._defaultGraph, true, false);
-    return await super.getApproximateSize(importedTerms, opts);
+  async getApproximateSize(matchTerms: IRSTerms, opts: IEmptyOpts) {
+    const importedTerms: IQSTerms = serialization.importTerms(matchTerms, this.quadstore.defaultGraph);
+    return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
-  async sparql(query: string, opts: TEmptyOpts) {
+  async sparql(query: string, opts: IEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isString(query), 'The "query" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -130,30 +136,76 @@ class RdfStore extends QuadStore implements IRSStore {
     }
   }
 
+  async put(quads: IRSQuad | IRSQuad[], opts: IEmptyOpts | undefined = {}): Promise<void> {
+    const importedQuads = Array.isArray(quads)
+      ? quads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
+      : serialization.importQuad(quads, this.quadstore.defaultGraph);
+    return await this.quadstore.put(importedQuads, opts);
+  }
+
+  async del(matchTermsOrOldQuads: IRSQuad | IRSTerms | IRSQuad[], opts: IEmptyOpts): Promise<void> {
+    let importedMatchTermsOrOldQuads: IQSQuad|IQSQuad[]|IQSTerms;
+    if (Array.isArray(matchTermsOrOldQuads)) {
+      importedMatchTermsOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
+      importedMatchTermsOrOldQuads = serialization.importQuad(<IRSQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
+    } else {
+      importedMatchTermsOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
+    }
+    return await this.quadstore.del(importedMatchTermsOrOldQuads, opts);
+  }
+  async get(matchTerms: IRSTerms, opts: IBaseGetOpts): Promise<IRSQuadArrayResult> {
+    const results = await this.getStream(matchTerms, opts);
+    const items: IRSQuad[] = await utils.streamToArray(results.iterator);
+    return { type: results.type, items, sorting: results.sorting };
+  }
+
+  async patch(matchTermsOrOldQuads: IRSQuad | IRSTerms | IRSQuad[], newQuads: IRSQuad | IRSQuad[], opts: IEmptyOpts): Promise<void> {
+    let importedMatchTermsOrOldQuads: IQSQuad|IQSQuad[]|IQSTerms;
+    if (Array.isArray(matchTermsOrOldQuads)) {
+      importedMatchTermsOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
+      importedMatchTermsOrOldQuads = serialization.importQuad(<IRSQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
+    } else {
+      importedMatchTermsOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
+    }
+    const importedNewQuads: IQSQuad|IQSQuad[] = Array.isArray(newQuads)
+      ? newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
+      : serialization.importQuad(newQuads, this.quadstore.defaultGraph);
+    return await this.quadstore.patch(importedMatchTermsOrOldQuads, importedNewQuads, opts);
+  }
+
+
   // **************************************************************************
   // ******************************* STREAM API *******************************
   // **************************************************************************
 
-  async getStream(matchTerms: IBaseTerms<Term>, opts: TEmptyOpts) {
+  async getStream(matchTerms: IRSTerms, opts: IEmptyOpts): Promise<IRSQuadStreamResult> {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const importedMatchTerms: IBaseTerms<string> = {};
-    if (matchTerms.subject) {
-      importedMatchTerms.subject = this._importTerm(matchTerms.subject, false, true, false);
-    }
-    if (matchTerms.predicate) {
-      importedMatchTerms.predicate = this._importTerm(matchTerms.predicate, false, true, false);
-    }
-    if (matchTerms.object) {
-      importedMatchTerms.object = this._importTerm(matchTerms.object, false, true, false);
-    }
-    if (matchTerms.graph) {
-      importedMatchTerms.graph = this._importTerm(matchTerms.graph, true, true, false);
-    }
-    const results = await QuadStore.prototype.getStream.call(this, importedMatchTerms, opts);
-    return { iterator: results.iterator.map(this._createQuadDeserializerMapper()), sorting: results.sorting };
+    const importedMatchTerms: IQSTerms = serialization.importTerms(matchTerms, this.quadstore.defaultGraph);
+    const results = await this.quadstore.getStream(importedMatchTerms, opts);
+    return {
+      type: EResultType.QUADS,
+      iterator: results.iterator.map(this._createQuadDeserializerMapper()),
+      sorting: results.sorting,
+    };
+  }
+
+  async putStream(source: IReadable<IRSQuad>, opts: IEmptyOpts): Promise<void> {
+    // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
+    const importedQuadsIterator: IReadable<IQSQuad> = ai.AsyncIterator.wrap(source)
+      .map(this._createQuadSerializerMapper());
+    return await this.quadstore.putStream(importedQuadsIterator, opts);
+  }
+
+  async delStream(source: IReadable<IRSQuad>, opts: IEmptyOpts): Promise<void> {
+    // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
+    const importedQuadsIterator: IReadable<IQSQuad> = ai.AsyncIterator.wrap(source)
+      .map(this._createQuadSerializerMapper());
+    return await this.quadstore.delStream(importedQuadsIterator, opts);
   }
 
   async searchStream(patterns, filters, opts) {
@@ -169,7 +221,7 @@ class RdfStore extends QuadStore implements IRSStore {
     });
     const results = await QuadStore.prototype.searchStream.call(this, importedPatterns, importedFilters, opts);
     const iterator = results.iterator.map((binding) => {
-      return serialization.exportTerms(binding, this._defaultGraph, this._dataFactory);
+      return serialization.exportTerms(binding, this._defaultGraph, this.dataFactory);
     });
     return { type: results.type, variables: results.variables, iterator };
   }
@@ -180,35 +232,15 @@ class RdfStore extends QuadStore implements IRSStore {
   }
 
 
-
-  _isQuad(obj) {
-    return QuadStore.prototype._isQuad.call(this, obj)
-      && _.isFunction(obj.equals);
+  _createQuadSerializerMapper(): (quad: IRSQuad) => IQSQuad {
+    return (quad: IRSQuad): IQSQuad => {
+      return serialization.importQuad(quad, this.quadstore.defaultGraph);
+    }
   }
 
-  _importTerm(term, isGraph, rangeBoundaryAllowed = false) {
-    return serialization.importTerm(term, isGraph, this._defaultGraph, rangeBoundaryAllowed);
-  }
-
-  _importQuad(quad) {
-    return serialization.importQuad(quad, this._defaultGraph);
-  }
-
-  _createQuadDeserializerMapper() {
-    return (quad) => {
-      return serialization.exportQuad(quad, this._defaultGraph, this._dataFactory);
-    };
-  }
-
-  _getTermValueComparator() {
-    return (a: Term, b: Term) => {
-      // @ts-ignore
-      const aSerializedValue = a._serializedValue || serialization.importTerm(a, false, this._defaultGraph, true, false);
-      // @ts-ignore
-      const bSerializedValue = b._serializedValue || serialization.importTerm(b, false, this._defaultGraph, true, false);
-      if (aSerializedValue < bSerializedValue) return -1;
-      else if (aSerializedValue === bSerializedValue) return 0;
-      else return 1;
+  _createQuadDeserializerMapper(): (quad: IQSQuad) => IRSQuad {
+    return (quad: IQSQuad): IRSQuad => {
+      return serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
     };
   }
 

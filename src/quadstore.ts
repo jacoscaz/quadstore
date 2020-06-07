@@ -12,7 +12,7 @@ import {
   EResultType,
   IEmptyOpts,
   IReadable,
-  IQSStoreOpts
+  IQSStoreOpts, IQSQuadStreamResult
 } from './types';
 import assert from 'assert';
 import events from 'events';
@@ -29,15 +29,15 @@ const search = require('./search');
 
 class QuadStore extends events.EventEmitter implements IQSStore {
 
-  private readonly _db: AbstractLevelDOWN;
-  private readonly _abstractLevelDOWN: AbstractLevelDOWN;
+  readonly db: AbstractLevelDOWN;
+  readonly abstractLevelDOWN: AbstractLevelDOWN;
 
-  protected readonly _defaultGraph: string;
-  private readonly _indexes: IQSIndex[];
-  private readonly _id: string;
+  readonly defaultGraph: string;
+  readonly indexes: IQSIndex[];
+  readonly id: string;
 
-  public readonly separator!: string;
-  public readonly boundary!: string;
+  readonly separator!: string;
+  readonly boundary!: string;
 
   /*
    * ==========================================================================
@@ -53,11 +53,11 @@ class QuadStore extends events.EventEmitter implements IQSStore {
       utils.isAbstractLevelDOWNInstance(opts.backend),
       'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN',
     );
-    this._abstractLevelDOWN = opts.backend;
-    this._db = levelup(encode(this._abstractLevelDOWN, {valueEncoding: 'json'}));
-    this._defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
-    this._indexes = [];
-    this._id = utils.nanoid();
+    this.abstractLevelDOWN = opts.backend;
+    this.db = levelup(encode(this.abstractLevelDOWN, {valueEncoding: 'json'}));
+    this.defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
+    this.indexes = [];
+    this.id = utils.nanoid();
     utils.defineReadOnlyProperty(this, 'boundary', opts.boundary || '\uDBFF\uDFFF');
     utils.defineReadOnlyProperty(this, 'separator', opts.separator || '\u0000\u0000');
     (opts.indexes || utils.genDefaultIndexes())
@@ -71,7 +71,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
 
   close() {
     // @ts-ignore
-    return this._db.close();
+    return this.db.close();
   }
 
   /*
@@ -85,7 +85,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
   }
 
   toJSON() {
-    return `[object ${this.constructor.name}::${this._id}]`;
+    return `[object ${this.constructor.name}::${this.id}]`;
   }
 
   /*
@@ -97,7 +97,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
   _addIndex(terms: TTermName[]): void {
     assert(utils.hasAllTerms(terms), 'Invalid index (bad terms).');
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
-    this._indexes.push({
+    this.indexes.push({
       terms,
       name,
       getKey: eval(
@@ -195,7 +195,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
    * ==========================================================================
    */
 
-  async getStream(matchTerms: IQSTerms, opts: IEmptyOpts) {
+  async getStream(matchTerms: IQSTerms, opts: IEmptyOpts): Promise<IQSQuadStreamResult> {
     if (_.isNil(matchTerms)) matchTerms = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
@@ -264,19 +264,19 @@ class QuadStore extends events.EventEmitter implements IQSStore {
     if (oldQuads !== null) {
       if (Array.isArray(oldQuads)) {
         // @ts-ignore
-        await this._db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
+        await this.db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
       } else {
         // @ts-ignore
-        await this._db.batch(this._quadToBatch(oldQuads, 'del'));
+        await this.db.batch(this._quadToBatch(oldQuads, 'del'));
       }
     }
     if (newQuads !== null) {
       if (Array.isArray(newQuads)) {
         // @ts-ignore
-        await this._db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
+        await this.db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
       } else {
         // @ts-ignore
-        await this._db.batch(this._quadToBatch(newQuads, 'put'));
+        await this.db.batch(this._quadToBatch(newQuads, 'put'));
       }
     }
   }
@@ -294,7 +294,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
    * @returns {}
    */
   protected _quadToBatch(quad: IQSQuad, type: 'del'|'put') {
-    const indexes = this._indexes;
+    const indexes = this.indexes;
     // @ts-ignore
     if (!quad[contextKey]) {
       // @ts-ignore
@@ -302,7 +302,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
         subject: quad.subject,
         predicate: quad.predicate,
         object: quad.object,
-        graph: this._defaultGraph,
+        graph: this.defaultGraph,
       };
     }
     return indexes.map(i => ({

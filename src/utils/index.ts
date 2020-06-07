@@ -102,29 +102,12 @@ export const defineReadOnlyProperty = (obj: object, key: string, value: any): vo
 
 export const noop = () => {};
 
-export const hasAllTerms = (coll: object): boolean => {
-  if (typeof(coll) !== 'object') throw new Error('not an object');
-  const found: { [key: string]: boolean } = {};
-  const terms = Array.isArray(coll) ? coll : Object.keys(coll);
-  if (terms.length !== 4) {
-    return false;
-  }
-  for (let t = 0; t < terms.length; t += 1) {
-    switch (terms[t]) {
-      case 'subject':
-      case 'predicate':
-      case 'object':
-      case 'graph':
-        if (found[terms[t]]) {
-          return false;
-        }
-        found[terms[t]] = true;
-        break;
-      default:
-        return false;
-    }
-  }
-  return true;
+export const hasAllTerms = (coll: any): boolean => {
+  return typeof(coll) === 'object'
+    && 'subject' in coll
+    && 'predicate' in coll
+    && 'object' in coll
+    && 'graph' in coll;
 }
 
 export const genDefaultIndexes = () => {

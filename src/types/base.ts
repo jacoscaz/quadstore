@@ -55,30 +55,36 @@ export interface IReadable<T> extends EventEmitter {
 export enum EResultType {
   QUADS = 'quads',
   BINDINGS = 'bindings',
+  APPROXIMATE_SIZE = 'approximate_size',
 }
 
-export interface IBaseQuadArrayResults<T extends IBaseQuad<any, any, any, any>> {
+export interface IBaseQuadArrayResults<T> {
   type: EResultType.QUADS,
   items: T[],
   sorting: TTermName[],
 }
 
-export interface IBaseQuadStreamResults<T extends IBaseQuad<any, any, any, any>> {
+export interface IBaseQuadStreamResults<T> {
   type: EResultType.QUADS,
   sorting: TTermName[],
   iterator: ai.AsyncIterator<T>,
 }
 
-export interface IBaseBindingArrayResults<T extends IBaseBinding<any>> {
+export interface IBaseBindingArrayResults<T> {
   type: EResultType.BINDINGS,
   items: T[],
   sorting: TTermName[],
 }
 
-export interface IBaseBindingStreamResults<T extends IBaseBinding<any>> {
+export interface IBaseBindingStreamResults<T> {
   type: EResultType.BINDINGS,
   sorting: TTermName[],
   iterator: ai.AsyncIterator<T>,
+}
+
+export interface IBaseApproximateSizeResults {
+  type: EResultType.APPROXIMATE_SIZE,
+  approximateSize: number,
 }
 
 // ****************************************************************************
@@ -93,19 +99,52 @@ export interface IBaseStoreOpts<G> {
   indexes?: TTermName[][],
 }
 
+export interface IBaseGetOpts {
+  limit?: number,
+  offset?: number,
+}
+
 export interface IBaseStore<
-  Q extends IBaseQuad<any, any, any, any>,
-  T extends IBaseTerms<any, any, any, any>
+  Q,
+  T,
+  S
 > extends EventEmitter {
   put(quads: Q|Q[], opts?: IEmptyOpts): Promise<void>
   del(matchTermsOrOldQuads: T|Q|Q[], opts: IEmptyOpts): Promise<void>
-  get(matchTerms: T, opts: IEmptyOpts): Promise<IBaseQuadArrayResults<Q>>
+  get(matchTerms: T, opts: IBaseGetOpts): Promise<IBaseQuadArrayResults<Q>>
   patch(matchTermsOrOldQuads: T|Q|Q[], newQuads: Q|Q[], opts: IEmptyOpts): Promise<void>
-  getApproximateSize(matchTerms: T, opts: IEmptyOpts): Promise<number>
-  getStream(matchTerms: T, opts: IEmptyOpts): Promise<IBaseQuadStreamResults<Q>>
+  search(pipeline: IBaseSearchPipeline, opts: IEmptyOpts): Promise<IBaseQuadArrayResults<Q>|IBaseBindingArrayResults<T>>
+  getApproximateSize(matchTerms: T, opts: IEmptyOpts): Promise<IBaseApproximateSizeResults>
+  getStream(matchTerms: T, opts: IBaseGetOpts): Promise<IBaseQuadStreamResults<Q>>
   putStream(source: IReadable<Q>, opts: IEmptyOpts): Promise<void>
   delStream(source: IReadable<Q>, opts: IEmptyOpts): Promise<void>
+  searchStream(pipeline: IBaseSearchPipeline, opts: IEmptyOpts): Promise<IBaseQuadStreamResults<Q>|IBaseBindingStreamResults<T>>
 }
+
+// ****************************************************************************
+// ********************************* SEARCH ***********************************
+// ****************************************************************************
+
+export enum ESearchStageType {
+  BGP = 'bgp',
+  LT = 'lt',
+  LTE = 'lte',
+  GT = 'gt',
+  GTE = 'gte',
+}
+
+export interface IBaseSearchBgpStage<T> {
+  type: ESearchStageType.BGP,
+  optional: boolean,
+  pattern: T,
+}
+
+export interface IBaseSearchFilterStage<T> {
+  type: ESearchStageType.GT|ESearchStageType.GTE|ESearchStageType.LT|ESearchStageType.LTE,
+  args: T[],
+}
+
+export type IBaseSearchPipeline = (IBaseSearchBgpStage<any>|IBaseSearchFilterStage<any>)[]
 
 // ****************************************************************************
 // ********************************** STUFF ***********************************

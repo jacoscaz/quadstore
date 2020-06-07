@@ -108,9 +108,9 @@ export const importTermRange = (range: IRSRange, rangeBoundary: boolean = false)
   return importedRange;
 }
 
-export const importTerm = (term: Term|IRSRange, isGraph: boolean, defaultGraphValue: string, rangeBoundaryAllowed: boolean = false, rangeBoundary: boolean = false): string|IQSRange => {
+export const importTerm = (term: Term|IRSRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|IQSRange => {
   if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
-    return importTermRange(<IRSRange>term);
+    return importTermRange(term, rangeBoundary);
   } else if ('termType' in term) {
     switch (term.termType) {
       case 'NamedNode':
@@ -222,7 +222,19 @@ export const exportTerms = (terms: IQSTerms, defaultGraphValue: string, dataFact
   return _.mapValues(terms, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
 };
 
-export const importTerms = (terms: IRSTerms, defaultGraphValue: string, rangeBoundary: boolean = false): IQSTerms => {
-  // @ts-ignore
-  return _.mapValues(terms, (term: Term) => importTerm(term, false, defaultGraphValue, rangeBoundary));
+export const importTerms = (terms: IRSTerms, defaultGraph: string): IQSTerms => {
+  const importedTerms: IQSTerms = {};
+  if (terms.subject) {
+    importedTerms.subject = importTerm(terms.subject, false, defaultGraph, false);
+  }
+  if (terms.predicate) {
+    importedTerms.predicate = importTerm(terms.predicate, false, defaultGraph, false);
+  }
+  if (terms.object) {
+    importedTerms.object = importTerm(terms.object, false, defaultGraph, true);
+  }
+  if (terms.graph) {
+    importedTerms.graph = importTerm(terms.graph, true, defaultGraph, false);
+  }
+  return importedTerms;
 };

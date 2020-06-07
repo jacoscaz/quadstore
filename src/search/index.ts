@@ -165,7 +165,7 @@ const parseFilter = (termNames: string[], filter: TFilter): TParsedFilter => {
 // };
 
 
-export const searchStream = async (store: QuadStore, patterns: TPattern[], filters: TFilter[]) => {
+export const searchStream = async (store: QuadStore, pipeline: ISearchOp) => {
 
   const termNames = store._getTermNames();
 

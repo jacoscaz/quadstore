@@ -1,9 +1,6 @@
 import {
-  IQSIndex,
-  TQuadstoreMatchTerms,
-  IQSStrategy,
-  TTermName,
-  IBaseRange
+  IQSIndex, IQSRange,
+  IQSStrategy, IQSTerms, TTermName,
 } from '../types';
 import QuadStore from '../quadstore';
 
@@ -13,11 +10,11 @@ const _ = require('../utils/lodash');
 const strategyCache = new Map();
 // TODO: keep cache size in check!
 
-const getCachedStrategy = (query: TQuadstoreMatchTerms) => {
+const getCachedStrategy = (query: IQSTerms) => {
   return strategyCache.get(query);
 };
 
-const setCachedStrategy = (query: TQuadstoreMatchTerms, strategy: IQSStrategy) => {
+const setCachedStrategy = (query: IQSTerms, strategy: IQSStrategy) => {
   strategyCache.set(query, strategy);
 };
 
@@ -32,11 +29,9 @@ const last = (a: any[]) => {
   return a[a.length - 1];
 };
 
-const addIndexMatch = (strategy: IQSStrategy, term: TTermName, valueOrRange: string|IBaseRange, store: QuadStore) => {
+const addIndexMatch = (strategy: IQSStrategy, term: TTermName, valueOrRange: string|IQSRange) => {
   switch (typeof(valueOrRange)) {
     case 'string':
-    case 'number':
-    case 'boolean':
       strategy.lt.push(valueOrRange);
       strategy.lte = true;
       strategy.gt.push(valueOrRange);
@@ -79,7 +74,7 @@ const canAddIndexMatch = (strategy: IQSStrategy) => {
   return true;
 };
 
-const populate = (query: TQuadstoreMatchTerms, indexTerms: TTermName[], strategy: IQSStrategy, store: QuadStore) => {
+const populate = (query: IQSTerms, indexTerms: TTermName[], strategy: IQSStrategy, store: QuadStore) => {
   if (Object.keys(query).length < 1) {
     return;
   }
@@ -97,20 +92,20 @@ const populate = (query: TQuadstoreMatchTerms, indexTerms: TTermName[], strategy
     strategy.valid = false;
     return;
   }
-  addIndexMatch(strategy, term, valueOrRange, store);
+  addIndexMatch(strategy, term, valueOrRange);
   populate(omit(query, term), indexTerms.slice(1), strategy, store);
 };
 
-const generate = (store: QuadStore, query: TQuadstoreMatchTerms) => {
+const generate = (store: QuadStore, query: IQSTerms) => {
   let strategy = getCachedStrategy(query);
   if (strategy) {
     return strategy;
   }
   let i = 0;
   // @ts-ignore
-  while (!strategy && i < store._indexes.length) {
+  while (!strategy && i < store.indexes.length) {
     // @ts-ignore
-    const index = store._indexes[i++];
+    const index = store.indexes[i++];
     const localStrategy = {
       index,
       query,

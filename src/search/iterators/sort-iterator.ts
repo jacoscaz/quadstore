@@ -35,7 +35,7 @@ class SortedSetIterator<T> extends ai.BufferedIterator<T> {
 
 class SortIterator<T> extends ai.TransformIterator<T, T> {
 
-  constructor(source: ai.AsyncIterator<T>, comparator: (a: T, b: T) => number) {
+  constructor(source: ai.AsyncIterator<T>, comparator: (a: T, b: T) => -1|0|1) {
 
     super();
 

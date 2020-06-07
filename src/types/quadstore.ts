@@ -4,7 +4,7 @@ import {
   IBaseBindingArrayResults, IBaseBindingStreamResults,
   IBaseQuad,
   IBaseQuadArrayResults, IBaseQuadStreamResults,
-  IBaseRange,
+  IBaseRange, IBaseSearchBgpStage, IBaseSearchFilterStage, IBaseSearchPipeline,
   IBaseStore,
   IBaseStoreOpts,
   IBaseTerms,
@@ -20,6 +20,10 @@ export interface IQSQuadArrayResult extends IBaseQuadArrayResults<IQSQuad> {}
 export interface IQSQuadStreamResult extends IBaseQuadStreamResults<IQSQuad> {}
 export interface IQSBindingArrayResult extends IBaseBindingArrayResults<IQSBinding> {}
 export interface IQSBindingStreamResult extends IBaseBindingStreamResults<IQSBinding> {}
+
+export interface IQSSearchBgpStage extends IBaseSearchBgpStage<IQSTerms> {}
+export interface IQSSearchFilterStage extends IBaseSearchFilterStage<string> {}
+export type IQSSearchPipeline = (IQSSearchBgpStage|IQSSearchFilterStage)[]
 
 export interface IQSIndex {
   name: string,

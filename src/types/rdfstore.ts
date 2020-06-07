@@ -12,15 +12,10 @@ import {
   TTermName
 } from './base';
 
-import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph } from 'rdf-js';
+import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad } from 'rdf-js';
 
 
-export interface IRSQuad extends IBaseQuad<
-  Quad_Subject,
-  Quad_Predicate,
-  Quad_Object,
-  Quad_Graph
-> {}
+export interface IRSQuad extends Quad {}
 
 export interface IRSRange extends IBaseRange<Literal> {}
 
@@ -42,4 +37,7 @@ export interface IRSStoreOpts extends IBaseStoreOpts<NamedNode> {
   dataFactory: DataFactory
 }
 
-export interface IRSStore extends IBaseStore<IRSQuad, IRSTerms> {}
+export interface IRSStore extends IBaseStore<IRSQuad, IRSTerms> {
+  sparql(query: string, opts: IEmptyOpts): Promise<IRSQuadArrayResult|IRSBindingArrayResult>
+  sparqlStream(query: string, opts: IEmptyOpts): Promise<IRSQuadStreamResult|IRSBindingStreamResult>
+}

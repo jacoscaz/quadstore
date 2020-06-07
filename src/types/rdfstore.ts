@@ -22,7 +22,7 @@ export interface IRSQuad extends IBaseQuad<
   Quad_Graph
 > {}
 
-export interface IRSRange extends IBaseRange<Quad_Object> {}
+export interface IRSRange extends IBaseRange<Literal> {}
 
 export interface IRSTerms extends IBaseTerms<
   Quad_Subject,

@@ -1,7 +1,8 @@
 
-'use strict';
+import * as _ from '../utils/lodash';
+import { Term, DataFactory, Literal, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from 'rdf-js';
+import {IQSQuad, IQSQuadArrayResult, IQSRange, IQSTerms, IRSQuad, IRSRange, IRSTerms} from '../types';
 
-import _ from '../utils/lodash';
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
 const xsdInteger = xsd + 'integer';
@@ -11,7 +12,7 @@ const fpstring = require('./fpstring');
 const xsdBoolean = xsd + 'boolean';
 const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
-function exportLiteralTerm(term, dataFactory) {
+export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
   const [, encoding, datatype, value, language] = term.split('^');
   switch (datatype) {
     case xsdString:
@@ -24,7 +25,7 @@ function exportLiteralTerm(term, dataFactory) {
   }
 }
 
-function importLiteralTerm(term, rangeBoundary = false) {
+export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
   if (term.language) {
     return `^^${xsdString}^${term.value}^${term.language}`;
   }
@@ -49,7 +50,7 @@ function importLiteralTerm(term, rangeBoundary = false) {
   }
 }
 
-function exportTerm(term, isGraph, defaultGraphValue, dataFactory) {
+export const exportTerm = (term: string, isGraph: boolean, defaultGraphValue: string, dataFactory: DataFactory): Term => {
   if (!term) {
     throw new Error(`Nil term "${term}". Cannot export.`);
   }
@@ -60,7 +61,10 @@ function exportTerm(term, isGraph, defaultGraphValue, dataFactory) {
     case '_':
       return dataFactory.blankNode(term.substr(2));
     case '?':
-      return dataFactory.variable(term.substr(1));
+      if (dataFactory.variable) {
+        return dataFactory.variable(term.substr(1));
+      }
+      throw new Error('DataFactory does not support variables');
     case '^':
       if (isGraph) {
         throw new Error(`Invalid graph term "${term}" (graph cannot be a literal).`);
@@ -71,24 +75,12 @@ function exportTerm(term, isGraph, defaultGraphValue, dataFactory) {
   }
 }
 
-module.exports.exportTerm = exportTerm;
-
-function importTerm(term, isGraph, defaultGraphValue, rangeBoundaryAllowed = false, rangeBoundary = false) {
+export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue: string): string => {
   if (!term) {
     if (isGraph) {
       return defaultGraphValue;
     }
     throw new Error(`Nil non-graph term, cannot import.`);
-  }
-  if (rangeBoundaryAllowed) {
-    if (Array.isArray(term)) {
-      return term.map(e => importTerm(e, isGraph, defaultGraphValue, rangeBoundaryAllowed, true));
-    }
-    if (term.gt || term.gte || term.lt || term.lte) {
-      return _.mapValues(term, v => importTerm(v, isGraph, defaultGraphValue, rangeBoundaryAllowed, true));
-    }
-  } else if (typeof(term.termType) !== 'string' || typeof(term.value) !== 'string') {
-    throw new Error(`Invalid term, cannot import.`);
   }
   switch (term.termType) {
     case 'NamedNode':
@@ -100,44 +92,137 @@ function importTerm(term, isGraph, defaultGraphValue, rangeBoundaryAllowed = fal
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':
-      return importLiteralTerm(term, rangeBoundary);
+      return importLiteralTerm(term, false);
     default:
+      // @ts-ignore
       throw new Error(`Unexpected termType: "${term.termType}".`);
   }
 }
 
-module.exports.importTerm = importTerm;
+export const importTermRange = (range: IRSRange, rangeBoundary: boolean = false): IQSRange => {
+  const importedRange: IQSRange = {};
+  if (range.lt) importedRange.lt = importLiteralTerm(range.lt, rangeBoundary);
+  if (range.lte) importedRange.lte = importLiteralTerm(range.lte, rangeBoundary);
+  if (range.gt) importedRange.gt = importLiteralTerm(range.gt, rangeBoundary);
+  if (range.gte) importedRange.gte = importLiteralTerm(range.gte, rangeBoundary);
+  return importedRange;
+}
 
-function importQuad(quad, defaultGraphValue) {
+export const importTerm = (term: Term|IRSRange, isGraph: boolean, defaultGraphValue: string, rangeBoundaryAllowed: boolean = false, rangeBoundary: boolean = false): string|IQSRange => {
+  if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
+    return importTermRange(<IRSRange>term);
+  } else if ('termType' in term) {
+    switch (term.termType) {
+      case 'NamedNode':
+        return term.value;
+      case 'BlankNode':
+        return '_:' + term.value;
+      case 'Variable':
+        return '?' + term.value;
+      case 'DefaultGraph':
+        return defaultGraphValue;
+      case 'Literal':
+        return importLiteralTerm(term, rangeBoundary);
+      default:
+        // @ts-ignore
+        throw new Error(`Unexpected termType: "${term.termType}".`);
+    }
+  } else {
+    throw new Error(`Unexpected type of "term" argument.`);
+  }
+}
+
+export const importQuad = (quad: IRSQuad, defaultGraphValue: string): IQSQuad => {
   return {
-    subject: importTerm(quad.subject, false, defaultGraphValue, false),
-    predicate: importTerm(quad.predicate, false, defaultGraphValue, false),
-    object: importTerm(quad.object, false, defaultGraphValue, false),
-    graph: importTerm(quad.graph, true, defaultGraphValue, false),
+    subject: importSimpleTerm(quad.subject, false, defaultGraphValue),
+    predicate: importSimpleTerm(quad.predicate, false, defaultGraphValue),
+    object: importSimpleTerm(quad.object, false, defaultGraphValue),
+    graph: importSimpleTerm(quad.graph, true, defaultGraphValue),
   };
 }
 
-module.exports.importQuad = importQuad;
+const exportQuadSubject = (term: string, dataFactory: DataFactory): Quad_Subject => {
+  switch (term[0]) {
+    case '_':
+      return dataFactory.blankNode(term.substr(2));
+    case '?':
+      if (dataFactory.variable) {
+        return dataFactory.variable(term.substr(1));
+      }
+      throw new Error('DataFactory does not support variables');
+    case '^':
+      throw new Error('No literals as subject');
+    default:
+      return dataFactory.namedNode(term);
+  }
+}
 
-function exportQuad(_quad, defaultGraphValue, dataFactory) {
+const exportQuadPredicate = (term: string, dataFactory: DataFactory): Quad_Predicate => {
+  switch (term[0]) {
+    case '_':
+      throw new Error('No blank nodes as predicates');
+    case '?':
+      if (dataFactory.variable) {
+        return dataFactory.variable(term.substr(1));
+      }
+      throw new Error('DataFactory does not support variables');
+    case '^':
+      throw new Error('No literals as predicates');
+    default:
+      return dataFactory.namedNode(term);
+  }
+}
+
+const exportQuadObject = (term: string, dataFactory: DataFactory): Quad_Object => {
+  switch (term[0]) {
+    case '_':
+      return dataFactory.blankNode(term.substr(2));
+    case '?':
+      if (dataFactory.variable) {
+        return dataFactory.variable(term.substr(1));
+      }
+      throw new Error('DataFactory does not support variables');
+    case '^':
+      return exportLiteralTerm(term, dataFactory);
+    default:
+      return dataFactory.namedNode(term);
+  }
+}
+
+const exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: DataFactory): Quad_Graph => {
+  if (term === defaultGraphValue) {
+    return dataFactory.defaultGraph();
+  }
+  switch (term[0]) {
+    case '_':
+      return dataFactory.blankNode(term.substr(2));
+    case '?':
+      if (dataFactory.variable) {
+        return dataFactory.variable(term.substr(1));
+      }
+      throw new Error('DataFactory does not support variables');
+    case '^':
+      throw new Error('No literals as graphs');
+    default:
+      return dataFactory.namedNode(term);
+  }
+}
+
+export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory: DataFactory): IRSQuad => {
   return dataFactory.quad(
-    exportTerm(_quad.subject, false, defaultGraphValue, dataFactory),
-    exportTerm(_quad.predicate, false, defaultGraphValue, dataFactory),
-    exportTerm(_quad.object, false, defaultGraphValue, dataFactory),
-    exportTerm(_quad.graph, true, defaultGraphValue, dataFactory)
+    exportQuadSubject(quad.subject, dataFactory),
+    exportQuadPredicate(quad.predicate, dataFactory),
+    exportQuadObject(quad.object, dataFactory),
+    exportQuadGraph(quad.graph, defaultGraphValue, dataFactory)
   );
-}
+};
 
-module.exports.exportQuad = exportQuad;
+export const exportTerms = (terms: IQSTerms, defaultGraphValue: string, dataFactory: DataFactory): IRSTerms => {
+  // @ts-ignore
+  return _.mapValues(terms, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
+};
 
-function exportTerms(terms, defaultGraphValue, dataFactory) {
-  return _.mapValues(terms, term => exportTerm(term, false, defaultGraphValue, dataFactory));
-}
-
-module.exports.exportTerms = exportTerms;
-
-function importTerms(terms, defaultGraphValue, rangeBoundary = false) {
-  return _.mapValues(terms, term => importTerm(term, false, defaultGraphValue, rangeBoundary));
-}
-
-module.exports.importTerms = importTerms;
+export const importTerms = (terms: IRSTerms, defaultGraphValue: string, rangeBoundary: boolean = false): IQSTerms => {
+  // @ts-ignore
+  return _.mapValues(terms, (term: Term) => importTerm(term, false, defaultGraphValue, rangeBoundary));
+};

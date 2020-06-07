@@ -1,7 +1,19 @@
 
 'use strict';
 
-import {IQSIndex, IQSQuad, IQSQuadArrayResult, IQSRange, IQSStore, IQSTerms, TTermName, EResultType, IEmptyOpts, IReadable} from './types';
+import {
+  IQSIndex,
+  IQSQuad,
+  IQSQuadArrayResult,
+  IQSRange,
+  IQSStore,
+  IQSTerms,
+  TTermName,
+  EResultType,
+  IEmptyOpts,
+  IReadable,
+  IQSStoreOpts
+} from './types';
 import assert from 'assert';
 import events from 'events';
 import encode from 'encoding-down';
@@ -20,7 +32,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
   private readonly _db: AbstractLevelDOWN;
   private readonly _abstractLevelDOWN: AbstractLevelDOWN;
 
-  protected readonly _defaultContextValue: string;
+  protected readonly _defaultGraph: string;
   private readonly _indexes: IQSIndex[];
   private readonly _id: string;
 
@@ -43,7 +55,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
     );
     this._abstractLevelDOWN = opts.backend;
     this._db = levelup(encode(this._abstractLevelDOWN, {valueEncoding: 'json'}));
-    this._defaultContextValue = opts.defaultContextValue || '_DEFAULT_CONTEXT_';
+    this._defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
     this._indexes = [];
     this._id = utils.nanoid();
     utils.defineReadOnlyProperty(this, 'boundary', opts.boundary || '\uDBFF\uDFFF');
@@ -290,7 +302,7 @@ class QuadStore extends events.EventEmitter implements IQSStore {
         subject: quad.subject,
         predicate: quad.predicate,
         object: quad.object,
-        graph: this._defaultContextValue,
+        graph: this._defaultGraph,
       };
     }
     return indexes.map(i => ({

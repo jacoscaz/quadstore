@@ -87,7 +87,7 @@ export interface IBaseBindingStreamResults<T extends IBaseBinding<any>> {
 
 export interface IBaseStoreOpts<G> {
   backend: AbstractLevelDOWN,
-  defaultContextValue: G,
+  defaultGraph: G,
   boundary?: string,
   separator?: string,
   indexes?: TTermName[][],

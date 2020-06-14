@@ -1,6 +1,7 @@
 import {
-  IQSIndex, IQSRange,
-  IQSStrategy, IQSTerms, TTermName,
+  TSGetStrategy,
+  TSIndex, TSPattern, TSRange,
+  TSTermName,
 } from '../types';
 import QuadStore from '../quadstore';
 
@@ -10,12 +11,12 @@ const _ = require('../utils/lodash');
 const strategyCache = new Map();
 // TODO: keep cache size in check!
 
-const getCachedStrategy = (query: IQSTerms) => {
-  return strategyCache.get(query);
+const getCachedStrategy = (pattern: TSPattern) => {
+  return strategyCache.get(pattern);
 };
 
-const setCachedStrategy = (query: IQSTerms, strategy: IQSStrategy) => {
-  strategyCache.set(query, strategy);
+const setCachedStrategy = (pattern: TSPattern, strategy: TSGetStrategy) => {
+  strategyCache.set(pattern, strategy);
 };
 
 const omit = (o: object, p: string) => {
@@ -29,7 +30,7 @@ const last = (a: any[]) => {
   return a[a.length - 1];
 };
 
-const addIndexMatch = (strategy: IQSStrategy, term: TTermName, valueOrRange: string|IQSRange) => {
+const addIndexMatch = (strategy: TSGetStrategy, term: TSTermName, valueOrRange: string|TSRange) => {
   switch (typeof(valueOrRange)) {
     case 'string':
       strategy.lt.push(valueOrRange);
@@ -61,7 +62,7 @@ const addIndexMatch = (strategy: IQSStrategy, term: TTermName, valueOrRange: str
   }
 };
 
-const canAddIndexMatch = (strategy: IQSStrategy) => {
+const canAddIndexMatch = (strategy: TSGetStrategy) => {
   if (strategy.lte !== strategy.gte) {
     return false;
   }
@@ -74,8 +75,8 @@ const canAddIndexMatch = (strategy: IQSStrategy) => {
   return true;
 };
 
-const populate = (query: IQSTerms, indexTerms: TTermName[], strategy: IQSStrategy, store: QuadStore) => {
-  if (Object.keys(query).length < 1) {
+const populate = (pattern: TSPattern, indexTerms: TSTermName[], strategy: TSGetStrategy, store: QuadStore) => {
+  if (Object.keys(pattern).length < 1) {
     return;
   }
   if (indexTerms.length < 1) {
@@ -83,7 +84,7 @@ const populate = (query: IQSTerms, indexTerms: TTermName[], strategy: IQSStrateg
     return;
   }
   const term = indexTerms[0];
-  const valueOrRange = query.hasOwnProperty(term) ? query[term] : null;
+  const valueOrRange = pattern.hasOwnProperty(term) ? pattern[term] : null;
   if (!valueOrRange) {
     strategy.valid = false;
     return;
@@ -93,11 +94,11 @@ const populate = (query: IQSTerms, indexTerms: TTermName[], strategy: IQSStrateg
     return;
   }
   addIndexMatch(strategy, term, valueOrRange);
-  populate(omit(query, term), indexTerms.slice(1), strategy, store);
+  populate(omit(pattern, term), indexTerms.slice(1), strategy, store);
 };
 
-const generate = (store: QuadStore, query: IQSTerms) => {
-  let strategy = getCachedStrategy(query);
+const generate = (store: QuadStore, pattern: TSPattern) => {
+  let strategy = getCachedStrategy(pattern);
   if (strategy) {
     return strategy;
   }
@@ -108,22 +109,22 @@ const generate = (store: QuadStore, query: IQSTerms) => {
     const index = store.indexes[i++];
     const localStrategy = {
       index,
-      query,
+      query: pattern,
       lt: [],
       gte: false,
       gt: [],
       lte: false,
       valid: true,
     };
-    populate(query, index.terms, localStrategy, store);
+    populate(pattern, index.terms, localStrategy, store);
     if (localStrategy.valid) {
       strategy = localStrategy;
     }
   }
   if (!strategy) {
-    throw new Error(`Could not find strategy for query "${JSON.stringify(query)}"`);
+    throw new Error(`Could not find strategy for query "${JSON.stringify(pattern)}"`);
   }
-  setCachedStrategy(query, strategy);
+  setCachedStrategy(pattern, strategy);
   return strategy;
 };
 

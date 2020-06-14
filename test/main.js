@@ -15,7 +15,7 @@ const quadStoreSuite = require('./quadstore');
 
 const remove = util.promisify(fs.remove);
 
-rdfSuite();
+// rdfSuite();
 searchSuite();
 
 describe('MemDOWN backend, standard indexes', () => {
@@ -26,7 +26,7 @@ describe('MemDOWN backend, standard indexes', () => {
   });
 
   quadStoreSuite();
-  rdfStoreSuite();
+  // rdfStoreSuite();
 
 });
 
@@ -43,6 +43,6 @@ describe('LevelDOWN backend, standard indexes', () => {
   });
 
   quadStoreSuite();
-  rdfStoreSuite();
+  // rdfStoreSuite();
 
 });

@@ -1,19 +1,18 @@
 
 import _ = require('../utils/lodash');
-import { Parser as SparqlParser } from 'sparqljs';
+import { Parser as SparqlParser, SparqlQuery } from 'sparqljs';
 import { handleSparqlUpdate } from './update';
 import { handleSparqlQuery } from './query';
+import {TSEmptyOpts, TSRdfStore} from '../types';
 
 const sparqlParser = new SparqlParser();
 
-const parse = (query) => {
+export const parse = (query: string): SparqlQuery => {
   return sparqlParser.parse(query);
 };
 
-module.exports.parse = parse;
-
-const sparqlStream = async (store, query, opts) => {
-  const parsed = parse(query);
+export const sparqlStream = async (store: TSRdfStore, query: string, opts: TSEmptyOpts) => {
+  const parsed: SparqlQuery = parse(query);
   switch (parsed.type) {
     case 'query':
       return await handleSparqlQuery(store, parsed, opts);
@@ -23,5 +22,3 @@ const sparqlStream = async (store, query, opts) => {
       throw new Error(`Unsupported SPARQL type "${parsed.type}"`);
   }
 };
-
-module.exports.sparqlStream = sparqlStream;

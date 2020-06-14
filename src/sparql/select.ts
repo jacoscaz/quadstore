@@ -1,3 +1,5 @@
+import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfSearchStage, TSRdfStore, TSSearchStageType} from '../types';
+import {SelectQuery} from 'sparqljs';
 
 const enums = require('../utils/enums');
 
@@ -22,16 +24,20 @@ const parseSparqlFilter = (whereGroup) => {
   }
 }
 
-const handleSparqlSelect = async (store, parsed, opts) => {
-  const patterns = [];
-  const filters = [];
+export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {
+  const stages: TSRdfSearchStage[] = []; // TODO: pipeline
   parsed.where.forEach((whereGroup) => {
     switch (whereGroup.type) {
       case 'graph':
         whereGroup.patterns.forEach((whereGroupPattern) => {
           switch (whereGroupPattern.type) {
             case 'bgp':
-              whereGroupPattern.triples.forEach(triple => { patterns.push({ ...triple, graph: whereGroup.name }) });
+              whereGroupPattern.triples.forEach(triple => {
+                stages.push({
+                  type: TSSearchStageType.BGP,
+                  pattern: {...triple, graph: whereGroup.name},
+                });
+              });
               break;
             default:
               throw new Error(`Unsupported WHERE group pattern type "${whereGroupPattern.type}"`);
@@ -48,9 +54,6 @@ const handleSparqlSelect = async (store, parsed, opts) => {
         throw new Error(`Unsupported WHERE group type "${whereGroup.type}"`);
     }
   });
-  const results = await store.searchStream(patterns, filters);
-
+  const results = await store.searchStream(stages, opts);
   return results;
 };
-
-module.exports.handleSparqlSelect = handleSparqlSelect;

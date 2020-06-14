@@ -2,7 +2,6 @@
 'use strict';
 
 import * as _ from './utils/lodash';
-import * as enums from './utils/enums';
 import * as utils from './utils';
 import assert from 'assert';
 import {EventEmitter} from 'events';
@@ -10,39 +9,44 @@ import QuadStore from './quadstore';
 import * as serialization from './rdf/serialization';
 import * as sparql from './sparql';
 import ai from 'asynciterator';
-import {BlankNode, DataFactory, DefaultGraph, NamedNode, Quad, Term, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Store} from 'rdf-js';
+import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store} from 'rdf-js';
 import {
-  EResultType,
-  IEmptyOpts,
-  IQSQuad,
-  IQSStoreOpts,
-  IQSTerms,
-  IReadable,
-  IRSQuad, IRSQuadArrayResult,
-  IRSQuadStreamResult,
-  IRSStore,
-  IRSStoreOpts,
-  IRSTerms
+  TSEmptyOpts,
+  TSGetOpts,
+  TSPattern,
+  TSQuad,
+  TSRdfBindingArrayResult,
+  TSRdfBindingStreamResult,
+  TSRdfPattern,
+  TSRdfQuad,
+  TSRdfQuadArrayResult,
+  TSRdfQuadStreamResult,
+  TSRdfSearchPipeline,
+  TSRdfStore,
+  TSRdfStoreOpts,
+  TSReadable,
+  TSResultType,
+  TSSearchStage,
+  TSStoreOpts,
 } from './types';
-import { IBaseGetOpts } from './types/base';
 
-class RdfStore extends EventEmitter implements IRSStore, Store {
+class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   readonly quadstore: QuadStore;
   readonly dataFactory: DataFactory;
 
-  constructor(opts: IRSStoreOpts) {
+  constructor(opts: TSRdfStoreOpts) {
     super();
     assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(utils.isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
-    const quadstoreOpts: IQSStoreOpts = {
+    const {dataFactory} = opts;
+    this.dataFactory = dataFactory;
+    const quadstoreOpts: TSStoreOpts = {
       ...opts,
-      defaultGraph: opts.defaultGraph
-        ? serialization.importSimpleTerm(opts.defaultGraph, true, 'urn:rdfstore:dg')
-        : 'urn:quadstore:dg',
+      defaultGraph: serialization.importSimpleTerm(dataFactory.defaultGraph(), true, 'urn:rdfstore:dg'),
     };
     this.quadstore = new QuadStore(quadstoreOpts);
-    this.dataFactory = opts.dataFactory;
+
   }
 
 
@@ -51,10 +55,10 @@ class RdfStore extends EventEmitter implements IRSStore, Store {
   // **************************************************************************
 
 
-  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): IReadable<Quad> {
+  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): TSReadable<Quad> {
     const iterator = new ai.TransformIterator<Quad, Quad>();
-    const matchTerms: IRSTerms = { subject, predicate, object, graph };
-    this.getStream(matchTerms, {})
+    const pattern: TSRdfPattern = { subject, predicate, object, graph };
+    this.getStream(pattern, {})
       .then((results) => {
         iterator.source = results.iterator;
       })
@@ -72,7 +76,7 @@ class RdfStore extends EventEmitter implements IRSStore, Store {
    * @param opts
    * @returns {*|EventEmitter}
    */
-  import(source: IReadable<IRSQuad>): EventEmitter {
+  import(source: TSReadable<TSRdfQuad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     const emitter = new EventEmitter();
     this.putStream(source, {})
@@ -81,7 +85,7 @@ class RdfStore extends EventEmitter implements IRSStore, Store {
     return emitter;
   }
 
-  remove(source: IReadable<Quad>): EventEmitter {
+  remove(source: TSReadable<TSRdfQuad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     const emitter = new EventEmitter();
     this.delStream(source, {})
@@ -116,63 +120,76 @@ class RdfStore extends EventEmitter implements IRSStore, Store {
   // ******************************* ARRAY API ********************************
   // **************************************************************************
 
-  async getApproximateSize(matchTerms: IRSTerms, opts: IEmptyOpts) {
-    const importedTerms: IQSTerms = serialization.importTerms(matchTerms, this.quadstore.defaultGraph);
+  async getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts) {
+    const importedTerms: TSPattern = serialization.importTerms(pattern, this.quadstore.defaultGraph);
     return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
-  async sparql(query: string, opts: IEmptyOpts) {
+  async sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
     if (_.isNil(opts)) opts = {};
     assert(_.isString(query), 'The "query" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const results = await this.sparqlStream(query, opts);
     switch (results.type) {
-      case enums.resultType.BINDINGS: {
+      case TSResultType.BINDINGS: {
         const bindings = await utils.streamToArray(results.iterator);
-        return {type: results.type, variables: results.variables, bindings, sorting: results.sorting};
+        return {...results, items: bindings};
       } break;
       default:
         throw new Error(`Unsupported results type "${results.type}"`);
     }
   }
 
-  async put(quads: IRSQuad | IRSQuad[], opts: IEmptyOpts | undefined = {}): Promise<void> {
+  async put(quads: TSRdfQuad | TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<void> {
     const importedQuads = Array.isArray(quads)
       ? quads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
       : serialization.importQuad(quads, this.quadstore.defaultGraph);
     return await this.quadstore.put(importedQuads, opts);
   }
 
-  async del(matchTermsOrOldQuads: IRSQuad | IRSTerms | IRSQuad[], opts: IEmptyOpts): Promise<void> {
-    let importedMatchTermsOrOldQuads: IQSQuad|IQSQuad[]|IQSTerms;
-    if (Array.isArray(matchTermsOrOldQuads)) {
-      importedMatchTermsOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
-    } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
-      importedMatchTermsOrOldQuads = serialization.importQuad(<IRSQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
+  async del(patternOrOldQuads: TSRdfQuad | TSRdfPattern | TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+    let importedPatternOrOldQuads: TSQuad|TSQuad[]|TSPattern;
+    if (Array.isArray(patternOrOldQuads)) {
+      importedPatternOrOldQuads = patternOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    } else if (utils.hasAllTerms(patternOrOldQuads)) {
+      importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>patternOrOldQuads, this.quadstore.defaultGraph);
     } else {
-      importedMatchTermsOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
+      importedPatternOrOldQuads = serialization.importTerms(patternOrOldQuads, this.quadstore.defaultGraph);
     }
-    return await this.quadstore.del(importedMatchTermsOrOldQuads, opts);
+    return await this.quadstore.del(importedPatternOrOldQuads, opts);
   }
-  async get(matchTerms: IRSTerms, opts: IBaseGetOpts): Promise<IRSQuadArrayResult> {
-    const results = await this.getStream(matchTerms, opts);
-    const items: IRSQuad[] = await utils.streamToArray(results.iterator);
+
+  async get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult> {
+    const results = await this.getStream(pattern, opts);
+    const items: TSRdfQuad[] = await utils.streamToArray(results.iterator);
     return { type: results.type, items, sorting: results.sorting };
   }
 
-  async patch(matchTermsOrOldQuads: IRSQuad | IRSTerms | IRSQuad[], newQuads: IRSQuad | IRSQuad[], opts: IEmptyOpts): Promise<void> {
-    let importedMatchTermsOrOldQuads: IQSQuad|IQSQuad[]|IQSTerms;
+  async patch(matchTermsOrOldQuads: TSRdfQuad | TSRdfPattern | TSRdfQuad[], newQuads: TSRdfQuad | TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+    let importedPatternOrOldQuads: TSQuad|TSQuad[]|TSPattern;
     if (Array.isArray(matchTermsOrOldQuads)) {
-      importedMatchTermsOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+      importedPatternOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
     } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
-      importedMatchTermsOrOldQuads = serialization.importQuad(<IRSQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
+      importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
     } else {
-      importedMatchTermsOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
+      importedPatternOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
     }
-    const importedNewQuads: IQSQuad|IQSQuad[] = Array.isArray(newQuads)
+    const importedNewQuads: TSQuad|TSQuad[] = Array.isArray(newQuads)
       ? newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
       : serialization.importQuad(newQuads, this.quadstore.defaultGraph);
-    return await this.quadstore.patch(importedMatchTermsOrOldQuads, importedNewQuads, opts);
+    return await this.quadstore.patch(importedPatternOrOldQuads, importedNewQuads, opts);
+  }
+
+  async search(stages: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
+    const importedStages: TSSearchStage[] = stages.map(stage => serialization.importSearchStage(stage, this.quadstore.defaultGraph));
+    const result = await this.quadstore.search(importedStages, opts);
+    switch (result.type) {
+      case TSResultType.QUADS:
+        return {...result, items: result.items.map(quad => serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory))};
+      case TSResultType.BINDINGS:
+        return {...result, items: result.items.map(binding => serialization.exportTerms(binding, this.quadstore.defaultGraph, this.dataFactory))};
+    }
+
   }
 
 
@@ -180,66 +197,58 @@ class RdfStore extends EventEmitter implements IRSStore, Store {
   // ******************************* STREAM API *******************************
   // **************************************************************************
 
-  async getStream(matchTerms: IRSTerms, opts: IEmptyOpts): Promise<IRSQuadStreamResult> {
-    if (_.isNil(matchTerms)) matchTerms = {};
+  async getStream(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult> {
+    if (_.isNil(pattern)) pattern = {};
     if (_.isNil(opts)) opts = {};
-    assert(_.isObject(matchTerms), 'The "matchTerms" argument is not an object.');
+    assert(_.isObject(pattern), 'The "matchTerms" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const importedMatchTerms: IQSTerms = serialization.importTerms(matchTerms, this.quadstore.defaultGraph);
+    const importedMatchTerms: TSPattern = serialization.importTerms(pattern, this.quadstore.defaultGraph);
     const results = await this.quadstore.getStream(importedMatchTerms, opts);
     return {
-      type: EResultType.QUADS,
+      type: TSResultType.QUADS,
       iterator: results.iterator.map(this._createQuadDeserializerMapper()),
       sorting: results.sorting,
     };
   }
 
-  async putStream(source: IReadable<IRSQuad>, opts: IEmptyOpts): Promise<void> {
-    // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
-    const importedQuadsIterator: IReadable<IQSQuad> = ai.AsyncIterator.wrap(source)
+  async putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
+    // @ts-ignore
+    const importedQuadsIterator: TSReadable<TSQuad> = ai.AsyncIterator.wrap(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.putStream(importedQuadsIterator, opts);
   }
 
-  async delStream(source: IReadable<IRSQuad>, opts: IEmptyOpts): Promise<void> {
+  async delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
     // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
-    const importedQuadsIterator: IReadable<IQSQuad> = ai.AsyncIterator.wrap(source)
+    const importedQuadsIterator: TSReadable<TSQuad> = ai.AsyncIterator.wrap(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.delStream(importedQuadsIterator, opts);
   }
 
-  async searchStream(patterns, filters, opts) {
+  async searchStream(stages: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (_.isNil(opts)) opts = {};
-    const importedPatterns = patterns.map(
-      pattern => serialization.importTerms(pattern, this._defaultGraph, true, false)
-    );
-    const importedFilters = filters.map((filter) => {
-      return {
-        type: filter.type,
-        args: filter.args.map(arg => serialization.importTerm(arg, false, this._defaultGraph, true, false)),
-      };
-    });
-    const results = await QuadStore.prototype.searchStream.call(this, importedPatterns, importedFilters, opts);
+    const importedStages: TSSearchStage[] = stages.map(stage => serialization.importSearchStage(stage, this.quadstore.defaultGraph));
+    const results = await QuadStore.prototype.searchStream.call(this, importedStages, opts);
     const iterator = results.iterator.map((binding) => {
-      return serialization.exportTerms(binding, this._defaultGraph, this.dataFactory);
+      return serialization.exportTerms(binding, this.quadstore.defaultGraph, this.dataFactory);
     });
-    return { type: results.type, variables: results.variables, iterator };
+    return { ...results, iterator };
   }
 
-  async sparqlStream(query: string, opts: TEmptyOpts) {
+  async sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (_.isNil(opts)) opts = {};
     return await sparql.sparqlStream(this, query, opts);
   }
 
 
-  _createQuadSerializerMapper(): (quad: IRSQuad) => IQSQuad {
-    return (quad: IRSQuad): IQSQuad => {
+  _createQuadSerializerMapper(): (quad: TSRdfQuad) => TSQuad {
+    return (quad: TSRdfQuad): TSQuad => {
       return serialization.importQuad(quad, this.quadstore.defaultGraph);
     }
   }
 
-  _createQuadDeserializerMapper(): (quad: IQSQuad) => IRSQuad {
-    return (quad: IQSQuad): IRSQuad => {
+  _createQuadDeserializerMapper(): (quad: TSQuad) => TSRdfQuad {
+    return (quad: TSQuad): TSRdfQuad => {
       return serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
     };
   }

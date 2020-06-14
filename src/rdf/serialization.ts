@@ -1,7 +1,16 @@
 
 import * as _ from '../utils/lodash';
 import { Term, DataFactory, Literal, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from 'rdf-js';
-import {IQSQuad, IQSQuadArrayResult, IQSRange, IQSTerms, IRSQuad, IRSRange, IRSTerms} from '../types';
+import {
+  IQSQuad,
+  IQSQuadArrayResult,
+  IQSRange,
+  IQSPattern,
+  TSRdfQuad,
+  TSRdfRange,
+  IRSPattern,
+  TSRdfSearchStage, TSSearchStage, TSSearchStageType
+} from '../types';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
@@ -99,7 +108,7 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
   }
 }
 
-export const importTermRange = (range: IRSRange, rangeBoundary: boolean = false): IQSRange => {
+export const importTermRange = (range: TSRdfRange, rangeBoundary: boolean = false): IQSRange => {
   const importedRange: IQSRange = {};
   if (range.lt) importedRange.lt = importLiteralTerm(range.lt, rangeBoundary);
   if (range.lte) importedRange.lte = importLiteralTerm(range.lte, rangeBoundary);
@@ -108,7 +117,7 @@ export const importTermRange = (range: IRSRange, rangeBoundary: boolean = false)
   return importedRange;
 }
 
-export const importTerm = (term: Term|IRSRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|IQSRange => {
+export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|IQSRange => {
   if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
     return importTermRange(term, rangeBoundary);
   } else if ('termType' in term) {
@@ -132,7 +141,7 @@ export const importTerm = (term: Term|IRSRange, isGraph: boolean, defaultGraphVa
   }
 }
 
-export const importQuad = (quad: IRSQuad, defaultGraphValue: string): IQSQuad => {
+export const importQuad = (quad: TSRdfQuad, defaultGraphValue: string): IQSQuad => {
   return {
     subject: importSimpleTerm(quad.subject, false, defaultGraphValue),
     predicate: importSimpleTerm(quad.predicate, false, defaultGraphValue),
@@ -208,7 +217,7 @@ const exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: D
   }
 }
 
-export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory: DataFactory): IRSQuad => {
+export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad => {
   return dataFactory.quad(
     exportQuadSubject(quad.subject, dataFactory),
     exportQuadPredicate(quad.predicate, dataFactory),
@@ -217,13 +226,13 @@ export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory
   );
 };
 
-export const exportTerms = (terms: IQSTerms, defaultGraphValue: string, dataFactory: DataFactory): IRSTerms => {
+export const exportTerms = (terms: IQSPattern, defaultGraphValue: string, dataFactory: DataFactory): IRSPattern => {
   // @ts-ignore
   return _.mapValues(terms, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
 };
 
-export const importTerms = (terms: IRSTerms, defaultGraph: string): IQSTerms => {
-  const importedTerms: IQSTerms = {};
+export const importTerms = (terms: IRSPattern, defaultGraph: string): IQSPattern => {
+  const importedTerms: IQSPattern = {};
   if (terms.subject) {
     importedTerms.subject = importTerm(terms.subject, false, defaultGraph, false);
   }
@@ -238,3 +247,18 @@ export const importTerms = (terms: IRSTerms, defaultGraph: string): IQSTerms => 
   }
   return importedTerms;
 };
+
+export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string): TSSearchStage => {
+  switch (stage.type) {
+    case TSSearchStageType.BGP:
+      return { ...stage, pattern: importTerms(stage.pattern, defaultGraph) };
+    case TSSearchStageType.LT:
+    case TSSearchStageType.LTE:
+    case TSSearchStageType.GT:
+    case TSSearchStageType.GTE:
+      return {
+        type: stage.type,
+        args: stage.args.map(arg => importTerm(arg, false, defaultGraph, true)),
+      };
+  }
+}

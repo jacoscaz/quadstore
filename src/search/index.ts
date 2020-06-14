@@ -1,104 +1,102 @@
-
 // import _ from '../utils/lodash';
 import p from 'p-iteration';
-import { resultType } from '../utils/enums';
-// import filtering from './filtering';
+import {termNames} from '../utils';
+import {compileFilter} from './filtering';
 import SortIterator from './iterators/sort-iterator';
 import ai from 'asynciterator';
 import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator';
 import {
-  TParsedPattern,
-  TQuadstoreQuad,
-  IBaseStreamResults,
-  IBaseBinding,
-  TVariables,
-  TMatchTerms,
-  TVarsToTermsMap, TTermsToVarsMap, TFilter, TPattern, TParsedFilter
+  TSBgpSearchStage,
+  TSBinding,
+  TSBindingStreamResult,
+  TSFilterSearchStage,
+  TSParsedBgpSearchStage,
+  TSParsedFilterSearchStage,
+  TSParsedSearchStage,
+  TSPattern,
+  TSQuad,
+  TSQuadStreamResult,
+  TSResultType,
+  TSSearchPipeline,
+  TSSearchStage,
+  TSTermName,
+  TSTermsToVarsMap,
+  TSVariables,
+  TSVarsToTermsMap
 } from '../types';
 
 import QuadStore from '../quadstore';
-import {TTermName} from '../types';
+import {TSSearchStageType} from '../types/base';
 
 
-const getBindingsIterator = async (store: QuadStore, parsedPattern: TParsedPattern): Promise<IBaseStreamResults> => {
-  const {variables, matchTerms, termsToVarsMap} = parsedPattern;
-  const results = await QuadStore.prototype.getStream.call(store, matchTerms, {});
-  const sorting = results.sorting.reduce((acc: string[], termName: TTermName) => {
+const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
+  const {variables, pattern, termsToVarsMap} = parsedPattern;
+  const results = await QuadStore.prototype.getStream.call(store, pattern, {});
+  const sorting: TSTermName[] = results.sorting.reduce((acc: TSTermName[], termName: TSTermName) => {
     if (termsToVarsMap[termName]) {
       // @ts-ignore
       acc.push(termsToVarsMap[termName]);
     }
     return acc;
-  }, <string[]>[]);
-  let iterator: ai.AsyncIterator<IBaseBinding> = results.iterator.transform({ transform: function (quad: TQuadstoreQuad, done: () => void) {
-    const binding: {[key: string]: string} = {};
+  }, <TSTermName[]>[]);
+  let iterator: ai.AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void) {
+    const binding: TSBinding = {};
     for (const term in termsToVarsMap) {
       if (termsToVarsMap.hasOwnProperty(term)) {
         // @ts-ignore
         binding[termsToVarsMap[term]] = quad[term];
       }
     }
-    this._push(binding);
+    // @ts-ignore
+      this._push(binding);
     done();
   }});
   // iterator = filterFns.reduce((it, filterFn) => it.filter(filterFn), iterator);
-  return { type: resultType.BINDINGS, iterator, sorting, variables };
+  return { type: TSResultType.BINDINGS, iterator, sorting, variables };
 };
 
-
-/**
- *
- * @param store
- * @param {GetStreamResults} prev
- * @param {ParsedPattern} next
- * @returns {Promise<GetStreamResults>}
- */
-
-const nestedLoopJoin = async (store: QuadStore, prev: IBaseStreamResults, next: TParsedPattern): Promise<IBaseStreamResults> => {
-
-  const nextCommonVarsToTermsMap: { [key: string]: string } = {};
-
+const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
+  const nextCommonVarsToTermsMap: TSVarsToTermsMap = {};
   const nextAdditionalSortingTerms: string[] = [];
-
-  for (const variableName in next.variables) {
-    if (next.varsToTermsMap.hasOwnProperty(variableName)) {
-      if (prev.variables.hasOwnProperty(variableName)) {
-        nextCommonVarsToTermsMap[variableName] = next.varsToTermsMap[variableName];
+  for (const variableName in nextStage.variables) {
+    if (nextStage.varsToTermsMap.hasOwnProperty(variableName)) {
+      if (prevResult.variables.hasOwnProperty(variableName)) {
+        nextCommonVarsToTermsMap[variableName] = nextStage.varsToTermsMap[variableName];
       } else {
         nextAdditionalSortingTerms.push(variableName);
       }
     }
   }
-
-  const joinedSorting: string[] = [...prev.sorting, ...nextAdditionalSortingTerms];
-  const nextSorting = joinedSorting.filter(variableName => next.variables.hasOwnProperty(variableName));
-
-  const getInnerIterator = async (outerBinding: IBaseBinding): Promise<ai.AsyncIterator<IBaseBinding>> => {
-    const innerMatchTerms = {...next.matchTerms};
+  const joinedSorting: string[] = [...prevResult.sorting, ...nextAdditionalSortingTerms];
+  const nextSorting = joinedSorting.filter(variableName => nextStage.variables.hasOwnProperty(variableName));
+  const getInnerIterator = async (outerBinding: TSBinding): Promise<ai.AsyncIterator<TSBinding>> => {
+    const innerPattern: TSPattern = {...nextStage.pattern};
     for (const variableName in nextCommonVarsToTermsMap) {
-      innerMatchTerms[nextCommonVarsToTermsMap[variableName]] = outerBinding[variableName];
+      innerPattern[nextCommonVarsToTermsMap[variableName]] = outerBinding[variableName];
     }
     const { iterator } = await getBindingsIterator(store, {
-      matchTerms: innerMatchTerms,
-      termsToVarsMap: next.termsToVarsMap,
-      varsToTermsMap: next.varsToTermsMap,
-      variables: next.variables,
+      type: TSSearchStageType.BGP,
+      optional: false,
+      pattern: innerPattern,
+      termsToVarsMap: nextStage.termsToVarsMap,
+      varsToTermsMap: nextStage.varsToTermsMap,
+      variables: nextStage.variables,
     });
     // @ts-ignore
     const comparator = QuadStore.prototype._getQuadComparator.call(store, nextSorting);
     // @ts-ignore
     return new SortIterator<IBaseBinding>(<ai.AsyncIterator<IBaseBinding>>iterator, comparator);
   };
-  const mergeItems = (firstBinding: IBaseBinding, secondBinding: IBaseBinding) => ({
+  const mergeItems = (firstBinding: TSBinding, secondBinding: TSBinding) => ({
     ...firstBinding,
     ...secondBinding,
   });
   return {
-    iterator: new NestedLoopJoinIterator<IBaseBinding>(prev.iterator, getInnerIterator, mergeItems),
-    variables: { ...prev.variables, ...next.variables },
+    iterator: new NestedLoopJoinIterator<TSBinding>(prevResult.iterator, getInnerIterator, mergeItems),
+    variables: { ...prevResult.variables, ...nextStage.variables },
     // @ts-ignore
     sorting: joinedSorting,
-    type: resultType.BINDINGS,
+    type: TSResultType.BINDINGS,
   };
 };
 
@@ -113,76 +111,99 @@ const objectContains = (outer: object, inner: object) => {
   return true;
 };
 
-/**
- *
- * @param {string[]}termNames
- * @param pattern
- * @returns {ParsedPattern}
- */
-const parsePattern = (termNames: TTermName[], pattern: TPattern) => {
-  const variables: TVariables = {};
-  const matchTerms: TMatchTerms = {};
-  const varsToTermsMap: TVarsToTermsMap = {};
-  const termsToVarsMap: TTermsToVarsMap = {};
-  termNames.forEach((termName) => {
-    if (pattern[termName]) {
+const parseBgpSearchStage = (stage: TSBgpSearchStage): TSParsedBgpSearchStage => {
+  const variables: TSVariables = {};
+  const pattern: TSPattern = {};
+  const varsToTermsMap: TSVarsToTermsMap = {};
+  const termsToVarsMap: TSTermsToVarsMap = {};
+  termNames.forEach((termName: TSTermName) => {
+    if (termName in stage.pattern) {
       // @ts-ignore
-      if (pattern[termName].charAt(0) === '?') {
+      if (stage.pattern[termName].charAt(0) === '?') {
         // @ts-ignore
         variables[pattern[termName]] = true;
         // @ts-ignore
         varsToTermsMap[pattern[termName]] = termName;
         termsToVarsMap[termName] = pattern[termName];
       } else {
-        matchTerms[termName] = pattern[termName];
+        pattern[termName] = pattern[termName];
       }
     }
   });
-  return { variables, matchTerms, termsToVarsMap, varsToTermsMap };
-};
+  return { ...stage, variables, pattern, termsToVarsMap, varsToTermsMap };
+}
 
-const parseFilter = (termNames: string[], filter: TFilter): TParsedFilter => {
+const parseFilterSearchStage = (stage: TSFilterSearchStage): TSParsedFilterSearchStage => {
   const variables: { [key: string]: true } = {};
-  filter.args.forEach((arg) => {
+  stage.args.forEach((arg) => {
     if (arg.charAt(0) === '?') {
       variables[arg] = true;
     }
   });
-  return { ...filter, variables };
-};
+  return { ...stage, variables };
+}
 
-// const applyFilterToPattern = (store: QuadStore, termNames: string[], parsedFilter: any, parsedPattern: ParsedPattern) => {
-//   const variableNames = Object.keys(parsedFilter.variables);
-//   if (variableNames.length === 1) {
-//     const matchTerms = {
-//       [parsedPattern.variables[variableNames[0]]]: filtering.getFilterTermRange(parsedFilter),
-//     };
-//     parsedPattern.filterMatchTerms = store._mergeMatchTerms(parsedPattern.filterMatchTerms, matchTerms, termNames);
-//   }
-//   const filterFn = filtering.compileFilter(parsedFilter);
-//   parsedPattern.filterFns.push(filterFn);
-//   return parsedPattern;
-// };
+const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
+  switch (stage.type) {
+    case TSSearchStageType.BGP:
+      return parseBgpSearchStage(stage);
+    case TSSearchStageType.LT:
+    case TSSearchStageType.LTE:
+    case TSSearchStageType.GT:
+    case TSSearchStageType.GTE:
+      return parseFilterSearchStage(stage);
+    default:
+      // @ts-ignore
+      throw new Error(`Unsupported search stage type "${stage.type}"`);
+  }
+}
 
+const applyBgpSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
+  return await nestedLoopJoin(store, prevResult, nextStage);
+}
 
-export const searchStream = async (store: QuadStore, pipeline: ISearchOp) => {
+const applyFilterSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedFilterSearchStage): Promise<TSBindingStreamResult> => {
+  // TODO: rework filter optimization by pushing filters down into nearest BGP
+  // const variableNames = Object.keys(nextStage.variables);
+  // if (variableNames.length === 1) {
+  //   const matchTerms = {
+  //     [parsedPattern.variables[variableNames[0]]]: filtering.getFilterTermRange(parsedFilter),
+  //   };
+  //   parsedPattern.filterMatchTerms = store._mergeMatchTerms(parsedPattern.filterMatchTerms, matchTerms, termNames);
+  // }
+  const filterFn = compileFilter(nextStage);
+  const iterator = prevResult.iterator.filter(filterFn);
+  return { ...prevResult, iterator };
+}
 
-  const termNames = store._getTermNames();
+const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
+  switch (nextStage.type) {
+    case TSSearchStageType.BGP:
+      if (prevResult.type !== TSResultType.BINDINGS) {
+        throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
+      }
+      return await applyBgpSearchStage(store, prevResult, nextStage);
+    case TSSearchStageType.LT:
+    case TSSearchStageType.LTE:
+    case TSSearchStageType.GT:
+    case TSSearchStageType.GTE:
+      if (prevResult.type !== TSResultType.BINDINGS) {
+        throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
+      }
+      return await applyFilterSearchStage(store, prevResult, nextStage);
+    default:
+      // @ts-ignore
+      throw new Error(`Unsupported search stage type "${nextStage.type}"`);
+  }
+}
 
-  let parsedFilters = filters.map(filter => parseFilter(termNames, filter));
-  let parsedPatterns: TParsedPattern[] = patterns.map(pattern => parsePattern(termNames, pattern));
-
-  // parsedFilters.forEach((parsedFilter) => {
-  //   parsedPatterns.forEach((parsedPattern) => {
-  //     if (objectContains(parsedPattern.variables, parsedFilter.variables)) {
-  //       applyFilterToPattern(store, termNames, parsedFilter, parsedPattern);
-  //     }
-  //   });
-  // });
-
-  return await p.reduce(parsedPatterns.slice(1), async (prev: IBaseStreamResults, next: TParsedPattern): Promise<IBaseStreamResults> => {
-    return await nestedLoopJoin(store, prev, next);
-  }, await getBindingsIterator(store, parsedPatterns[0]));
-
+export const searchStream = async (store: QuadStore, stages: TSSearchPipeline): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
+  const parsedStages = stages.map(parseSearchStage);
+  // TODO: optimization pass including pushing filters down to nearest BGP stage
+  return await p.reduce(
+    parsedStages.slice(1),
+    applySearchStage.bind(null, store),
+    await getBindingsIterator(store, <TSParsedBgpSearchStage>parsedStages[0]),
+  );
 };
 

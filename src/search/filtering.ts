@@ -1,78 +1,77 @@
-import {IBaseBinding, TParsedFilter} from '../types';
+import {TSBinding, TSParsedFilterSearchStage} from '../types';
+
 
 const { filterType } = require('../utils/enums');
 
-const compileGtFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
-  const variableCount = Object.keys(parsedFilter.variables).length;
+const compileGtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
+  const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] > parsedFilter.args[1];
+    return (binding: TSBinding) => binding[stage.args[0]] > stage.args[1];
   }
   if (variableCount === 2) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] > binding[parsedFilter.args[1]];
+    return (binding: TSBinding) => binding[stage.args[0]] > binding[stage.args[1]];
   }
-  throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
+  throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
 
-const compileGteFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
-  const variableCount = Object.keys(parsedFilter.variables).length;
+const compileGteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
+  const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] >= parsedFilter.args[1];
+    return (binding: TSBinding) => binding[stage.args[0]] >= stage.args[1];
   }
   if (variableCount === 2) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] >= binding[parsedFilter.args[1]];
+    return (binding: TSBinding) => binding[stage.args[0]] >= binding[stage.args[1]];
   }
-  throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
+  throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
 
-const compileLtFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
-  const variableCount = Object.keys(parsedFilter.variables).length;
+const compileLtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
+  const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] < parsedFilter.args[1];
+    return (binding: TSBinding) => binding[stage.args[0]] < stage.args[1];
   }
   if (variableCount === 2) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] < binding[parsedFilter.args[1]];
+    return (binding: TSBinding) => binding[stage.args[0]] < binding[stage.args[1]];
   }
-  throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
+  throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
 
-const compileLteFilter = (parsedFilter: TParsedFilter): (binding: IBaseBinding) => boolean => {
-  const variableCount = Object.keys(parsedFilter.variables).length;
+const compileLteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
+  const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] <= parsedFilter.args[1];
+    return (binding: TSBinding) => binding[stage.args[0]] <= stage.args[1];
   }
   if (variableCount === 2) {
-    return (binding: IBaseBinding) => binding[parsedFilter.args[0]] <= binding[parsedFilter.args[1]];
+    return (binding: TSBinding) => binding[stage.args[0]] <= binding[stage.args[1]];
   }
-  throw new Error(`Invalid number of arguments for filter type "${parsedFilter.type}"`);
+  throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
 
-const compileFilter = (parsedFilter: TParsedFilter) => {
-  switch (parsedFilter.type) {
+export const compileFilter = (stage: TSParsedFilterSearchStage) => {
+  switch (stage.type) {
     case filterType.GT:
-      return compileGtFilter(parsedFilter);
+      return compileGtFilter(stage);
     case filterType.GTE:
-      return compileGteFilter(parsedFilter);
+      return compileGteFilter(stage);
     case filterType.LT:
-      return compileLtFilter(parsedFilter);
+      return compileLtFilter(stage);
     case filterType.LTE:
-      return compileLteFilter(parsedFilter);
+      return compileLteFilter(stage);
     default:
-      throw new Error(`Unsupported filter type "${parsedFilter.type}"`);
+      throw new Error(`Unsupported filter type "${stage.type}"`);
   }
 };
 
-module.exports.compileFilter = compileFilter;
-
-const getFilterTermRange = (parsedFilter: TParsedFilter) => {
-  switch (parsedFilter.type) {
+export const getFilterTermRange = (stage: TSParsedFilterSearchStage) => {
+  switch (stage.type) {
     case filterType.LT:
-      return { lt: parsedFilter.args[1] };
+      return { lt: stage.args[1] };
     case filterType.LTE:
-      return { lte: parsedFilter.args[1] };
+      return { lte: stage.args[1] };
     case filterType.GT:
-      return { gt: parsedFilter.args[1] };
+      return { gt: stage.args[1] };
     case filterType.GTE:
-      return { gte: parsedFilter.args[1] };
+      return { gte: stage.args[1] };
     default:
       return null;
   }

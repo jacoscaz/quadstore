@@ -1,43 +1,98 @@
 
 import {
-  IBaseBinding,
-  IBaseBindingArrayResults, IBaseBindingStreamResults,
-  IBaseQuad,
-  IBaseQuadArrayResults, IBaseQuadStreamResults,
-  IBaseRange,
-  IBaseStore,
-  IBaseStoreOpts,
-  IBaseTerms,
-  IEmptyOpts, IReadable,
-  TTermName
-} from './base';
-
-import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad } from 'rdf-js';
+  TSEmptyOpts, TSReadable, TSResultType, TSSearchStageType,
+  TSTermName,
+} from './common';
 
 
-export interface IRSQuad extends Quad {}
+import ai from 'asynciterator';
+import {AbstractLevelDOWN} from 'abstract-leveldown';
+import {EventEmitter} from "events";
 
-export interface IRSRange extends IBaseRange<Literal> {}
+import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Variable, Term } from 'rdf-js';
+import {TSApproximateSizeResult, TSGetOpts, TSVariables} from './quadstore';
 
-export interface IRSTerms extends IBaseTerms<
-  Quad_Subject,
-  Quad_Predicate,
-  Quad_Object|IRSRange,
-  Quad_Graph
-> {}
 
-export interface IRSBinding extends IBaseBinding<BlankNode|Literal|NamedNode|DefaultGraph> {}
+export type TSRdfQuad = Quad;
 
-export interface IRSQuadArrayResult extends IBaseQuadArrayResults<IRSQuad> {}
-export interface IRSQuadStreamResult extends IBaseQuadStreamResults<IRSQuad> {}
-export interface IRSBindingArrayResult extends IBaseBindingArrayResults<IRSBinding> {}
-export interface IRSBindingStreamResult extends IBaseBindingStreamResults<IRSBinding> {}
-
-export interface IRSStoreOpts extends IBaseStoreOpts<NamedNode> {
-  dataFactory: DataFactory
+export interface TSRdfRange {
+  lt?: Literal,
+  lte?: Literal,
+  gt?: Literal,
+  gte?: Literal,
 }
 
-export interface IRSStore extends IBaseStore<IRSQuad, IRSTerms> {
-  sparql(query: string, opts: IEmptyOpts): Promise<IRSQuadArrayResult|IRSBindingArrayResult>
-  sparqlStream(query: string, opts: IEmptyOpts): Promise<IRSQuadStreamResult|IRSBindingStreamResult>
+export interface TSRdfPattern {
+  subject?: Quad_Subject,
+  predicate?: Quad_Predicate,
+  object?: Quad_Object|TSRdfRange,
+  graph?: Quad_Graph,
+}
+
+export interface TSRdfBinding {
+  [key: string]: Term,
+}
+
+export interface TSRdfQuadArrayResult {
+  type: TSResultType.QUADS,
+  items: TSRdfQuad[],
+  sorting: TSTermName[],
+}
+
+export interface TSRdfQuadStreamResult {
+  type: TSResultType.QUADS,
+  sorting: TSTermName[],
+  iterator: ai.AsyncIterator<TSRdfQuad>,
+}
+
+export interface TSRdfBindingArrayResult {
+  type: TSResultType.BINDINGS,
+  items: TSRdfBinding[],
+  sorting: TSTermName[],
+  variables: TSVariables,
+}
+
+export interface TSRdfBindingStreamResult {
+  type: TSResultType.BINDINGS,
+  sorting: TSTermName[],
+  variables: TSVariables,
+  iterator: ai.AsyncIterator<TSRdfBinding>,
+}
+
+export interface TSRdfBgpSearchStage {
+  type: TSSearchStageType.BGP,
+  optional: boolean,
+  pattern: TSRdfPattern,
+}
+
+export interface TSRdfFilterSearchStage {
+  type: TSSearchStageType.GT|TSSearchStageType.GTE|TSSearchStageType.LT|TSSearchStageType.LTE,
+  args: (Variable|Literal)[],
+}
+
+export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage;
+
+export type TSRdfSearchPipeline = TSRdfSearchStage[];
+
+export interface TSRdfStoreOpts {
+  backend: AbstractLevelDOWN,
+  boundary?: string,
+  separator?: string,
+  indexes?: TSTermName[][],
+  dataFactory: DataFactory,
+}
+
+export interface TSRdfStore extends EventEmitter {
+  put(quads: TSRdfQuad|TSRdfQuad[], opts?: TSEmptyOpts): Promise<void>
+  del(patternOrQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
+  get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult>
+  patch(patternOrOldQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], newQuads: TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
+  search(pipeline: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
+  sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
+  getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
+  getStream(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadStreamResult>
+  putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
+  delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
+  searchStream(pipeline: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
+  sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
 }

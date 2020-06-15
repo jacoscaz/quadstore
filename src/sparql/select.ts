@@ -26,34 +26,38 @@ const parseSparqlFilter = (whereGroup) => {
 
 export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {
   const stages: TSRdfSearchStage[] = []; // TODO: pipeline
-  parsed.where.forEach((whereGroup) => {
-    switch (whereGroup.type) {
-      case 'graph':
-        whereGroup.patterns.forEach((whereGroupPattern) => {
-          switch (whereGroupPattern.type) {
-            case 'bgp':
-              whereGroupPattern.triples.forEach(triple => {
-                stages.push({
-                  type: TSSearchStageType.BGP,
-                  pattern: {...triple, graph: whereGroup.name},
+  if (parsed.where) {
+    parsed.where.forEach((whereGroup) => {
+      switch (whereGroup.type) {
+        case 'graph':
+          whereGroup.patterns.forEach((whereGroupPattern) => {
+            switch (whereGroupPattern.type) {
+              case 'bgp':
+                whereGroupPattern.triples.forEach(triple => {
+                  stages.push({
+                    type: TSSearchStageType.BGP,
+                    pattern: {...triple, graph: whereGroup.name},
+                  });
                 });
-              });
-              break;
-            default:
-              throw new Error(`Unsupported WHERE group pattern type "${whereGroupPattern.type}"`);
-          }
-        });
-        break;
-      case 'bgp':
-        whereGroup.triples.forEach(triple => { patterns.push(triple); });
-        break;
-      case 'filter':
-        filters.push(parseSparqlFilter(whereGroup));
-        break;
-      default:
-        throw new Error(`Unsupported WHERE group type "${whereGroup.type}"`);
-    }
-  });
-  const results = await store.searchStream(stages, opts);
+                break;
+              default:
+                throw new Error(`Unsupported WHERE group pattern type "${whereGroupPattern.type}"`);
+            }
+          });
+          break;
+        case 'bgp':
+          whereGroup.triples.forEach(triple => {
+            patterns.push(triple);
+          });
+          break;
+        case 'filter':
+          filters.push(parseSparqlFilter(whereGroup));
+          break;
+        default:
+          throw new Error(`Unsupported WHERE group type "${whereGroup.type}"`);
+      }
+    });
+  }
+  const results = <TSRdfBindingStreamResult>(await store.searchStream(stages, opts));
   return results;
 };

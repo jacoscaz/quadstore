@@ -11,6 +11,7 @@ import * as sparql from './sparql';
 import ai from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store} from 'rdf-js';
 import {
+  TSBinding,
   TSEmptyOpts,
   TSGetOpts,
   TSPattern,
@@ -21,7 +22,7 @@ import {
   TSRdfQuad,
   TSRdfQuadArrayResult,
   TSRdfQuadStreamResult,
-  TSRdfSearchPipeline,
+  TSRdfSearchStage,
   TSRdfStore,
   TSRdfStoreOpts,
   TSReadable,
@@ -121,7 +122,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
   // **************************************************************************
 
   async getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts) {
-    const importedTerms: TSPattern = serialization.importTerms(pattern, this.quadstore.defaultGraph);
+    const importedTerms: TSPattern = serialization.importPattern(pattern, this.quadstore.defaultGraph);
     return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
@@ -154,7 +155,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     } else if (utils.hasAllTerms(patternOrOldQuads)) {
       importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>patternOrOldQuads, this.quadstore.defaultGraph);
     } else {
-      importedPatternOrOldQuads = serialization.importTerms(patternOrOldQuads, this.quadstore.defaultGraph);
+      importedPatternOrOldQuads = serialization.importPattern(patternOrOldQuads, this.quadstore.defaultGraph);
     }
     return await this.quadstore.del(importedPatternOrOldQuads, opts);
   }
@@ -172,7 +173,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
       importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
     } else {
-      importedPatternOrOldQuads = serialization.importTerms(matchTermsOrOldQuads, this.quadstore.defaultGraph);
+      importedPatternOrOldQuads = serialization.importPattern(matchTermsOrOldQuads, this.quadstore.defaultGraph);
     }
     const importedNewQuads: TSQuad|TSQuad[] = Array.isArray(newQuads)
       ? newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
@@ -180,14 +181,17 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return await this.quadstore.patch(importedPatternOrOldQuads, importedNewQuads, opts);
   }
 
-  async search(stages: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
+  async search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
     const importedStages: TSSearchStage[] = stages.map(stage => serialization.importSearchStage(stage, this.quadstore.defaultGraph));
     const result = await this.quadstore.search(importedStages, opts);
     switch (result.type) {
       case TSResultType.QUADS:
         return {...result, items: result.items.map(quad => serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory))};
       case TSResultType.BINDINGS:
-        return {...result, items: result.items.map(binding => serialization.exportTerms(binding, this.quadstore.defaultGraph, this.dataFactory))};
+        return {...result, items: result.items.map(binding => serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory))};
+      default:
+        // @ts-ignore
+        throw new Error(`Unsupported result type "${result.type}"`);
     }
 
   }
@@ -202,7 +206,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(pattern), 'The "matchTerms" argument is not an object.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const importedMatchTerms: TSPattern = serialization.importTerms(pattern, this.quadstore.defaultGraph);
+    const importedMatchTerms: TSPattern = serialization.importPattern(pattern, this.quadstore.defaultGraph);
     const results = await this.quadstore.getStream(importedMatchTerms, opts);
     return {
       type: TSResultType.QUADS,
@@ -225,13 +229,25 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return await this.quadstore.delStream(importedQuadsIterator, opts);
   }
 
-  async searchStream(stages: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
+  async searchStream(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (_.isNil(opts)) opts = {};
     const importedStages: TSSearchStage[] = stages.map(stage => serialization.importSearchStage(stage, this.quadstore.defaultGraph));
     const results = await QuadStore.prototype.searchStream.call(this, importedStages, opts);
-    const iterator = results.iterator.map((binding) => {
-      return serialization.exportTerms(binding, this.quadstore.defaultGraph, this.dataFactory);
-    });
+    let iterator;
+    switch (results.type) {
+      case TSResultType.BINDINGS:
+        iterator = results.iterator.map((binding: TSBinding) => {
+          return serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory);
+        });
+        break;
+      case TSResultType.QUADS:
+        iterator = results.iterator.map((quad: TSQuad) => {
+          return serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
+        });
+        break;
+      default:
+        throw new Error(`Unsupported result type "${results.type}"`);
+    }
     return { ...results, iterator };
   }
 

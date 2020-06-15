@@ -17,6 +17,13 @@ export interface TSIndex {
 export interface TSPattern {
   subject?: string,
   predicate?: string,
+  object?: string|TSRange,
+  graph?: string,
+}
+
+export interface TSSimplePattern {
+  subject?: string,
+  predicate?: string,
   object?: string,
   graph?: string,
 }
@@ -73,7 +80,7 @@ export interface TSApproximateSizeResult {
 export interface TSBgpSearchStage {
   type: TSSearchStageType.BGP,
   optional: boolean,
-  pattern: TSPattern,
+  pattern: TSSimplePattern,
 }
 
 export interface TSFilterSearchStage {
@@ -82,8 +89,6 @@ export interface TSFilterSearchStage {
 }
 
 export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage;
-
-export type TSSearchPipeline = TSSearchStage[];
 
 export interface TSStoreOpts {
   backend: AbstractLevelDOWN,
@@ -113,12 +118,12 @@ export interface TSStore extends EventEmitter {
   del(patternOrQuads: TSPattern|TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void>
   get(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadArrayResult>
   patch(patternOrOldQuads: TSPattern|TSQuad|TSQuad[], newQuads: TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void>
-  search(pipeline: TSSearchPipeline, opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
+  search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
   getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
   getStream(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadStreamResult>
   putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<void>
   delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<void>
-  searchStream(pipeline: TSSearchPipeline, opts: TSEmptyOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
+  searchStream(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
 }
 
 
@@ -153,7 +158,7 @@ export type TFilter = {
 };
 
 export interface TSParsedBgpSearchStage extends TSBgpSearchStage {
-  pattern: TSPattern,
+  pattern: TSSimplePattern,
   variables: TSVariables,
   varsToTermsMap: TSVarsToTermsMap,
   termsToVarsMap: TSTermsToVarsMap,

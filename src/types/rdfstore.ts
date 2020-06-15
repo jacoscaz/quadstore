@@ -11,6 +11,7 @@ import {EventEmitter} from "events";
 
 import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Variable, Term } from 'rdf-js';
 import {TSApproximateSizeResult, TSGetOpts, TSVariables} from './quadstore';
+import QuadStore from '../quadstore';
 
 
 export type TSRdfQuad = Quad;
@@ -26,6 +27,13 @@ export interface TSRdfPattern {
   subject?: Quad_Subject,
   predicate?: Quad_Predicate,
   object?: Quad_Object|TSRdfRange,
+  graph?: Quad_Graph,
+}
+
+export interface TSRdfSimplePattern {
+  subject?: Quad_Subject,
+  predicate?: Quad_Predicate,
+  object?: Quad_Object,
   graph?: Quad_Graph,
 }
 
@@ -62,7 +70,7 @@ export interface TSRdfBindingStreamResult {
 export interface TSRdfBgpSearchStage {
   type: TSSearchStageType.BGP,
   optional: boolean,
-  pattern: TSRdfPattern,
+  pattern: TSRdfSimplePattern,
 }
 
 export interface TSRdfFilterSearchStage {
@@ -71,8 +79,6 @@ export interface TSRdfFilterSearchStage {
 }
 
 export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage;
-
-export type TSRdfSearchPipeline = TSRdfSearchStage[];
 
 export interface TSRdfStoreOpts {
   backend: AbstractLevelDOWN,
@@ -83,16 +89,18 @@ export interface TSRdfStoreOpts {
 }
 
 export interface TSRdfStore extends EventEmitter {
+  quadstore: QuadStore
+  dataFactory: DataFactory
   put(quads: TSRdfQuad|TSRdfQuad[], opts?: TSEmptyOpts): Promise<void>
   del(patternOrQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
   get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult>
   patch(patternOrOldQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], newQuads: TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
-  search(pipeline: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
+  search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
   sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
   getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
   getStream(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadStreamResult>
   putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
   delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
-  searchStream(pipeline: TSRdfSearchPipeline, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
+  searchStream(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
   sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
 }

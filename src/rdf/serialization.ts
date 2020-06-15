@@ -2,14 +2,13 @@
 import * as _ from '../utils/lodash';
 import { Term, DataFactory, Literal, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from 'rdf-js';
 import {
-  IQSQuad,
-  IQSQuadArrayResult,
-  IQSRange,
-  IQSPattern,
+  TSBinding,
+  TSPattern,
+  TSQuad,
+  TSRange, TSRdfBinding, TSRdfPattern,
   TSRdfQuad,
   TSRdfRange,
-  IRSPattern,
-  TSRdfSearchStage, TSSearchStage, TSSearchStageType
+  TSRdfSearchStage, TSRdfSimplePattern, TSSearchStage, TSSearchStageType, TSSimplePattern
 } from '../types';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
@@ -108,8 +107,8 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
   }
 }
 
-export const importTermRange = (range: TSRdfRange, rangeBoundary: boolean = false): IQSRange => {
-  const importedRange: IQSRange = {};
+export const importRange = (range: TSRdfRange, rangeBoundary: boolean = false): TSRange => {
+  const importedRange: TSRange = {};
   if (range.lt) importedRange.lt = importLiteralTerm(range.lt, rangeBoundary);
   if (range.lte) importedRange.lte = importLiteralTerm(range.lte, rangeBoundary);
   if (range.gt) importedRange.gt = importLiteralTerm(range.gt, rangeBoundary);
@@ -117,9 +116,9 @@ export const importTermRange = (range: TSRdfRange, rangeBoundary: boolean = fals
   return importedRange;
 }
 
-export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|IQSRange => {
+export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|TSRange => {
   if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
-    return importTermRange(term, rangeBoundary);
+    return importRange(term, rangeBoundary);
   } else if ('termType' in term) {
     switch (term.termType) {
       case 'NamedNode':
@@ -141,7 +140,7 @@ export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraph
   }
 }
 
-export const importQuad = (quad: TSRdfQuad, defaultGraphValue: string): IQSQuad => {
+export const importQuad = (quad: TSRdfQuad, defaultGraphValue: string): TSQuad => {
   return {
     subject: importSimpleTerm(quad.subject, false, defaultGraphValue),
     predicate: importSimpleTerm(quad.predicate, false, defaultGraphValue),
@@ -217,7 +216,7 @@ const exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: D
   }
 }
 
-export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad => {
+export const exportQuad = (quad: TSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad => {
   return dataFactory.quad(
     exportQuadSubject(quad.subject, dataFactory),
     exportQuadPredicate(quad.predicate, dataFactory),
@@ -226,39 +225,55 @@ export const exportQuad = (quad: IQSQuad, defaultGraphValue: string, dataFactory
   );
 };
 
-export const exportTerms = (terms: IQSPattern, defaultGraphValue: string, dataFactory: DataFactory): IRSPattern => {
-  // @ts-ignore
-  return _.mapValues(terms, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
+export const exportBinding = (binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding => {
+  return _.mapValues(binding, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
 };
 
-export const importTerms = (terms: IRSPattern, defaultGraph: string): IQSPattern => {
-  const importedTerms: IQSPattern = {};
+export const importPattern = (terms: TSRdfPattern, defaultGraph: string): TSPattern => {
+  const importedTerms: TSPattern = {};
   if (terms.subject) {
-    importedTerms.subject = importTerm(terms.subject, false, defaultGraph, false);
+    importedTerms.subject = importSimpleTerm(terms.subject, false, defaultGraph);
   }
   if (terms.predicate) {
-    importedTerms.predicate = importTerm(terms.predicate, false, defaultGraph, false);
+    importedTerms.predicate = importSimpleTerm(terms.predicate, false, defaultGraph);
   }
   if (terms.object) {
     importedTerms.object = importTerm(terms.object, false, defaultGraph, true);
   }
   if (terms.graph) {
-    importedTerms.graph = importTerm(terms.graph, true, defaultGraph, false);
+    importedTerms.graph = importSimpleTerm(terms.graph, true, defaultGraph);
   }
   return importedTerms;
+};
+
+export const importSimplePattern = (terms: TSRdfSimplePattern, defaultGraph: string): TSSimplePattern => {
+  const importedPattern: TSSimplePattern = {};
+  if (terms.subject) {
+    importedPattern.subject = importSimpleTerm(terms.subject, false, defaultGraph);
+  }
+  if (terms.predicate) {
+    importedPattern.predicate = importSimpleTerm(terms.predicate, false, defaultGraph);
+  }
+  if (terms.object) {
+    importedPattern.object = importSimpleTerm(terms.object, false, defaultGraph);
+  }
+  if (terms.graph) {
+    importedPattern.graph = importSimpleTerm(terms.graph, true, defaultGraph);
+  }
+  return importedPattern;
 };
 
 export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string): TSSearchStage => {
   switch (stage.type) {
     case TSSearchStageType.BGP:
-      return { ...stage, pattern: importTerms(stage.pattern, defaultGraph) };
+      return { ...stage, pattern: importSimplePattern(stage.pattern, defaultGraph) };
     case TSSearchStageType.LT:
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
     case TSSearchStageType.GTE:
       return {
         type: stage.type,
-        args: stage.args.map(arg => importTerm(arg, false, defaultGraph, true)),
+        args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph)),
       };
   }
 }

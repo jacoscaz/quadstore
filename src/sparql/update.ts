@@ -1,23 +1,23 @@
 
-const AsyncIterator = require('asynciterator');
-const enums = require('../utils/enums');
-const { handleSparqlSelect } = require('./select');
+import ai from 'asynciterator';
+import * as select from './select';
+import {TSEmptyOpts, TSRdfQuad, TSRdfStore} from '../types';
 
-const handleSparqlInsert = async (store, update, opts) => {
-  const quads = update.insert.reduce((acc, group) => {
+const handleSparqlInsert = async (store: TSRdfStore, update, opts: TSEmptyOpts) => {
+  const quads = update.insert.reduce((acc: TSRdfQuad[], group) => {
     switch (group.type) {
       case 'bgp':
-        acc.push(...group.triples);
+        acc.push(...group.triples.map(triple => ({ ...triple, graph: store.dataFactory.defaultGraph()})));
         break;
       case 'graph':
-        acc.push(...group.triples.map(t => ({ ...t, graph: group.name})));
+        acc.push(...group.triples.map(triple => ({ ...triple, graph: group.name})));
         break;
       default:
         throw new Error(`Unsupported SPARQL insert group type "${group.type}"`);
     }
     return acc;
   }, []);
-  const iterator = new AsyncIterator.ArrayIterator(quads).transform((quad, done) => {
+  const iterator = new ai.ArrayIterator(quads).transform((quad, done) => {
     store.put([quad])
       .then(done.bind(null, null))
       .catch(done);
@@ -39,7 +39,7 @@ const handleSparqlDelete = async (store, update, opts) => {
     }
     return acc;
   }, []);
-  const iterator = new AsyncIterator.ArrayIterator(quads).transform((quad, done) => {
+  const iterator = new ai.ArrayIterator(quads).transform((quad, done) => {
     store.del([quad])
       .then(done.bind(null, null))
       .catch(done);
@@ -92,7 +92,7 @@ const handleSparqlInsertDelete = async (store, update, opts) => {
   return { type: enums.resultType.BINDINGS, iterator };
 };
 
-const handleSparqlUpdate = async (store, parsed, opts) => {
+const handleSparqlUpdate = async (store: TSRdfStore, parsed, opts) => {
   const { updates } = parsed;
   if (updates.length > 1) {
     throw new Error(`Unsupported number of update groups in query (> 1)`);

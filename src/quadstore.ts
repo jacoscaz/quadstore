@@ -12,8 +12,7 @@ import {
   TSQuadStreamResult,
   TSRange,
   TSReadable,
-  TSResultType,
-  TSSearchPipeline,
+  TSResultType, TSSearchStage,
   TSStore,
   TSTermName
 
@@ -150,11 +149,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.QUADS, items: quads, sorting: results.sorting };
   }
 
-  async search(pipeline: TSSearchPipeline, opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
+  async search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
     if (_.isNil(opts)) opts = {};
-    assert(_.isArray(pipeline), 'The "patterns" argument is not an array.');
+    assert(_.isArray(stages), 'The "patterns" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    const results = await this.searchStream(pipeline, opts);
+    const results = await this.searchStream(stages, opts);
     switch (results.type) {
       case enums.resultType.BINDINGS: {
         const bindings = await utils.streamToArray(results.bindings);
@@ -206,11 +205,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await get.getStream(this, pattern, opts);
   }
 
-  async searchStream(pipeline: TSSearchPipeline, opts: TSEmptyOpts) {
+  async searchStream(stages: TSSearchStage[], opts: TSEmptyOpts) {
     if (_.isNil(opts)) opts = {};
-    assert(_.isArray(pipeline), 'The "patterns" argument is not an array.');
+    assert(_.isArray(stages), 'The "patterns" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await search.searchStream(this, pipeline, opts);
+    return await search.searchStream(this, stages, opts);
   }
 
   async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts) {
@@ -384,29 +383,29 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return c;
   }
 
-  protected _mergeMatchTerms(a: TSPattern, b: TSPattern, termNames: TSTermName[]): TSPattern {
-    if (!termNames) {
-      termNames = this._getTermNames();
-    }
-    const c = { ...b };
-    termNames.forEach((termName) => {
-      if (_.isNil(c[termName])) {
-        if (!_.isNil(a[termName])) {
-          c[termName] = a[termName];
-        }
-      } else {
-        if (!_.isNil(a[termName])) {
-          if (_.isObject(a[termName]) && _.isObject(c[termName])) {
-            // @ts-ignore
-            c[termName] = this._mergeTermRanges(a[termName], c[termName]);
-          } else {
-            throw new Error(`Cannot merge match terms`);
-          }
-        }
-      }
-    });
-    return c;
-  };
+  // protected _mergeMatchTerms(a: TSPattern, b: TSPattern, termNames: TSTermName[]): TSPattern {
+  //   if (!termNames) {
+  //     termNames = this._getTermNames();
+  //   }
+  //   const c = { ...b };
+  //   termNames.forEach((termName) => {
+  //     if (_.isNil(c[termName])) {
+  //       if (!_.isNil(a[termName])) {
+  //         c[termName] = a[termName];
+  //       }
+  //     } else {
+  //       if (!_.isNil(a[termName])) {
+  //         if (_.isObject(a[termName]) && _.isObject(c[termName])) {
+  //           // @ts-ignore
+  //           c[termName] = this._mergeTermRanges(a[termName], c[termName]);
+  //         } else {
+  //           throw new Error(`Cannot merge match terms`);
+  //         }
+  //       }
+  //     }
+  //   });
+  //   return c;
+  // };
 
 }
 

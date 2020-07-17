@@ -12,7 +12,7 @@ module.exports = () => {
       const store = this.store;
       const newQuad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
       await store.put(newQuad);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuad);
     });
@@ -21,7 +21,7 @@ module.exports = () => {
       const store = this.store;
       const newQuads = [{ subject: 's', predicate: 'p', object: 'o', graph: 'c' }];
       await store.put(newQuads);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);
     });
@@ -33,7 +33,7 @@ module.exports = () => {
         { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
       await store.put(newQuads);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(2);
       should(foundQuads[0]).deepEqual(newQuads[0]);
       should(foundQuads[1]).deepEqual(newQuads[1]);
@@ -46,7 +46,7 @@ module.exports = () => {
         { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
       await store.put(newQuads);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(2);
       should(foundQuads[0]).deepEqual(newQuads[0]);
       should(foundQuads[1]).deepEqual(newQuads[1]);
@@ -59,7 +59,7 @@ module.exports = () => {
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
       await store.put(newQuads);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);
     });
@@ -71,7 +71,7 @@ module.exports = () => {
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
       await store.put(newQuads);
-      const { quads: foundQuads } = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);
     });

@@ -14,14 +14,14 @@ module.exports = () => {
         } 
       `);
       const first = await this.store.get({});
-      should(first.quads).have.length(2);
+      should(first.items).have.length(2);
       await this.store.sparql(`
         DELETE DATA { 
           GRAPH <ex://g3> { <ex://s3> <ex://p3> <ex://o3>. } .
         } 
       `);
       const second = await this.store.get({});
-      should(second.quads).have.length(1);
+      should(second.items).have.length(1);
     });
 
   });

@@ -50,22 +50,23 @@ module.exports = () => {
 
 
     it('should match quads by subject', async function () {
-      const patterns = [
-        {
+      const stages = [
+        { type: 'bgp', pattern: {
           subject: factory.variable('s'),
           predicate: factory.namedNode('http://ex.com/p'),
           object: factory.namedNode('http://ex.com/o'),
-        },
-        {
+        } },
+        { type: 'bgp', pattern: {
           subject: factory.variable('s'),
           predicate: factory.namedNode('http://ex.com/p2'),
           object: factory.variable('o'),
-        },
+        } },
+        {
+          type: 'lt',
+          args: [factory.variable('o'), factory.variable('s')],
+        }
       ];
-      const filters = [
-        {type: 'lt', args: [factory.variable('o'), factory.variable('s')]}
-      ];
-      const results = await this.store.searchStream(patterns, filters);
+      const results = await this.store.searchStream(stages);
       should(results.type).equal(enums.resultType.BINDINGS);
       const bindings = await utils.streamToArray(results.iterator);
       console.log(bindings);

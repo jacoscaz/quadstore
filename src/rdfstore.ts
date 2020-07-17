@@ -24,7 +24,8 @@ import {
   TSRdfQuadStreamResult,
   TSRdfSearchStage,
   TSRdfStore,
-  TSRdfStoreOpts, TSRdfVoidResult,
+  TSRdfStoreOpts,
+  TSRdfVoidResult,
   TSReadable,
   TSResultType,
   TSSearchStage,
@@ -47,6 +48,9 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
       defaultGraph: serialization.importSimpleTerm(dataFactory.defaultGraph(), true, 'urn:rdfstore:dg'),
     };
     this.quadstore = new QuadStore(quadstoreOpts);
+    this.quadstore.on('ready', () => {
+      this.emit('ready');
+    });
 
   }
 
@@ -126,7 +130,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
-  async sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
+  async sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult> {
     if (_.isNil(opts)) opts = {};
     assert(_.isString(query), 'The "query" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -136,7 +140,15 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
         const bindings = await utils.streamToArray(results.iterator);
         return {...results, items: bindings};
       } break;
+      case TSResultType.VOID: {
+        return results;
+      } break;
+      case TSResultType.QUADS: {
+        const quads = await utils.streamToArray(results.iterator);
+        return {...results, items: quads};
+      }
       default:
+        // @ts-ignore
         throw new Error(`Unsupported results type "${results.type}"`);
     }
   }
@@ -232,7 +244,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
   async searchStream(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (_.isNil(opts)) opts = {};
     const importedStages: TSSearchStage[] = stages.map(stage => serialization.importSearchStage(stage, this.quadstore.defaultGraph));
-    const results = await QuadStore.prototype.searchStream.call(this, importedStages, opts);
+    const results = await this.quadstore.searchStream(importedStages, opts);
     let iterator;
     switch (results.type) {
       case TSResultType.BINDINGS:

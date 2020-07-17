@@ -48,7 +48,7 @@ module.exports = () => {
       SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
     `);
       should(results.type).equal(enums.resultType.BINDINGS);
-      should(results.bindings).have.length(2);
+      should(results.items).have.length(2);
     });
 
     it('should select with multiple patterns', async function () {
@@ -59,7 +59,7 @@ module.exports = () => {
       }
     `);
       should(results.type).equal(enums.resultType.BINDINGS);
-      should(results.bindings).have.length(2);
+      should(results.items).have.length(2);
     });
 
     it('should select with simple filter', async function () {
@@ -70,7 +70,7 @@ module.exports = () => {
       }
     `);
       should(results.type).equal(enums.resultType.BINDINGS);
-      should(results.bindings).have.length(1);
+      should(results.items).have.length(1);
     });
 
   });

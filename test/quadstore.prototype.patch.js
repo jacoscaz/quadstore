@@ -30,7 +30,7 @@ module.exports = () => {
       const expected = quadsSamples.slice(2).concat(newQuads);
       await store.put(quadsArray);
       await store.patch(oldQuads, newQuads);
-      const { quads } = await store.get({});
+      const { items: quads } = await store.get({});
       newQuads.sort(store._getQuadComparator());
       quads.sort(store._getQuadComparator());
       should(quads).have.length(expected.length);
@@ -46,7 +46,7 @@ module.exports = () => {
       ];
       await store.put(quadsArray);
       await store.patch({ subject: 's2' }, newQuads);
-      const { quads } = await store.get({});
+      const { items: quads } = await store.get({});
       newQuads.sort(store._getQuadComparator());
       quads.sort(store._getQuadComparator());
       should(quads).have.length(4);

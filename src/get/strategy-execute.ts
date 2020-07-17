@@ -1,6 +1,5 @@
 import QuadStore from '../quadstore';
 import {TSEmptyOpts, TSGetOpts, TSGetStrategy} from '../types';
-import {} from '../types/base';
 
 const _ = require('../utils/lodash');
 const AsyncIterator = require('asynciterator');

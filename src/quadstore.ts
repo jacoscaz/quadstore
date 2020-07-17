@@ -15,7 +15,6 @@ import {
   TSResultType, TSSearchStage,
   TSStore,
   TSTermName
-
 } from './types';
 import assert from 'assert';
 import events from 'events';
@@ -98,7 +97,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    */
 
   _addIndex(terms: TSTermName[]): void {
-    assert(utils.hasAllTerms(terms), 'Invalid index (bad terms).');
+    // assert(utils.hasAllTerms(terms), 'Invalid index (bad terms).');
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this.indexes.push({
       terms,
@@ -295,18 +294,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * @returns {}
    */
   protected _quadToBatch(quad: TSQuad, type: 'del'|'put') {
-    const indexes = this.indexes;
-    // @ts-ignore
-    if (!quad[contextKey]) {
-      // @ts-ignore
-      quad = {
-        subject: quad.subject,
-        predicate: quad.predicate,
-        object: quad.object,
-        graph: this.defaultGraph,
-      };
-    }
-    return indexes.map(i => ({
+    return this.indexes.map(i => ({
         type,
         key: i.getKey(quad),
         value: quad,

@@ -1,60 +1,73 @@
-import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfSearchStage, TSRdfStore, TSSearchStageType} from '../types';
-import {SelectQuery} from 'sparqljs';
 
-const enums = require('../utils/enums');
+import {
+  TSEmptyOpts, TSFilterSearchStage,
+  TSFilterSearchStageType,
+  TSRdfBindingStreamResult, TSRdfFilterSearchStage,
+  TSRdfSearchStage, TSRdfSimplePattern,
+  TSRdfStore,
+  TSSearchStageType
+} from '../types';
+import {Term, Quad_Graph} from 'rdf-js';
+import {BgpPattern, FilterPattern, GraphPattern, Pattern, SelectQuery} from 'sparqljs';
 
-const parseSparqlFilter = (whereGroup) => {
+const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage => {
   if (whereGroup.type !== 'filter') {
     throw new Error(`Not a filter`);
+  }
+  if (!('type' in whereGroup.expression)) {
+    throw new Error(`Unsupported where expression`);
   }
   if (whereGroup.expression.type !== 'operation') {
     throw new Error(`Unsupported filter expression type "${whereGroup.expression.type}"`);
   }
   switch (whereGroup.expression.operator) {
-    case '<':
-      return { type: enums.filterType.LT, args: whereGroup.expression.args };
-    case '<=':
-      return { type: enums.filterType.LTE, args: whereGroup.expression.args };
-    case '>':
-      return { type: enums.filterType.GT, args: whereGroup.expression.args };
-    case '>=':
-      return { type: enums.filterType.GTE, args: whereGroup.expression.args };
+    case '<':// @ts-ignore
+      return { type: TSSearchStageType.LT, args: whereGroup.expression.args };
+    case '<=':// @ts-ignore
+      return { type: TSSearchStageType.LTE, args: whereGroup.expression.args };
+    case '>':// @ts-ignore
+      return { type: TSSearchStageType.GT, args: whereGroup.expression.args };
+    case '>=':// @ts-ignore
+      return { type: TSSearchStageType.GTE, args: whereGroup.expression.args };
     default:
       throw new Error(`Unsupported filter operator "${whereGroup.expression.operator}"`);
   }
 }
 
-export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {
+
+const sparqlBgpPatternToStages = (pattern: BgpPattern, graph: Term): TSRdfSearchStage[] => {
+  return pattern.triples.map(triple => ({
+    type: TSSearchStageType.BGP,
+    pattern: <TSRdfSimplePattern><unknown>{...triple, graph},
+    optional: false,
+  }));
+}
+
+export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pattern[] }, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {
   const stages: TSRdfSearchStage[] = []; // TODO: pipeline
   if (parsed.where) {
-    parsed.where.forEach((whereGroup) => {
-      switch (whereGroup.type) {
+    parsed.where.forEach((pattern) => {
+      switch (pattern.type) {
         case 'graph':
-          whereGroup.patterns.forEach((whereGroupPattern) => {
-            switch (whereGroupPattern.type) {
+          const graphPattern = <GraphPattern>pattern;
+          pattern.patterns.forEach((innerPattern) => {
+            switch (innerPattern.type) {
               case 'bgp':
-                whereGroupPattern.triples.forEach(triple => {
-                  stages.push({
-                    type: TSSearchStageType.BGP,
-                    pattern: {...triple, graph: whereGroup.name},
-                  });
-                });
+                stages.push(...sparqlBgpPatternToStages(innerPattern, <Quad_Graph><unknown>graphPattern.name));
                 break;
               default:
-                throw new Error(`Unsupported WHERE group pattern type "${whereGroupPattern.type}"`);
+                throw new Error(`Unsupported WHERE group pattern type "${innerPattern.type}"`);
             }
           });
           break;
         case 'bgp':
-          whereGroup.triples.forEach(triple => {
-            patterns.push(triple);
-          });
+          stages.push(...sparqlBgpPatternToStages(pattern, store.dataFactory.defaultGraph()));
           break;
         case 'filter':
-          filters.push(parseSparqlFilter(whereGroup));
+          stages.push(parseSparqlFilter(pattern));
           break;
         default:
-          throw new Error(`Unsupported WHERE group type "${whereGroup.type}"`);
+          throw new Error(`Unsupported WHERE group type "${pattern.type}"`);
       }
     });
   }

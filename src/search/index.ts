@@ -70,7 +70,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
   const joinedSorting: string[] = [...prevResult.sorting, ...nextAdditionalSortingTerms];
   const nextSorting = joinedSorting.filter(variableName => nextStage.variables.hasOwnProperty(variableName));
   const getInnerIterator = async (outerBinding: TSBinding): Promise<ai.AsyncIterator<TSBinding>> => {
-    const innerPattern: TSPattern = {...nextStage.pattern};
+    const innerPattern: TSSimplePattern = {...nextStage.pattern};
     for (const variableName in nextCommonVarsToTermsMap) {
       innerPattern[nextCommonVarsToTermsMap[variableName]] = outerBinding[variableName];
     }

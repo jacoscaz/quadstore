@@ -18,7 +18,7 @@ module.exports = () => {
     });
 
     afterEach(async function () {
-      await this.store.close();
+      // await this.store.close();
     });
 
     require('./quadstore.counting')();

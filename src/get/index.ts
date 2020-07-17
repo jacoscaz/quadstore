@@ -4,7 +4,6 @@ import {
   TSEmptyOpts, TSPattern, TSQuadStreamResult
 
 } from '../types';
-import {} from '../types/base';
 
 const { execute, executeApproximateSize } = require('./strategy-execute');
 const { generate } = require('./strategy-generate');

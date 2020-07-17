@@ -24,7 +24,7 @@ import {
   TSRdfQuadStreamResult,
   TSRdfSearchStage,
   TSRdfStore,
-  TSRdfStoreOpts,
+  TSRdfStoreOpts, TSRdfVoidResult,
   TSReadable,
   TSResultType,
   TSSearchStage,
@@ -251,7 +251,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return { ...results, iterator };
   }
 
-  async sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
+  async sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult> {
     if (_.isNil(opts)) opts = {};
     return await sparql.sparqlStream(this, query, opts);
   }
@@ -271,4 +271,4 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
 }
 
-module.exports = RdfStore;
+export default RdfStore;

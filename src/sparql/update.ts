@@ -1,20 +1,33 @@
 import ai from 'asynciterator';
 import {TSEmptyOpts, TSRdfBinding, TSRdfQuad, TSRdfStore, TSRdfVoidResult, TSResultType, TSTermName} from '../types';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
-import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode} from 'rdf-js';
+import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
 import {termNames, waitForEvent} from '../utils';
 import * as select from './select';
 
-const parsePredicate = (predicate: NamedNode | Variable | PropertyPath): Quad_Predicate => {
+const parseSubject = (subject: NamedNode | BlankNode | Variable | Literal): Quad_Subject => {
+  if (subject.termType === 'Literal') {
+    throw new Error('Literals not supported');
+  }
+  return subject;
+}
+
+const parsePredicate = (predicate: Literal | BlankNode | NamedNode | Variable | PropertyPath): Quad_Predicate => {
   if ('type' in predicate) {
     throw new Error('Property paths are not supported');
+  }
+  if (predicate.termType === 'Literal') {
+    throw new Error('Literals not supported');
+  }
+  if (predicate.termType === 'BlankNode') {
+    throw new Error('Blank nodes not supported');
   }
   return predicate;
 };
 
 const graphTripleToQuad = (store: TSRdfStore, triple: Triple, graph: Quad_Graph): TSRdfQuad => {
   return store.dataFactory.quad(
-    triple.subject,
+    parseSubject(triple.subject),
     parsePredicate(triple.predicate),
     triple.object,
     graph,
@@ -23,7 +36,7 @@ const graphTripleToQuad = (store: TSRdfStore, triple: Triple, graph: Quad_Graph)
 
 const bgpTripleToQuad = (store: TSRdfStore, triple: Triple): TSRdfQuad => {
   return store.dataFactory.quad(
-    triple.subject,
+    parseSubject(triple.subject),
     parsePredicate(triple.predicate),
     triple.object,
     store.dataFactory.defaultGraph(),

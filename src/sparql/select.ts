@@ -35,7 +35,7 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
 }
 
 
-const sparqlBgpPatternToStages = (pattern: BgpPattern, graph: Term): TSRdfSearchStage[] => {
+const sparqlBgpPatternToStages = (pattern: BgpPattern, graph?: Term): TSRdfSearchStage[] => {
   return pattern.triples.map(triple => ({
     type: TSSearchStageType.BGP,
     pattern: <TSRdfSimplePattern><unknown>{...triple, graph},
@@ -53,7 +53,7 @@ export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pa
           pattern.patterns.forEach((innerPattern) => {
             switch (innerPattern.type) {
               case 'bgp':
-                stages.push(...sparqlBgpPatternToStages(innerPattern, <Quad_Graph><unknown>graphPattern.name));
+                stages.push(...sparqlBgpPatternToStages(innerPattern, graphPattern.name));
                 break;
               default:
                 throw new Error(`Unsupported WHERE group pattern type "${innerPattern.type}"`);
@@ -61,7 +61,7 @@ export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pa
           });
           break;
         case 'bgp':
-          stages.push(...sparqlBgpPatternToStages(pattern, store.dataFactory.defaultGraph()));
+          stages.push(...sparqlBgpPatternToStages(pattern));
           break;
         case 'filter':
           stages.push(parseSparqlFilter(pattern));

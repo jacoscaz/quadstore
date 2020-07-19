@@ -118,15 +118,14 @@ const parseBgpSearchStage = (stage: TSBgpSearchStage): TSParsedBgpSearchStage =>
   const termsToVarsMap: TSTermsToVarsMap = {};
   termNames.forEach((termName: TSTermName) => {
     if (termName in stage.pattern) {
-      // @ts-ignore
-      if (stage.pattern[termName].charAt(0) === '?') {
-        // @ts-ignore
-        variables[stage.pattern[termName]] = true;
-        // @ts-ignore
-        varsToTermsMap[pattern[termName]] = termName;
-        termsToVarsMap[termName] = pattern[termName];
+      const term = stage.pattern[termName];
+      if (!term) return;
+      if (term.charAt(0) === '?') {
+        variables[term] = true;
+        varsToTermsMap[term] = termName;
+        termsToVarsMap[termName] = term;
       } else {
-        pattern[termName] = stage.pattern[termName];
+        pattern[termName] = term;
       }
     }
   });

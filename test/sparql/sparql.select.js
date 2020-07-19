@@ -45,30 +45,30 @@ module.exports = () => {
 
     it('should select with a single pattern', async function () {
       const results = await this.store.sparql(`
-      SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
-    `);
+        SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
+      `);
       should(results.type).equal(enums.resultType.BINDINGS);
       should(results.items).have.length(2);
     });
 
     it('should select with multiple patterns', async function () {
       const results = await this.store.sparql(`
-      SELECT ?s ?o {
-        ?s <http://ex.com/p> <http://ex.com/o>.
-        ?s <http://ex.com/p2> ?o.
-      }
-    `);
+        SELECT ?s ?o {
+          ?s <http://ex.com/p> <http://ex.com/o>.
+          ?s <http://ex.com/p2> ?o.
+        }
+      `);
       should(results.type).equal(enums.resultType.BINDINGS);
       should(results.items).have.length(2);
     });
 
     it('should select with simple filter', async function () {
       const results = await this.store.sparql(`
-      SELECT ?s {
-        ?s <http://ex.com/p> <http://ex.com/o> .
-        FILTER (?s < <http://ex.com/s2>)
-      }
-    `);
+        SELECT ?s {
+          ?s <http://ex.com/p> <http://ex.com/o> .
+          FILTER (?s < <http://ex.com/s2>)
+        }
+      `);
       should(results.type).equal(enums.resultType.BINDINGS);
       should(results.items).have.length(1);
     });

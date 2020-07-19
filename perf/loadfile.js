@@ -38,7 +38,10 @@ const remove = util.promisify(fs.remove.bind(fs));
   const absStorePath = path.join(os.tmpdir(), `node-quadstore-${utils.nanoid()}`);
   console.log(absStorePath);
 
-  const store = new RdfStore(leveldown(absStorePath), { dataFactory });
+  const store = new RdfStore({
+    backend: leveldown(absStorePath),
+    dataFactory,
+  });
 
   await utils.waitForEvent(store, 'ready');
 

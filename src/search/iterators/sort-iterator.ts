@@ -1,14 +1,15 @@
 
-const SortedSet = require('js-sorted-set');
-const AsyncIterator = require('asynciterator');
+// @ts-ignore
+import SortedSet from 'js-sorted-set';
+import ai from 'asynciterator';
 
-class SortedSetIterator extends AsyncIterator.BufferedIterator {
+class SortedSetIterator<T> extends ai.BufferedIterator<T> {
 
-  constructor(set) {
+  constructor(set: SortedSet<T>) {
 
     super();
 
-    let value = null;
+    let value: T | null;
     let iterator = set.beginIterator();
 
     this._read = (count, done) => {
@@ -32,18 +33,20 @@ class SortedSetIterator extends AsyncIterator.BufferedIterator {
 
 }
 
-class SortIterator extends AsyncIterator.TransformIterator {
+class SortIterator<T> extends ai.TransformIterator<T, T> {
 
-  constructor(source, comparator) {
+  constructor(source: ai.AsyncIterator<T>, comparator: (a: T, b: T) => -1|0|1) {
 
     super();
 
     const set = new SortedSet({ comparator });
 
-    source.on('data', (item) => {
+    // @ts-ignore
+    source.on('data', (item: T) => {
       set.insert(item);
     });
 
+    // @ts-ignore
     source.on('end', () => {
       this.source = new SortedSetIterator(set);
     });
@@ -52,4 +55,4 @@ class SortIterator extends AsyncIterator.TransformIterator {
 
 }
 
-module.exports = SortIterator;
+export default SortIterator;

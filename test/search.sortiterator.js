@@ -1,5 +1,5 @@
 
-const SortIterator = require('../lib/search/generic-iterators/sort-iterator');
+const SortIterator = require('../lib/search/iterators/sort-iterator').default;
 const utils = require('./utils');
 const should = require('should');
 const AsyncIterator = require('asynciterator');

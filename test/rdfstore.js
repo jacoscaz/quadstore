@@ -20,7 +20,7 @@ module.exports = () => {
     });
 
     afterEach(async function () {
-      await this.store.close();
+      // await this.store.close();
     });
 
     require('./rdfstore.prototype.match')();

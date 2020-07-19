@@ -1,9 +1,9 @@
 
-const AsyncIterator = require('asynciterator');
+import ai from 'asynciterator';
 
-class MergeIterator extends AsyncIterator.BufferedIterator {
+class MergeIterator<T> extends ai.BufferedIterator<T> {
 
-  constructor(a, b, compare, push) {
+  constructor(a: ai.AsyncIterator<T>, b: ai.AsyncIterator<T>, compare: (a: T, b: T) => number, push: (a: T, b: T) => T) {
 
     super();
 
@@ -14,16 +14,16 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
     let isDestroyed = false;
 
     /** Callback passed to _destroy() */
-    let destroyDone = null;
+    let destroyDone: (() => void) | null = null;
 
     /** Cause passed to _destroy() */
-    let destroyCause = null;
+    let destroyCause: any = null;
 
     /** Number of elements left to push */
     let readMore = 0;
 
     /** _read() Callback */
-    let readDone = null;
+    let readDone: (() => void) | null = null;
 
     /** Whether we have to read from a at the next iteration */
     let readA = true;
@@ -32,7 +32,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
     let aEnded = false;
 
     /** Latest item read from a */
-    let aCurrent = null;
+    let aCurrent: T | null = null;
 
     /** Whether we're waiting for a "readable" event on a */
     let aWaiting = false;
@@ -44,16 +44,16 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
     let bEnded = false;
 
     /** Latest item read from b */
-    let bCurrent = null;
+    let bCurrent: T | null = null;
 
     /** Whether we're waiting for a "readable" event on b */
     let bWaiting = false;
 
     /** end event handler for a */
-    let aOnEnd;
+    let aOnEnd: () => void;
 
     /** end event handler for b */
-    let bOnEnd;
+    let bOnEnd: () => void;
 
     const cleanup = () => {
       a.removeListener('readable', loop);
@@ -63,10 +63,14 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
       isReading = false;
       aWaiting = false;
       bWaiting = false;
+      // @ts-ignore
       if (!a.done && !a.ended) {
+        // @ts-ignore
         a.destroy(destroyCause);
       }
+      // @ts-ignore
       if (!b.done && !b.ended) {
+        // @ts-ignore
         b.destroy(destroyCause);
       }
       if (readDone) {
@@ -100,7 +104,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
     };
     b.once('end', bOnEnd);
 
-    const loop = () => {
+    const loop: () => void = () => {
 
       aWaiting = false;
       bWaiting = false;
@@ -120,6 +124,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
       }
 
       if (aCurrent === null) {
+        // @ts-ignore
         if (a.ended || a.done) {
           return cleanup();
         }
@@ -132,6 +137,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
       }
 
       if (bCurrent === null) {
+        // @ts-ignore
         if (b.ended || b.done) {
           return cleanup();
         }
@@ -164,6 +170,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
         isReading = false;
         const _readDone = readDone;
         readDone = null;
+        // @ts-ignore
         return _readDone();
       }
 
@@ -189,6 +196,7 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
       loop();
     };
 
+    // @ts-ignore
     this._destroy = (cause, done) => {
       isDestroyed = true;
       destroyDone = done;
@@ -200,4 +208,4 @@ class MergeIterator extends AsyncIterator.BufferedIterator {
 
 }
 
-module.exports = MergeIterator;
+export default MergeIterator;

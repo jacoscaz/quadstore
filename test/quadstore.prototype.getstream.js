@@ -18,22 +18,6 @@ module.exports = () => {
       ]);
     });
 
-    describe('Meta', () => {
-
-      it('should match quads by subject', function (cb) {
-        const iterator = this.store.getStream({subject: 's'});
-        iterator.getProperty('meta', (meta) => {
-          iterator.destroy();
-          should(iterator.done).equal(true);
-          should(meta).be.an.Object();
-          should(meta.sorting).deepEqual(['subject', 'predicate', 'object', 'graph']);
-          should(meta.approximateCount).be.a.Number();
-          cb();
-        });
-      });
-
-    });
-
   });
 
 }

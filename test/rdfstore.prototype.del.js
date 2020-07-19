@@ -34,7 +34,7 @@ module.exports = () => {
       ];
       await store.put(quads);
       await store.del({ subject: factory.namedNode('http://ex.com/s0') });
-      const foundQuads = await store.get({});
+      const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
     });
   });

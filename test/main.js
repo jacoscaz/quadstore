@@ -30,19 +30,19 @@ describe('MemDOWN backend, standard indexes', () => {
 
 });
 
-// describe('LevelDOWN backend, standard indexes', () => {
-//
-//   beforeEach(async function () {
-//     this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
-//     this.db = leveldown(this.location);
-//     this.indexes = null;
-//   });
-//
-//   afterEach(async function () {
-//     await remove(this.location);
-//   });
-//
-//   quadStoreSuite();
-//   rdfStoreSuite();
-//
-// });
+describe('LevelDOWN backend, standard indexes', () => {
+
+  beforeEach(async function () {
+    this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
+    this.db = leveldown(this.location);
+    this.indexes = null;
+  });
+
+  afterEach(async function () {
+    await remove(this.location);
+  });
+
+  quadStoreSuite();
+  rdfStoreSuite();
+
+});

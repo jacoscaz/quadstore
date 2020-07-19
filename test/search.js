@@ -1,6 +1,6 @@
 
 module.exports = () => {
-  describe('search', () => {
+  describe('Search', () => {
     require('./search.sortiterator')();
     require('./search.mergeiterator')();
     require('./search.nestedloopjoiniterator')();

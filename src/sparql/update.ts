@@ -106,7 +106,7 @@ const replaceBindingInPattern = (quad: TSRdfQuad, binding: TSRdfBinding): TSRdfQ
     if (term.termType !== 'Variable') {
       return;
     }
-    const bindingValue = binding[term.value];
+    const bindingValue = binding[`?${term.value}`];
     if (!bindingValue) {
       return;
     }
@@ -152,16 +152,14 @@ const replaceBindingInPattern = (quad: TSRdfQuad, binding: TSRdfBinding): TSRdfQ
   return p;
 };
 
-const sparqlQuadsToQuad = (store: TSRdfStore, pattern: Quads, binding: TSRdfBinding = {}): TSRdfQuad[] => {
+const sparqlPatternToQuads = (store: TSRdfStore, pattern: Quads, binding: TSRdfBinding = {}): TSRdfQuad[] => {
   const quads: TSRdfQuad[] = [];
   switch (pattern.type) {
     case 'bgp':
-      const bgpPattern = <BgpPattern>pattern;
-      quads.push(...bgpPattern.triples.map(triple => bgpTripleToQuad(store, triple)));
+      quads.push(...pattern.triples.map(triple => bgpTripleToQuad(store, triple)));
       break;
     case 'graph':
-      const graphPattern = <GraphQuads>pattern;
-      quads.push(...graphPattern.triples.map(triple => graphTripleToQuad(store, triple, graphPattern.name)));
+      quads.push(...pattern.triples.map(triple => graphTripleToQuad(store, triple, pattern.name)));
       break;
     default:
       // @ts-ignore
@@ -178,12 +176,12 @@ const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteO
       const insertQuads: TSRdfQuad[] = [];
       if (update.delete) {
         update.delete.forEach((pattern: Quads) => {
-          deleteQuads.push(...sparqlQuadsToQuad(store, pattern, binding));
+          deleteQuads.push(...sparqlPatternToQuads(store, pattern, binding));
         });
       }
       if (update.insert) {
         update.insert.forEach((pattern: Quads) => {
-          insertQuads.push(...sparqlQuadsToQuad(store, pattern, binding));
+          insertQuads.push(...sparqlPatternToQuads(store, pattern, binding));
         });
       }
       store.patch(deleteQuads, insertQuads, {})

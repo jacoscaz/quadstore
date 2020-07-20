@@ -1,10 +1,10 @@
 
 'use strict';
 
-const _ = require('../lib/utils/lodash');
+const _ = require('../dist/lib/utils/lodash');
 const should = require('should');
-const utils = require('../lib/utils');
-const enums = require('../lib/utils/enums');
+const utils = require('../dist/lib/utils');
+const enums = require('../dist/lib/utils/enums');
 
 module.exports = () => {
 

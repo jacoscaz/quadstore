@@ -1,8 +1,8 @@
 
 'use strict';
 
-const _ = require('../lib/utils/lodash');
-const utils = require('../lib/utils');
+const _ = require('../dist/lib/utils/lodash');
+const utils = require('../dist/lib/utils');
 const QuadStore = require('..').QuadStore;
 
 module.exports = () => {

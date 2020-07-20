@@ -1,8 +1,8 @@
 
-const _ = require('../../lib/utils/lodash');
+const _ = require('../../dist/lib/utils/lodash');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const enums = require('../../lib/utils/enums');
+const enums = require('../../dist/lib/utils/enums');
 
 module.exports = () => {
   describe('SELECT', () => {

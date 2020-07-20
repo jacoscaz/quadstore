@@ -1,0 +1,20 @@
+import flatMap from 'lodash.flatmap';
+import groupBy from 'lodash.groupby';
+import mapValues from 'lodash.mapvalues';
+export declare const isFunction: (f: any) => boolean;
+export declare const isObject: (o: any) => boolean;
+export declare const isSimpleObject: (o: any) => boolean;
+export declare const isString: (s: any) => boolean;
+export declare const isNumber: (n: any) => boolean;
+export declare const isNil: (n: any) => boolean;
+export declare const isBoolean: (b: any) => boolean;
+export declare const isArray: (arg: any) => arg is any[];
+export declare const extend: {
+    <T, U>(target: T, source: U): T & U;
+    <T_1, U_1, V>(target: T_1, source1: U_1, source2: V): T_1 & U_1 & V;
+    <T_2, U_2, V_1, W>(target: T_2, source1: U_2, source2: V_1, source3: W): T_2 & U_2 & V_1 & W;
+    (target: object, ...sources: any[]): any;
+};
+export { flatMap };
+export { groupBy };
+export { mapValues };

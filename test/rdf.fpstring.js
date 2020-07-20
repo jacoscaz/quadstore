@@ -1,5 +1,5 @@
 
-const fpstring = require('../lib/rdf/fpstring');
+const fpstring = require('../dist/lib/rdf/fpstring');
 
 /*
  * https://stackoverflow.com/a/12646864

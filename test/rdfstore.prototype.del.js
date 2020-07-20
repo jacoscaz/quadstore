@@ -1,8 +1,8 @@
 
 'use strict';
 
-const _ = require('../lib/utils/lodash');
-const utils = require('../lib/utils');
+const _ = require('../dist/lib/utils/lodash');
+const utils = require('../dist/lib/utils');
 const should = require('should');
 const factory = require('n3').DataFactory;
 

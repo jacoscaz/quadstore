@@ -4,6 +4,7 @@ const should = require('should');
 const factory = require('@rdfjs/data-model');
 
 module.exports = () => {
+
   describe('INSERT / DELETE', () => {
 
     it('should delete a quad and insert a new quad', async function () {

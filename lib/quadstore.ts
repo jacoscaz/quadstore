@@ -71,9 +71,12 @@ class QuadStore extends events.EventEmitter implements TSStore {
     this.emit('ready');
   }
 
-  close() {
-    // @ts-ignore
-    return this.db.close();
+  async close() {
+    await new Promise((resolve, reject) => {
+      this.db.close((err) => {
+        err ? reject(err) : resolve();
+      });
+    });
   }
 
   /*

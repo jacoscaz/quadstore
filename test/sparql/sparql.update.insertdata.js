@@ -4,7 +4,7 @@ const should = require('should');
 const factory = require('@rdfjs/data-model');
 
 module.exports = () => {
-  describe.only('INSERT DATA', () => {
+  describe('INSERT DATA', () => {
 
     it('should insert a single quad in the default graph', async function () {
       await this.store.sparql(`

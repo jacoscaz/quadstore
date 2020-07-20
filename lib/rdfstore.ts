@@ -54,6 +54,9 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   }
 
+  async close() {
+    await this.quadstore.close();
+  }
 
   // **************************************************************************
   // ******************************** RDF/JS **********************************

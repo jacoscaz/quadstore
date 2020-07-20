@@ -117,9 +117,7 @@ export const importRange = (range: TSRdfRange, rangeBoundary: boolean = false): 
 }
 
 export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string|TSRange => {
-  if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
-    return importRange(term, rangeBoundary);
-  } else if ('termType' in term) {
+  if ('termType' in term) {
     switch (term.termType) {
       case 'NamedNode':
         return term.value;
@@ -135,6 +133,8 @@ export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraph
         // @ts-ignore
         throw new Error(`Unexpected termType: "${term.termType}".`);
     }
+  } else if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
+    return importRange(term, rangeBoundary);
   } else {
     throw new Error(`Unexpected type of "term" argument.`);
   }

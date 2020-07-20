@@ -6,7 +6,7 @@ import {
   TSRdfSearchStage, TSRdfSimplePattern,
   TSRdfStore,
   TSSearchStageType
-} from '../types';
+} from '../types/index.js';
 import {Term, Quad_Graph} from 'rdf-js';
 import {BgpPattern, FilterPattern, GraphPattern, Pattern, SelectQuery} from 'sparqljs';
 

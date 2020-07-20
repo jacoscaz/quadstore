@@ -1,10 +1,10 @@
 // import _ from '../utils/lodash';
 import p from 'p-iteration';
-import {termNames} from '../utils';
-import {compileFilter} from './filtering';
-import SortIterator from './iterators/sort-iterator';
+import {termNames} from '../utils/index.js';
+import {compileFilter} from './filtering.js';
+import SortIterator from './iterators/sort-iterator.js';
 import ai from 'asynciterator';
-import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator';
+import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator.js';
 import {
   TSBgpSearchStage,
   TSBinding,
@@ -25,7 +25,7 @@ import {
   TSSearchStageType, TSSimplePattern,
 } from '../types';
 
-import QuadStore from '../quadstore';
+import QuadStore from '../quadstore.js';
 
 
 

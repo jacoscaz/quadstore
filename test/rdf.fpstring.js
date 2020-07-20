@@ -1,5 +1,5 @@
 
-const fpstring = require('../dist/lib/rdf/fpstring');
+const fpstring = require('../dist-cjs/lib/rdf/fpstring');
 
 /*
  * https://stackoverflow.com/a/12646864
@@ -49,7 +49,7 @@ module.exports = () => {
 
       const shuffledValues = shuffle(values);
       should(shuffledValues).not.deepEqual(values);
-      const shuffledPairs = shuffledValues.map(n => [n, fpstring(n)]);
+      const shuffledPairs = shuffledValues.map(n => [n, fpstring.encode(n)]);
       const sortedPairs = sort(shuffledPairs, (p1, p2) => p1[1] < p2[1] ? -1 : 1);
       const sortedValues = sortedPairs.map(p => p[0]);
       should(sortedValues).deepEqual(values);

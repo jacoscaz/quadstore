@@ -1,6 +1,6 @@
 
-import * as select from './select';
-import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfQuadStreamResult, TSRdfStore} from '../types';
+import * as select from './select.js';
+import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfQuadStreamResult, TSRdfStore} from '../types/index.js';
 import {Query} from 'sparqljs';
 
 export const handleSparqlQuery = async (store: TSRdfStore, parsed: Query, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {

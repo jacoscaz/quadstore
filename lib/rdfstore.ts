@@ -1,13 +1,13 @@
 
 'use strict';
 
-import * as _ from './utils/lodash';
-import * as utils from './utils';
+import * as _ from './utils/lodash.js';
+import * as utils from './utils/index.js';
 import assert from 'assert';
 import {EventEmitter} from 'events';
-import QuadStore from './quadstore';
-import * as serialization from './rdf/serialization';
-import * as sparql from './sparql';
+import QuadStore from './quadstore.js';
+import * as serialization from './rdf/serialization.js';
+import * as sparql from './sparql/index.js';
 import ai from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store} from 'rdf-js';
 import {
@@ -30,7 +30,7 @@ import {
   TSResultType,
   TSSearchStage,
   TSStoreOpts,
-} from './types';
+} from './types/index.js';
 
 class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
@@ -251,16 +251,16 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
         iterator = results.iterator.map((binding: TSBinding) => {
           return serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory);
         });
-        break;
+        return { ...results, iterator };
       case TSResultType.QUADS:
         iterator = results.iterator.map((quad: TSQuad) => {
           return serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
         });
-        break;
+        return { ...results, iterator };
       default:
+        // @ts-ignore
         throw new Error(`Unsupported result type "${results.type}"`);
     }
-    return { ...results, iterator };
   }
 
   async sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult> {

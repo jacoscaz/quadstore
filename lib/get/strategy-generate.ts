@@ -1,11 +1,11 @@
+
 import {
   TSGetStrategy,
   TSIndex, TSPattern, TSRange,
   TSTermName,
-} from '../types';
-import QuadStore from '../quadstore';
-
-const _ = require('../utils/lodash');
+} from '../types/index.js';
+import QuadStore from '../quadstore.js';
+import * as _  from '../utils/lodash.js';
 
 
 const strategyCache = new Map();
@@ -97,7 +97,7 @@ const populate = (pattern: TSPattern, indexTerms: TSTermName[], strategy: TSGetS
   populate(omit(pattern, term), indexTerms.slice(1), strategy, store);
 };
 
-const generate = (store: QuadStore, pattern: TSPattern) => {
+export const generate = (store: QuadStore, pattern: TSPattern) => {
   let strategy = getCachedStrategy(pattern);
   if (strategy) {
     return strategy;
@@ -127,5 +127,3 @@ const generate = (store: QuadStore, pattern: TSPattern) => {
   setCachedStrategy(pattern, strategy);
   return strategy;
 };
-
-module.exports.generate = generate;

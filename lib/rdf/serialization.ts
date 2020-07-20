@@ -1,5 +1,5 @@
 
-import * as _ from '../utils/lodash';
+import * as _ from '../utils/lodash.js';
 import { Term, DataFactory, Literal, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from 'rdf-js';
 import {
   TSBinding,
@@ -9,14 +9,14 @@ import {
   TSRdfQuad,
   TSRdfRange,
   TSRdfSearchStage, TSRdfSimplePattern, TSSearchStage, TSSearchStageType, TSSimplePattern
-} from '../types';
+} from '../types/index.js';
+import * as fpstring from './fpstring.js';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
 const xsdInteger = xsd + 'integer';
 const xsdDouble = xsd + 'double';
 const xsdDateTime = xsd + 'dateTime';
-const fpstring = require('./fpstring');
 const xsdBoolean = xsd + 'boolean';
 const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
@@ -44,15 +44,15 @@ export const importLiteralTerm = (term: Literal, rangeBoundary = false): string 
     case xsdInteger:
     case xsdDouble:
       if (rangeBoundary) {
-        return `^number:${fpstring(term.value.slice(1, -1))}`;
+        return `^number:${fpstring.encode(term.value.slice(1, -1))}`;
       }
-      return `^number:${fpstring(term.value.slice(1, -1))}^${term.datatype.value}^${term.value}^`;
+      return `^number:${fpstring.encode(term.value.slice(1, -1))}^${term.datatype.value}^${term.value}^`;
     case xsdDateTime:
       const timestamp = new Date(term.value.slice(1, -1)).valueOf();
       if (rangeBoundary) {
-        return `^datetime:${fpstring(timestamp)}`;
+        return `^datetime:${fpstring.encode(timestamp)}`;
       }
-      return `^datetime:${fpstring(timestamp)}^${term.datatype.value}^${term.value}^`;
+      return `^datetime:${fpstring.encode(timestamp)}^${term.datatype.value}^${term.value}^`;
     default:
       return `^^${term.datatype.value}^${term.value}^`;
   }

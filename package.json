@@ -13,17 +13,27 @@
     "rdfjs",
     "browser"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist-cjs/index.js",
+  "types": "dist-cjs/index.d.ts",
+  "exports": {
+    "import": "dist-esm/index.js",
+    "require": "dist-cjs/index.js"
+  },
   "scripts": {
     "test": "nyc mocha ./test",
     "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/",
-    "ts:build": "tsc --project .",
-    "ts:watch": "tsc --watch --project ."
+    "ts:build:cjs": "tsc --project ./tsconfig.json && echo \"{ \\\"type\\\": \\\"commonjs\\\" }\" > dist-cjs/package.json",
+    "ts:watch:cjs": "mkdir -p dist-cjs && echo \"{ \\\"type\\\": \\\"commonjs\\\" }\" > dist-cjs/package.json && tsc --watch --project ./tsconfig-cjs.json",
+    "ts:build:esm": "tsc --project ./tsconfig-esm.json && echo \"{ \\\"type\\\": \\\"module\\\" }\" > dist-esm/package.json",
+    "ts:watch:esm": "mkdir -p dist-esm && echo \"{ \\\"type\\\": \\\"module\\\" }\" > dist-esm/package.json && tsc --watch --project ./tsconfig-esm.json",
+    "ts:build": "npm run ts:build:cjs && npm run ts:build:esm"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist-esm/**/*.js",
+    "dist-esm/**/*.d.ts",
+    "dist-cjs/**/*.js",
+    "dist-cjs/**/*.d.ts"
   ],
   "repository": {
     "type": "git",

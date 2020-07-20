@@ -1,8 +1,8 @@
 
-import { isFunction, isObject } from './lodash';
-import {TSReadable, TSTermName} from '../types';
+import { isFunction, isObject } from './lodash.js';
+import {TSReadable, TSTermName} from '../types/index.js';
 import { EventEmitter} from 'events';
-import nanoid from './nanoid';
+import nanoid from './nanoid.js';
 
 export const wait = (delay: number): Promise<void> => {
   return new Promise((resolve) => {
@@ -112,7 +112,7 @@ export const hasAllTerms = (coll: any): boolean => {
     && 'graph' in coll;
 }
 
-export const genDefaultIndexes = () => {
+export const genDefaultIndexes = (): TSTermName[][] => {
   return [
     ['subject', 'predicate', 'object', 'graph'],
     ['object', 'graph', 'subject', 'predicate'],

@@ -1,10 +1,10 @@
 
 'use strict';
 
-const _ = require('../dist/lib/utils/lodash');
+const _ = require('../dist-cjs/lib/utils/lodash');
 const should = require('should');
-const enums = require('../dist/lib/utils/enums');
-const utils = require('../dist/lib/utils');
+const enums = require('../dist-cjs/lib/utils/enums');
+const utils = require('../dist-cjs/lib/utils');
 const factory = require('@rdfjs/data-model');
 
 

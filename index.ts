@@ -1,5 +1,5 @@
 
-import QuadStore from './lib/quadstore';
-import RdfStore from './lib/rdfstore';
+import QuadStore from './lib/quadstore.js';
+import RdfStore from './lib/rdfstore.js';
 
 export { QuadStore, RdfStore };

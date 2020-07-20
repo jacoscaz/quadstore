@@ -2,7 +2,7 @@
 'use strict';
 
 import {
-  TSBinding,
+  TSApproximateSizeResult,
   TSBindingArrayResult,
   TSEmptyOpts,
   TSIndex,
@@ -12,10 +12,12 @@ import {
   TSQuadStreamResult,
   TSRange,
   TSReadable,
-  TSResultType, TSSearchStage,
-  TSStore, TSStoreOpts,
+  TSResultType,
+  TSSearchStage,
+  TSStore,
+  TSStoreOpts,
   TSTermName
-} from './types';
+} from './types/index.js';
 import assert from 'assert';
 import events from 'events';
 import encode from 'encoding-down';
@@ -23,11 +25,10 @@ import levelup from 'levelup';
 import ai from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
-const _ = require('./utils/lodash');
-const enums = require('./utils/enums');
-const utils = require('./utils');
-const get = require('./get');
-const search = require('./search');
+import * as _ from './utils/lodash.js';
+import * as utils from './utils/index.js';
+import * as get from './get/index.js';
+import * as search from './search/index.js';
 
 class QuadStore extends events.EventEmitter implements TSStore {
 
@@ -153,9 +154,9 @@ class QuadStore extends events.EventEmitter implements TSStore {
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const results = await this.searchStream(stages, opts);
     switch (results.type) {
-      case enums.resultType.BINDINGS: {
-        const bindings = await utils.streamToArray(results.bindings);
-        return {type: results.type, items: bindings, sorting: results.sorting};
+      case TSResultType.BINDINGS: {
+        const bindings = await utils.streamToArray(results.iterator);
+        return { ...results, type: results.type, items: bindings };
       } break;
       default:
         throw new Error(`Unsupported result type "${results.type}"`);
@@ -181,7 +182,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts) {
+  async getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult> {
     if (_.isNil(pattern)) pattern = {};
     if (_.isNil(opts)) opts = {};
     assert(_.isObject(pattern), 'The "matchTerms" argument is not a function..');
@@ -203,11 +204,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await get.getStream(this, pattern, opts);
   }
 
-  async searchStream(stages: TSSearchStage[], opts: TSEmptyOpts) {
+  async searchStream(stages: TSSearchStage[], opts?: TSEmptyOpts) {
     if (_.isNil(opts)) opts = {};
     assert(_.isArray(stages), 'The "patterns" argument is not an array.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await search.searchStream(this, stages, opts);
+    return await search.searchStream(this, stages);
   }
 
   async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts) {

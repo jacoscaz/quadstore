@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('../dist/lib/utils/lodash');
+const _ = require('../dist-cjs/lib/utils/lodash');
 const should = require('should');
 
 module.exports = () => {

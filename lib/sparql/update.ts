@@ -1,9 +1,9 @@
 import ai from 'asynciterator';
-import {TSEmptyOpts, TSRdfBinding, TSRdfQuad, TSRdfStore, TSRdfVoidResult, TSResultType, TSTermName} from '../types';
+import {TSEmptyOpts, TSRdfBinding, TSRdfQuad, TSRdfStore, TSRdfVoidResult, TSResultType, TSTermName} from '../types/index.js';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
 import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
-import {termNames, waitForEvent} from '../utils';
-import * as select from './select';
+import {termNames, waitForEvent} from '../utils/index.js';
+import * as select from './select.js';
 
 const parseSubject = (subject: NamedNode | BlankNode | Variable | Literal): Quad_Subject => {
   if (subject.termType === 'Literal') {

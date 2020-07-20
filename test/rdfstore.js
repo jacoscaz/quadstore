@@ -2,7 +2,7 @@
 
 'use strict';
 
-const utils = require('../dist/lib/utils');
+const utils = require('../dist-cjs/lib/utils');
 const dataFactory = require('@rdfjs/data-model');
 const RdfStore = require('..').RdfStore;
 

@@ -1,7 +1,5 @@
-import {TSBinding, TSParsedFilterSearchStage} from '../types';
 
-
-const { filterType } = require('../utils/enums');
+import {TSBinding, TSParsedFilterSearchStage, TSSearchStageType} from '../types/index.js';
 
 const compileGtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
@@ -49,13 +47,13 @@ const compileLteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding
 
 export const compileFilter = (stage: TSParsedFilterSearchStage) => {
   switch (stage.type) {
-    case filterType.GT:
+    case TSSearchStageType.GT:
       return compileGtFilter(stage);
-    case filterType.GTE:
+    case TSSearchStageType.GTE:
       return compileGteFilter(stage);
-    case filterType.LT:
+    case TSSearchStageType.LT:
       return compileLtFilter(stage);
-    case filterType.LTE:
+    case TSSearchStageType.LTE:
       return compileLteFilter(stage);
     default:
       throw new Error(`Unsupported filter type "${stage.type}"`);
@@ -64,13 +62,13 @@ export const compileFilter = (stage: TSParsedFilterSearchStage) => {
 
 export const getFilterTermRange = (stage: TSParsedFilterSearchStage) => {
   switch (stage.type) {
-    case filterType.LT:
+    case TSSearchStageType.LT:
       return { lt: stage.args[1] };
-    case filterType.LTE:
+    case TSSearchStageType.LTE:
       return { lte: stage.args[1] };
-    case filterType.GT:
+    case TSSearchStageType.GT:
       return { gt: stage.args[1] };
-    case filterType.GTE:
+    case TSSearchStageType.GTE:
       return { gte: stage.args[1] };
     default:
       return null;

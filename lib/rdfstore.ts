@@ -8,8 +8,8 @@ import {EventEmitter} from 'events';
 import QuadStore from './quadstore.js';
 import * as serialization from './rdf/serialization.js';
 import * as sparql from './sparql/index.js';
-import ai from 'asynciterator';
-import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store} from 'rdf-js';
+import {TransformIterator, AsyncIterator} from 'asynciterator';
+import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream} from 'rdf-js';
 import {
   TSBinding,
   TSEmptyOpts,
@@ -63,19 +63,19 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
   // **************************************************************************
 
 
-  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): TSReadable<Quad> {
-    const iterator = new ai.TransformIterator<Quad, Quad>();
+  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): Stream<Quad> {
+    const iterator = new TransformIterator<Quad, Quad>();
     const pattern: TSRdfPattern = { subject, predicate, object, graph };
     this.getStream(pattern, {})
       .then((results) => {
-        iterator.source = results.iterator;
+        iterator.source = <AsyncIterator<Quad>>results.iterator;
       })
       .catch((err) => {
         // TODO: is the destroy() method really supported by AsyncIterator?
         // @ts-ignore
         iterator.destroy();
       });
-    return iterator;
+    return <Stream<Quad>>iterator;
   }
 
   /**
@@ -84,19 +84,19 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
    * @param opts
    * @returns {*|EventEmitter}
    */
-  import(source: TSReadable<TSRdfQuad>): EventEmitter {
+  import(source: Stream<Quad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     const emitter = new EventEmitter();
-    this.putStream(source, {})
+    this.putStream(<TSReadable<TSRdfQuad>>source, {})
       .then(() => { emitter.emit('end'); })
       .catch((err) => { emitter.emit('error', err); });
     return emitter;
   }
 
-  remove(source: TSReadable<TSRdfQuad>): EventEmitter {
+  remove(source: Stream<Quad>): EventEmitter {
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     const emitter = new EventEmitter();
-    this.delStream(source, {})
+    this.delStream(<TSReadable<TSRdfQuad>>source, {})
       .then(() => emitter.emit('end'))
       .catch((err) => emitter.emit('error', err));
     return emitter;
@@ -232,14 +232,14 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   async putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
     // @ts-ignore
-    const importedQuadsIterator: TSReadable<TSQuad> = ai.AsyncIterator.wrap(source)
+    const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.putStream(importedQuadsIterator, opts);
   }
 
   async delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
     // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
-    const importedQuadsIterator: TSReadable<TSQuad> = ai.AsyncIterator.wrap(source)
+    const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.delStream(importedQuadsIterator, opts);
   }

@@ -3,6 +3,8 @@ import { isFunction, isObject } from './lodash.js';
 import {TSReadable, TSTermName} from '../types/index.js';
 import { EventEmitter} from 'events';
 import nanoid from './nanoid.js';
+import { Readable } from 'stream';
+import { AsyncIterator, TransformIterator } from 'asynciterator';
 
 export const wait = (delay: number): Promise<void> => {
   return new Promise((resolve) => {

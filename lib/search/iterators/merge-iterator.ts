@@ -1,9 +1,9 @@
 
-import ai from 'asynciterator';
+import { BufferedIterator, AsyncIterator } from 'asynciterator';
 
-class MergeIterator<T> extends ai.BufferedIterator<T> {
+class MergeIterator<T> extends BufferedIterator<T> {
 
-  constructor(a: ai.AsyncIterator<T>, b: ai.AsyncIterator<T>, compare: (a: T, b: T) => number, push: (a: T, b: T) => T) {
+  constructor(a: AsyncIterator<T>, b: AsyncIterator<T>, compare: (a: T, b: T) => number, push: (a: T, b: T) => T) {
 
     super();
 

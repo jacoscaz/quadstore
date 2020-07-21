@@ -1,4 +1,4 @@
-import ai from 'asynciterator';
+import {ArrayIterator} from 'asynciterator';
 import {TSEmptyOpts, TSRdfBinding, TSRdfQuad, TSRdfStore, TSRdfVoidResult, TSResultType, TSTermName} from '../types/index.js';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
 import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
@@ -60,7 +60,7 @@ const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperati
       }
     });
   }
-  const iterator = new ai.ArrayIterator(quads).transform({
+  const iterator = new ArrayIterator(quads).transform({
     transform(quad, done: () => void) {
       store.put([quad])
         .then(done.bind(null, null))
@@ -88,7 +88,7 @@ const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperati
       }
     });
   }
-  const iterator = new ai.ArrayIterator(quads).transform({
+  const iterator = new ArrayIterator(quads).transform({
     transform(quad, done: () => void) {
       store.del([quad], {})
         .then(done.bind(null, null))

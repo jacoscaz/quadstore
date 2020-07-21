@@ -1,6 +1,6 @@
 import QuadStore from '../quadstore.js';
-import {TSEmptyOpts, TSGetOpts, TSGetStrategy} from '../types/index.js';
-import * as ai from 'asynciterator';
+import {TSEmptyOpts, TSGetOpts, TSGetStrategy, TSQuad} from '../types/index.js';
+import {AsyncIterator, TransformIterator} from 'asynciterator';
 
 type TLevelOpts = {
   lt?: string,
@@ -67,7 +67,7 @@ export const executeApproximateSize = async (store: QuadStore, strategy: TSGetSt
   // TODO: handle opts.limit and opts.offset
 };
 
-export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: TSGetOpts) => {
+export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: TSGetOpts): Promise<AsyncIterator<TSQuad>> => {
   const levelOpts: TLevelOpts = generateLevelOpts(store, strategy, opts);
   if (opts.offset) {
     levelOpts.offset = opts.offset;
@@ -75,7 +75,6 @@ export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: T
   if (opts.limit) {
     levelOpts.limit = opts.limit;
   }
-  // @ts-ignore
-  const iterator = ai.AsyncIterator.wrap(store.db.createValueStream(levelOpts));
+  const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts));
   return iterator;
 };

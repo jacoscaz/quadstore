@@ -1,9 +1,9 @@
 
 // @ts-ignore
 import SortedSet from 'js-sorted-set';
-import ai from 'asynciterator';
+import { AsyncIterator, BufferedIterator, TransformIterator } from 'asynciterator';
 
-class SortedSetIterator<T> extends ai.BufferedIterator<T> {
+class SortedSetIterator<T> extends BufferedIterator<T> {
 
   constructor(set: SortedSet<T>) {
 
@@ -33,9 +33,9 @@ class SortedSetIterator<T> extends ai.BufferedIterator<T> {
 
 }
 
-class SortIterator<T> extends ai.TransformIterator<T, T> {
+class SortIterator<T> extends TransformIterator<T, T> {
 
-  constructor(source: ai.AsyncIterator<T>, comparator: (a: T, b: T) => -1|0|1) {
+  constructor(source: AsyncIterator<T>, comparator: (a: T, b: T) => -1|0|1) {
 
     super();
 

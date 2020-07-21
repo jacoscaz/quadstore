@@ -22,7 +22,7 @@ import assert from 'assert';
 import events from 'events';
 import encode from 'encoding-down';
 import levelup from 'levelup';
-import ai from 'asynciterator';
+import {AsyncIterator, TransformIterator} from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
 import * as _ from './utils/lodash.js';
@@ -225,9 +225,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
           .catch(cb);
       },
     };
-    // TODO: address TS incompatible typings
-    // @ts-ignore
-    const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
+    const iterator = new TransformIterator(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
 
@@ -242,9 +240,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
           .catch(cb);
       },
     };
-    // TODO: address TS incompatible typings
-    // @ts-ignore
-    const iterator = ai.AsyncIterator.wrap(source).transform(transformOpts);
+    const iterator = new TransformIterator(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
 

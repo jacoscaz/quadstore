@@ -1,9 +1,9 @@
 
-import ai from 'asynciterator';
+import { AsyncIterator, BufferedIterator } from 'asynciterator';
 
-class NestedLoopJoinIterator<T> extends ai.BufferedIterator<T> {
+class NestedLoopJoinIterator<T> extends BufferedIterator<T> {
 
-  constructor(outerIterator: ai.AsyncIterator<T>, getInnerIterator: (t: T) => Promise<ai.AsyncIterator<T>>, mergeItems: (o: T, i: T) => T) {
+  constructor(outerIterator: AsyncIterator<T>, getInnerIterator: (t: T) => Promise<AsyncIterator<T>>, mergeItems: (o: T, i: T) => T) {
 
     super();
 
@@ -13,7 +13,7 @@ class NestedLoopJoinIterator<T> extends ai.BufferedIterator<T> {
     let readDone: (() => void) | null = null;
     let readCount = 0;
 
-    let innerIterator: ai.AsyncIterator<T> | null = null;
+    let innerIterator: AsyncIterator<T> | null = null;
 
     let outerItem: T | null = null;
     let innerItem: T | null = null;

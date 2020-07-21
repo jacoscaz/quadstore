@@ -1,8 +1,8 @@
 
 import { EventEmitter } from 'events';
 import { AbstractLevelDOWN } from 'abstract-leveldown'
-import ai from 'asynciterator';
-import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Variable, Term } from 'rdf-js';
+import {AsyncIterator} from 'asynciterator';
+import { BlankNode, NamedNode, DefaultGraph, Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Variable, Term, Stream, BaseQuad } from 'rdf-js';
 
 
 export interface TSEmptyOpts {}
@@ -13,16 +13,11 @@ export interface TSEmptyOpts {}
 
 export type TSTermName = 'subject' | 'predicate' | 'object' | 'graph';
 
-// As we're using asynciterator.AsyncIterator AND stream.Readable instances,
-// we need a generic type that covers both of those.
-export interface TSReadable<T> extends EventEmitter {
+export interface TSReadable<T> extends AsyncIterator<T> {
   on(eventName: 'data', fn: (chunk: T) => void): this;
   on(eventName: 'end', fn: () => void): this;
   on(eventName: 'error', fn: (err: Error) => void): this;
-  // TODO: this should be T|null but adding null makes it incompatible with
-  //       the RDF/JS typings. Perhaps we should make a PR to the typings
-  //       repo
-  read(): T;
+  read(): T|null;
 }
 
 export const enum TSResultType {
@@ -99,7 +94,7 @@ export interface TSQuadArrayResult {
 export interface TSQuadStreamResult {
   type: TSResultType.QUADS,
   sorting: TSTermName[],
-  iterator: ai.AsyncIterator<TSQuad>,
+  iterator: TSReadable<TSQuad>,
 }
 
 export interface TSBindingArrayResult {
@@ -113,7 +108,7 @@ export interface TSBindingStreamResult {
   type: TSResultType.BINDINGS,
   sorting: TSTermName[],
   variables: TSVariables,
-  iterator: ai.AsyncIterator<TSBinding>,
+  iterator: TSReadable<TSBinding>,
 }
 
 export interface TSApproximateSizeResult {
@@ -255,7 +250,7 @@ export interface TSRdfQuadArrayResult {
 export interface TSRdfQuadStreamResult {
   type: TSResultType.QUADS,
   sorting: TSTermName[],
-  iterator: ai.AsyncIterator<TSRdfQuad>,
+  iterator: TSReadable<TSRdfQuad>,
 }
 
 export interface TSRdfBindingArrayResult {
@@ -269,7 +264,7 @@ export interface TSRdfBindingStreamResult {
   type: TSResultType.BINDINGS,
   sorting: TSTermName[],
   variables: TSVariables,
-  iterator: ai.AsyncIterator<TSRdfBinding>,
+  iterator: TSReadable<TSRdfBinding>,
 }
 
 export interface TSRdfVoidResult {

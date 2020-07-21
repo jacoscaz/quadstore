@@ -8,9 +8,9 @@
 - *[new]* added support for user-defined indexes
 - *[new]* added support for complex searches
 - *[new]* added support for basic SPARQL queries
+- **[breaking]** refactored all APIs to return results wrapped in objects
 - **[breaking]** refactored all streaming APIs to use `AsyncIterator` and
-  asynchronous entrypoints with the exception of `RDF/JS` methods
-- **[breaking]** dropped support for `getApproximateCount()` 
+  asynchronous entrypoints with the exception of `RDF/JS` methods 
 - **[breaking]** dropped support for previous implementation of custom indexes
 - **[breaking]** dropped support for callbacks
 - **[breaking]** refactored constructors to only use a single `opts` argument,

@@ -6,7 +6,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
 
 A LevelDB-backed graph database for Node.js and the browser. 
-Supports quads, RDF/JS interfaces and SPARQL queries.
+Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
 
 ## Table of contents
 
@@ -89,9 +89,8 @@ GRAPH-2             SOURCE              LINKEDIN
 ```
 
 Quadstore is a LevelDB-backed graph database for Node.js and the browser 
-with native support for quads and the RDF/JS interface specification.
-Additional features, such as SPARQL queries, are made available through 
-separate modules.
+with native support for quads, the RDF/JS interface specification, complex
+searches and SPARQL queries.
 
 Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
 maintaining multiple indexes each of which deals with a different permutation
@@ -114,23 +113,6 @@ specific to each use case.
 
 Active, under development.
 
-### Roadmap
-
-We're currently working on the following features:
-
-- Adding support for complex searches, see [searches in LevelGraph][r1]
-- Refactoring support for SPARQL queries around something lighter than Comunica
-
-We're also evaluating the following features for future developments:
-
-- Adding support for quad generation, see [generation in LevelGraph][r2]
-- Adding support for [RDF*][rdfstar-blog] (see also [these slides][rdfstar-slides])
-
-[r1]: https://github.com/levelgraph/levelgraph#searches
-[r2]: https://github.com/levelgraph/levelgraph#triple-generation
-[rdfstar-blog]: https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
-[rdfstar-slides]: http://olafhartig.de/slides/W3CWorkshop2019RDFStarAndSPARQLStar.pdf
-
 ### Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
@@ -139,18 +121,38 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
-- Supports retrieval, update, insertion and removal of quads
-- Implements [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces
-- SPARQL queries are supported via the additional [`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore-sparql) package
-- HTTP endpoints are supported via the additional [`quadstore-http`](https://github.com/beautifulinteractions/node-quadstore-http) package.
+- written in Typescript;
+- retrieval, update, insertion and removal of quads;
+- complex searches;
+- SPARQL queries;
+- [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces.
+
+### Roadmap
+
+We're currently working on the following features:
+
+- native support for complex searches;
+- native support for SPARQL queries;
+- pushing filters down to the database;
+- performance improvements.
+
+We're also evaluating the following features for future developments:
+
+- quad generation, see [generation in LevelGraph][r2]
+- [RDF*][rdfstar-blog] (see also [these slides][rdfstar-slides])
+
+[r1]: https://github.com/levelgraph/levelgraph#searches
+[r2]: https://github.com/levelgraph/levelgraph#triple-generation
+[rdfstar-blog]: https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
+[rdfstar-slides]: http://olafhartig.de/slides/W3CWorkshop2019RDFStarAndSPARQLStar.pdf
 
 ### Notes
 
-- Uses [Semantic Versioning](https://semver.org). 
-  Pre-releases are tagged accordingly.
-- The `master` branch is kept in sync with NPM and all development work happens
-  on the `devel` branch and/or issue-specific branches.
-- Requires Node.js >= 10.0.0.
+- uses [Semantic Versioning](https://semver.org), pre-releases are tagged
+  accordingly;
+- the `master` branch is kept in sync with NPM and all development work happens
+  on the `devel` branch and/or issue-specific branches;
+- requires Node.js >= 10.0.0.
 
 ## Usage
 
@@ -161,10 +163,67 @@ interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
 
 We test `quadstore` using the following backends:
 
-- [`leveldown`](https://github.com/level/leveldown/) offers persistent storage
+- [`leveldown`](https://github.com/level/leveldown/) for persistent storage
   backed by LevelDB itself
-- [`memdown`](https://github.com/level/memdown) package offers volatile 
-  in-memory storage
+- [`memdown`](https://github.com/level/memdown) for volatile in-memory storage
+
+### Return values
+
+With the exception of RDF/JS interfaces, `quadstore`'s APIs are promise-based
+and all methods return objects that include both the actual query results and
+relevant metadata such as the sorting criteria used for ordering the results.
+
+#### Result types
+
+Objects returned by `quadstore`'s APIs have the `type` property set to one of
+the following values:
+
+- `"VOID"` - when there's no data returned by the database, such as with the
+  `put` method or `INSERT DATA` SPARQL queries;
+- `"QUADS"` - when a query returns a series of quads;
+- `"BINDINGS"` - when a query returns a series of bindings.
+
+#### Streaming vs. non-streaming
+
+For those methods that return objects with the `type` property set to either
+`"QUADS"` or `"BINDINGS"`, `quadstore` provides query results either in streaming
+mode or in non-streaming mode. 
+  
+Streaming methods such as `getStream` and `searchStream` return objects with
+the `iterator` property set to an instance of [`AsyncIterator`][asynciterator-gh],
+a superset of the `stream.Readable` interface. This instance emits either quads
+or bindings, depending on the value of the `type` property.
+
+Non-streaming methods such as `get` and `search` return objects with the
+`items` property set to an array of either quads or bindings, depending on the
+value of the `type` property.
+
+[asynciterator-gh]: https://github.com/RubenVerborgh/AsyncIterator#readme
+
+#### Sorting
+
+All methods returning objects with the `type` property set to either `"QUADS"` or
+`"BINDINGS"` also include a `sorting` property set to an array that represents
+the sorting criteria by which the database is ordering the provided results. 
+
+#### Example
+
+```js
+const results = await store.get({});
+console.log(JSON.stringify(results));
+```
+
+```json
+{
+  "type": "QUADS",
+  "items": [
+    { "subject":  "a", "predicate": "a", "object": "c", "graph": "d"},
+    { "subject":  "a", "predicate": "b", "object": "c", "graph": "d"},
+    { "subject":  "b", "predicate": "a", "object": "c", "graph": "d"}
+  ],
+  "sorting": ["subject", "predicate", "object", "graph"]
+} 
+```
 
 ### Graph API
 
@@ -176,19 +235,12 @@ We test `quadstore` using the following backends:
 Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
-    opts.backend = require('memdown')();    // REQUIRED: level instance 
-    opts.contextKey = 'graph';              // OPTIONAL: name of fourth term
+    opts.backend = require('memdown')();    // REQUIRED: level instance
     opts.indexes = [                        // OPTIONAL: custom indexes
         ['subject', 'predicate', 'object', 'graph'],
     ];
     
 The `opts.backend` option **must** be an instance of a leveldb backend.
-
-The `opts.contextKey` option determines which key the store will use to read and
-write the fourth term of each quad. The default value `graph` requires all 
-quads to be formatted as `{ subject, predicate, object, graph }` objects. 
-Similarly, the value `context` would require all quads to be formatted as
-`{ subject, predicate, object, context }` objects.
 
 ##### Custom indexes
 
@@ -197,18 +249,18 @@ by the store. If not set, the store will default to the following indexes:
 
 ```
 [
-  ['subject', 'predicate', 'object', contextKey],
-  ['object', contextKey, 'subject', 'predicate'],
-  [contextKey, 'subject', 'predicate', 'object'],
-  ['object', 'subject', 'predicate', contextKey],
-  ['predicate', 'object', contextKey, 'subject'],
-  [contextKey, 'predicate', 'object', 'subject'],
+  ['subject', 'predicate', 'object', 'graph'],
+  ['object', 'graph', 'subject', 'predicate'],
+  ['graph', 'subject', 'predicate', 'object'],
+  ['object', 'subject', 'predicate', 'graph'],
+  ['predicate', 'object', 'graph', 'subject'],
+  ['graph', 'predicate', 'object', 'subject'],
 ]; 
 ```
 
-This option, if present, **must** be set to an array of terms array, each of 
+This option, if present, **must** be set to an array of term arrays, each of 
 which **must** represent one of the 24 possible permutations of the four terms 
-`subject`, `predicate`, `object` and `[context]`. Partial indexes are not 
+`subject`, `predicate`, `object` and `graph`. Partial indexes are not 
 supported.
 
 The store will automatically select which index(es) to use for a given query 
@@ -218,7 +270,7 @@ found for a given query, the store will throw an error**.
 #### QuadStore.prototype.get()
 
     const matchTerms = {graph: 'g'};
-    const quads = await store.get(matchTerms);
+    const { items } = await store.get(matchTerms);
 
 Returns an array of all quads within the store matching the specified terms.
 
@@ -228,20 +280,20 @@ Quadstore supports range-based matching in addition to value-based matching.
 Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
     const matchTerms = {graph: { gt: 'g' } };
-    const quads = await store.get(matchTerms);
+    const { items } = await store.get(matchTerms);
 
 #### QuadStore.prototype.search()
 
-    const patterns = [
-        {subject: '?s', predicate: 'p1', object: '?o'},
-        {subject: '?s', predicate: 'p2', object: 'o2'},
+    const pipeline = [
+      {subject: '?s', predicate: 'p1', object: '?o'},
+      {subject: '?s', predicate: 'p2', object: 'o2'},
+      { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
     ];
-    const filters = [
-        { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
-    ];
-    const quads = await store.search(patterns, filters);
+    const { items } = await store.search(pipeline);
 
-Returns an array of all quads within the store matching the specified terms.
+Returns an array of all quads within the store matching the specified patterns
+and filters. Search methods such as `search()` and `searchStream()` support the
+use of variables.
 
 #### QuadStore.prototype.put()
 
@@ -306,27 +358,19 @@ See [QuadStore.prototype.get()](#quadstoreprototypeget).
 #### QuadStore.prototype.getStream()
 
     const matchTerms = {graph: 'c'};
-    const readableStream = await store.getStream(matchTerms);
-
-Returns a `stream.Readable` of all quads matching the terms in 
-the specified query.
+    const { iterator } = await store.getStream(matchTerms);
 
 This method supports [range matching](#range-matching). 
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.searchStream()
 
-    const patterns = [
-        {subject: '?s', predicate: 'p1', object: '?o'},
-        {subject: '?s', predicate: 'p2', object: 'o2'},
+    const pipeline = [
+      {subject: '?s', predicate: 'p1', object: '?o'},
+      {subject: '?s', predicate: 'p2', object: 'o2'},
+      { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
     ];
-    const filters = [
-        { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
-    ];
-    const readableStream = await store.search(patterns, filters);
-
-Returns a `stream.Readable` of all quads matching the terms in 
-the specified query.
+    const { iterator } = await store.searchStream(pipeline);
  
 See [QuadStore.prototype.search()](#quadstoreprototypesearch).
 
@@ -347,12 +391,8 @@ Deletes all quads coming through the specified `stream.Readable` from the store.
 `quadstore` aims to support the 
 [RDF/JS](https://github.com/rdfjs/representation-task-force) interface 
 specification through the specialized `RdfStore` class, which currently 
-implements the `Source`, `Sink` and `Store` interfaces (Term(s)-only, no 
-RegExp(s)).
-
-Additionally, the `RdfStore` class also supports `SPARQL` queries and provides
-`HTTP` endpoints matching the 
-[RDF/JS](https://github.com/rdfjs/representation-task-force)'s specification.
+implements the `Source`, `Sink` and `Store` interfaces. Additionally, the 
+`RdfStore` class also supports `SPARQL` queries.
 
 #### RdfStore class
 
@@ -372,27 +412,19 @@ The `dataFactory` option *must* be an implementation of the
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
 - [N3.js' N3.DataFactory](https://www.npmjs.com/package/n3)
 
-The `contextKey` option from the `QuadStore` class is set to `graph` and cannot
-be changed.
-
 #### Graph API, Quad and Term instances
 
 The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, 
-the `get`, `put`, `del`, `patch`, `query`, `getStream`, `putStream` and 
-`delStream` methods accept and return (streams of and/or arrays of) `Quad` 
-objects as produced by the `dataFactory.quad` method. 
+the `get`, `put`, `del`, `patch`, `query`, `getStream`, `searchStream`, 
+`putStream` and `delStream` methods accept and return iterators and/or arrays
+of `Quad` objects as produced by the `dataFactory.quad` method. 
 
 Matching terms, such as those used in the `get` and `getStream` methods,
 must be `Term` objects as produced by the `dataFactory.namedNode`, 
-`dataFactory.blankNode` or `dataFactory.literal` methods. 
+`dataFactory.blankNode` or `dataFactory.literal` methods.
 
-The same rules apply for the `match`, `import`, `remove` and `removeMatches` 
-methods inherited from the RDF/JS interface.
-
-#### SPARQL Queries
-
-SPARQL queries are supported via the additional package 
-[`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore).
+Search methods such as `search` and `searchStream` support the use of variables
+via RDF/JS' `Variable` interface as implemented by `dataFactory.variable()`.
 
 #### RDF range matching
 
@@ -460,22 +492,25 @@ Consumes the stream removing each incoming quad.
 Removes all quad  matching the provided terms.
 Supports [range-based matching](#rdf-range-matching).
 
-### Browser
+### Build systems
 
-`quadstore` can be used in browsers via build systems such as:
+`quadstore` is built targeting both the ES and CommonJS module specifications.
+Modern runtimes and build systems should automatically load the correct set of
+modules as long as they are able to understand the `type`, `main`, `module` and
+`exports` properties of `package.json` files as explained in [the official
+Node.js documentation on ES modules][n-esm]. Tree-shaking is supported via the 
+ESM build. 
 
-- [`rollup`](https://rollupjs.org/guide/en/)
-- [`webpack`](https://webpack.js.org)
-- [`browserify`](http://browserify.org)
+### Browser usage
 
-Persistent, in-browser storage is supported using the 
-[`level-js`](https://github.com/Level/level-js) backend for levelDB.
+The [`level-js`](https://github.com/Level/level-js) backend for levelDB offers
+support for browser-side persistent storage. 
 
 ## Performance
 
 We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
 file into an instance of `RdfStore` on Node v12.14.0 running on a 2018 
-MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~15k quads per 
+MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~14k quads per 
 second** and **~4k quads per MB**.
 
     node perf/loadfile.js /Users/jacoscaz/Downloads/1million.rdf 

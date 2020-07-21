@@ -22,3 +22,6 @@ before_install:
   - export CXX="g++-4.9";
   - export LINK="gcc-4.9";
   - export LINKXX="g++-4.9";
+
+before_script:
+  - npm run ts:build:cjs

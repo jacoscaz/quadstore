@@ -38,7 +38,8 @@ Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
-- [Browser](#browser)
+- [Build systems](#build-systems)
+- [Browser](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
 
@@ -447,6 +448,38 @@ This is also the case for terms with the following date/time datatypes:
 http://www.w3.org/2001/XMLSchema#dateTime
 ```
 
+#### RdfStore.prototype.sparql()
+
+The `sparql()` method provides support for non-streaming SPARQL queries.
+Objects returned by `sparql()` have their `type` property set to different
+values depending on each specific query:
+
+- `SELECT` queries will result in objects having their `type` property 
+  set to `"BINDINGS"`;
+- `CONSTRUCT` queries will result in objects objects having their `type`
+  property set to `"QUADS"`;
+- `UPDATE` properties such as `INSERT DATA`, `DELETE DATA` and 
+  `INSERT/DELETE WHERE` queries will result in objects having their `type`
+  property set to `"VOID"`.
+  
+```js
+const { type, items } = await store.sparql(`
+  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
+`);
+```
+
+#### RdfStore.prototype.sparqlStream()
+
+The `sparqlStream()` method provides support for streaming SPARQL queries.
+Objects returned by `sparqlStream()` have their `type` property set to
+different values depending on each specific query, as for `sparql()`.
+
+```js
+const { type, iterator } = await store.sparqlStream(`
+  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
+`);
+```
+
 #### RdfStore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
@@ -492,7 +525,7 @@ Consumes the stream removing each incoming quad.
 Removes all quad  matching the provided terms.
 Supports [range-based matching](#rdf-range-matching).
 
-### Build systems
+## Build systems
 
 `quadstore` is built targeting both the ES and CommonJS module specifications.
 Modern runtimes and build systems should automatically load the correct set of
@@ -501,7 +534,7 @@ modules as long as they are able to understand the `type`, `main`, `module` and
 Node.js documentation on ES modules][n-esm]. Tree-shaking is supported via the 
 ESM build. 
 
-### Browser usage
+## Browser usage
 
 The [`level-js`](https://github.com/Level/level-js) backend for levelDB offers
 support for browser-side persistent storage. 

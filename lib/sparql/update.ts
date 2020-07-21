@@ -62,7 +62,7 @@ const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperati
   }
   const iterator = new ArrayIterator(quads).transform({
     transform(quad, done: () => void) {
-      store.put([quad])
+      store.put(quad)
         .then(done.bind(null, null))
         .catch(done);
     },
@@ -90,7 +90,7 @@ const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperati
   }
   const iterator = new ArrayIterator(quads).transform({
     transform(quad, done: () => void) {
-      store.del([quad], {})
+      store.del(quad, {})
         .then(done.bind(null, null))
         .catch(done);
     },
@@ -184,7 +184,7 @@ const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteO
           insertQuads.push(...sparqlPatternToQuads(store, pattern, binding));
         });
       }
-      store.patch(deleteQuads, insertQuads, {})
+      store.multiPatch(deleteQuads, insertQuads, {})
         .then(done.bind(null, null))
         .catch(done);
     },

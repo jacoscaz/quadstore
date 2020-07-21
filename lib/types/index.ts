@@ -153,10 +153,13 @@ export interface TSGetStrategy {
 }
 
 export interface TSStore extends EventEmitter {
-  put(quads: TSQuad|TSQuad[], opts?: TSEmptyOpts): Promise<void>
-  del(patternOrQuads: TSPattern|TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void>
   get(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadArrayResult>
-  patch(patternOrOldQuads: TSPattern|TSQuad|TSQuad[], newQuads: TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void>
+  put(quad: TSQuad, opts?: TSEmptyOpts): Promise<void>
+  multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<void>
+  del(quad: TSQuad, opts: TSEmptyOpts): Promise<void>
+  multiDel(Quads: TSQuad[], opts: TSEmptyOpts): Promise<void>
+  patch(oldQuad: TSQuad, newQuad: TSQuad, opts: TSEmptyOpts): Promise<void>
+  multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts: TSEmptyOpts): Promise<void>
   search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
   getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
   getStream(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadStreamResult>
@@ -295,10 +298,13 @@ export interface TSRdfStoreOpts {
 export interface TSRdfStore extends EventEmitter {
   quadstore: TSStore
   dataFactory: DataFactory
-  put(quads: TSRdfQuad|TSRdfQuad[], opts?: TSEmptyOpts): Promise<void>
-  del(patternOrQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
   get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult>
-  patch(patternOrOldQuads: TSRdfPattern|TSRdfQuad|TSRdfQuad[], newQuads: TSRdfQuad|TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
+  put(quad: TSRdfQuad, opts?: TSEmptyOpts): Promise<void>
+  multiPut(quads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<void>
+  del(quad: TSRdfQuad, opts: TSEmptyOpts): Promise<void>
+  multiDel(quads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
+  patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void>
+  multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
   search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
   sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult>
   getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>

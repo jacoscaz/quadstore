@@ -120,25 +120,40 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async put(quads: TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void> {
-    if (_.isNil(opts)) opts = {};
-    assert(_.isObject(quads), 'The "quads" argument is not an object.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
+  async put(newQuad: TSQuad, opts?: TSEmptyOpts) {
     // @ts-ignore
-    return await this._delput([], quads, opts);
+    await this.db.batch(this._quadToBatch(newQuad, 'put'));
   }
 
-  async del(patternOrQuads: TSPattern|TSQuad|TSQuad[], opts: TSEmptyOpts): Promise<void> {
-    if (_.isNil(opts)) opts = {};
-    assert(_.isObject(patternOrQuads), 'The "matchTermsOrOldQuads" argument is not an object.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return (Array.isArray(patternOrQuads) || this._isQuad(patternOrQuads))
-      // TODO: type checks not being understood by TS
-      // @ts-ignore
-      ? await this._delput(patternOrQuads, [], opts)
-      // TODO: type checks not being understood by TS
-      // @ts-ignore
-      : await this._getdelput(patternOrQuads, [], opts);
+  async multiPut(newQuads: TSQuad[], opts?: TSEmptyOpts) {
+    // @ts-ignore
+    await this.db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
+  }
+
+  async del(oldQuad: TSQuad, opts?: TSEmptyOpts) {
+    // @ts-ignore
+    await this.db.batch(this._quadToBatch(oldQuad, 'del'));
+  }
+
+  async multiDel(oldQuads: TSQuad[], opts?: TSEmptyOpts) {
+    // @ts-ignore
+    await this.db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
+  }
+
+  async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts) {
+    // @ts-ignore
+    await this.db.batch([
+      ...(this._quadToBatch(oldQuad, 'del')),
+      ...(this._quadToBatch(newQuad, 'put')),
+    ]);
+  }
+
+  async multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts) {
+    // @ts-ignore
+    await this.db.batch([
+      ...(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del'))),
+      ...(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put'))),
+    ]);
   }
 
   async get(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadArrayResult> {
@@ -164,19 +179,6 @@ class QuadStore extends events.EventEmitter implements TSStore {
       default:
         throw new Error(`Unsupported result type "${results.type}"`);
     }
-  }
-
-  async patch(patternOrOldQuads: TSPattern|TSQuad|TSQuad[], newQuads: TSQuad|TSQuad[], opts: TSEmptyOpts) {
-    if (_.isNil(opts)) opts = {};
-    assert(_.isObject(patternOrOldQuads), 'Invalid type of "matchTermsOrOldQuads" argument.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return (Array.isArray(patternOrOldQuads) || this._isQuad(patternOrOldQuads))
-      // TODO: fix type checks not being understood by TS
-      // @ts-ignore
-      ? await this._delput(patternOrOldQuads, newQuads, opts)
-      // TODO: fix type checks not being understood by TS
-      // @ts-ignore
-      : await this._getdelput(patternOrOldQuads, newQuads, opts);
   }
 
   /*
@@ -220,7 +222,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
       transform: (quad: TSQuad, cb: () => void) => {
-        this._delput([], [quad], opts)
+        this.put(quad, opts)
           .then(cb.bind(null, null))
           .catch(cb);
       },
@@ -235,7 +237,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
       transform: (quad: TSQuad, cb: () => void) => {
-        this._delput([quad], [], opts)
+        this.del(quad, opts)
           .then(cb.bind(null, null))
           .catch(cb);
       },
@@ -243,8 +245,6 @@ class QuadStore extends events.EventEmitter implements TSStore {
     const iterator = new TransformIterator(source).transform(transformOpts);
     await utils.streamToArray(iterator);
   }
-
-
 
   protected _isQuad(obj: any): boolean {
     return _.isString(obj.subject)
@@ -258,32 +258,6 @@ class QuadStore extends events.EventEmitter implements TSStore {
    *                            LOW-LEVEL DB HELPERS
    * ==========================================================================
    */
-
-  protected async _delput(oldQuads: TSQuad|TSQuad[], newQuads: TSQuad|TSQuad[], opts: TSEmptyOpts) {
-    if (oldQuads !== null) {
-      if (Array.isArray(oldQuads)) {
-        // @ts-ignore
-        await this.db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
-      } else {
-        // @ts-ignore
-        await this.db.batch(this._quadToBatch(oldQuads, 'del'));
-      }
-    }
-    if (newQuads !== null) {
-      if (Array.isArray(newQuads)) {
-        // @ts-ignore
-        await this.db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
-      } else {
-        // @ts-ignore
-        await this.db.batch(this._quadToBatch(newQuads, 'put'));
-      }
-    }
-  }
-
-  protected async _getdelput(matchTerms: TSPattern, newQuads: TSQuad|TSQuad[], opts: TSEmptyOpts) {
-    const oldQuads = (await this.get(matchTerms, opts)).items;
-    await this._delput(oldQuads, newQuads, {});
-  }
 
   /**
    * Transforms a quad into a batch of either put or del

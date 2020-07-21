@@ -45,7 +45,7 @@ module.exports = () => {
           factory.namedNode('http://ex.com/g2')
         ),
       ];
-      await this.store.put(quads);
+      await this.store.multiPut(quads);
     });
 
 

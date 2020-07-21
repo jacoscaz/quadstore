@@ -19,23 +19,6 @@ module.exports = () => {
       should(quadsAfter).have.length(0);
     });
 
-    it('should delete matching quads correctly', async function () {
-      const store = this.store;
-      const quadsArray = [
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
-        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
-        { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
-        { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
-        { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
-      ];
-      await store.put(quadsArray);
-      await store.del({ subject: 's2' });
-      const { items: quads } = await store.get({});
-      quads.sort(store._getQuadComparator());
-      should(quads).have.length(2);
-      should(quads).be.deepEqual(quadsArray.slice(0, 2));
-    });
-
   });
 
 };

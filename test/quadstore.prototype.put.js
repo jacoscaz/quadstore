@@ -20,7 +20,7 @@ module.exports = () => {
     it('should store a single quad correctly (as array) (promise)', async function () {
       const store = this.store;
       const newQuads = [{ subject: 's', predicate: 'p', object: 'o', graph: 'c' }];
-      await store.put(newQuads);
+      await store.multiPut(newQuads);
       const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);
@@ -32,7 +32,7 @@ module.exports = () => {
         { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
         { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
-      await store.put(newQuads);
+      await store.multiPut(newQuads);
       const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(2);
       should(foundQuads[0]).deepEqual(newQuads[0]);
@@ -45,7 +45,7 @@ module.exports = () => {
         { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
         { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
       ];
-      await store.put(newQuads);
+      await store.multiPut(newQuads);
       const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(2);
       should(foundQuads[0]).deepEqual(newQuads[0]);
@@ -58,7 +58,7 @@ module.exports = () => {
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
-      await store.put(newQuads);
+      await store.multiPut(newQuads);
       const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);
@@ -70,7 +70,7 @@ module.exports = () => {
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
       ];
-      await store.put(newQuads);
+      await store.multiPut(newQuads);
       const { items: foundQuads } = await store.get({});
       should(foundQuads).have.length(1);
       should(foundQuads[0]).deepEqual(newQuads[0]);

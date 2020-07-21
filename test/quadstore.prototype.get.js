@@ -9,7 +9,7 @@ module.exports = () => {
   describe('QuadStore.prototype.get()', () => {
 
     beforeEach(async function () {
-      await this.store.put([
+      await this.store.multiPut([
         { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
         { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
         { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },

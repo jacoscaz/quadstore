@@ -26,7 +26,6 @@ module.exports = () => {
     require('./rdfstore.prototype.match')();
     require('./rdfstore.prototype.searchstream')();
     require('./rdfstore.prototype.sparql')();
-    require('./rdfstore.prototype.del')();
     require('./rdfstore.prototype.remove')();
     require('./rdfstore.prototype.import')();
     require('./rdfstore.prototype.removematches')();

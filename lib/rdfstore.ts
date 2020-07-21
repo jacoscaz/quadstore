@@ -156,44 +156,42 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     }
   }
 
-  async put(quads: TSRdfQuad | TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<void> {
-    const importedQuads = Array.isArray(quads)
-      ? quads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
-      : serialization.importQuad(quads, this.quadstore.defaultGraph);
-    return await this.quadstore.put(importedQuads, opts);
+  async put(quad: TSRdfQuad, opts: TSEmptyOpts | undefined = {}): Promise<void> {
+    return await this.quadstore.put(serialization.importQuad(quad, this.quadstore.defaultGraph), opts);
   }
 
-  async del(patternOrOldQuads: TSRdfQuad | TSRdfPattern | TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
-    let importedPatternOrOldQuads: TSQuad|TSQuad[]|TSPattern;
-    if (Array.isArray(patternOrOldQuads)) {
-      importedPatternOrOldQuads = patternOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
-    } else if (utils.hasAllTerms(patternOrOldQuads)) {
-      importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>patternOrOldQuads, this.quadstore.defaultGraph);
-    } else {
-      importedPatternOrOldQuads = serialization.importPattern(patternOrOldQuads, this.quadstore.defaultGraph);
-    }
-    return await this.quadstore.del(importedPatternOrOldQuads, opts);
+  async multiPut(quads: TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<void> {
+    const importedQuads = quads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    return await this.quadstore.multiPut(importedQuads, opts);
+  }
+
+  async del(oldQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void> {
+    return await this.quadstore.del(serialization.importQuad(oldQuad, this.quadstore.defaultGraph), opts);
+  }
+
+  async multiDel(oldQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+    let importedOldQuads = oldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    return await this.quadstore.multiDel(importedOldQuads, opts);
+  }
+
+  async patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void> {
+    return await this.quadstore.patch(
+      serialization.importQuad(oldQuad, this.quadstore.defaultGraph),
+      serialization.importQuad(newQuad, this.quadstore.defaultGraph),
+      opts,
+    );
+  }
+
+  async multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+    const importedOldQuads = oldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    const importedNewQuads = newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
+    return await this.quadstore.multiPatch(importedOldQuads, importedNewQuads, opts);
   }
 
   async get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult> {
     const results = await this.getStream(pattern, opts);
     const items: TSRdfQuad[] = await utils.streamToArray(results.iterator);
     return { type: results.type, items, sorting: results.sorting };
-  }
-
-  async patch(matchTermsOrOldQuads: TSRdfQuad | TSRdfPattern | TSRdfQuad[], newQuads: TSRdfQuad | TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
-    let importedPatternOrOldQuads: TSQuad|TSQuad[]|TSPattern;
-    if (Array.isArray(matchTermsOrOldQuads)) {
-      importedPatternOrOldQuads = matchTermsOrOldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
-    } else if (utils.hasAllTerms(matchTermsOrOldQuads)) {
-      importedPatternOrOldQuads = serialization.importQuad(<TSRdfQuad>matchTermsOrOldQuads, this.quadstore.defaultGraph);
-    } else {
-      importedPatternOrOldQuads = serialization.importPattern(matchTermsOrOldQuads, this.quadstore.defaultGraph);
-    }
-    const importedNewQuads: TSQuad|TSQuad[] = Array.isArray(newQuads)
-      ? newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph))
-      : serialization.importQuad(newQuads, this.quadstore.defaultGraph);
-    return await this.quadstore.patch(importedPatternOrOldQuads, importedNewQuads, opts);
   }
 
   async search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {

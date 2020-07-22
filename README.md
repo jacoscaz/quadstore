@@ -39,7 +39,7 @@ Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
 - [Build systems](#build-systems)
-- [Browser](#browser-usage)
+- [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
 
@@ -182,7 +182,9 @@ the following values:
 - `"VOID"` - when there's no data returned by the database, such as with the
   `put` method or `INSERT DATA` SPARQL queries;
 - `"QUADS"` - when a query returns a series of quads;
-- `"BINDINGS"` - when a query returns a series of bindings.
+- `"BINDINGS"` - when a query returns a series of bindings;
+- `"APPROXIMATE_SIZE"` - when a query returns an approximate count of how many
+  matching items are present.
 
 #### Streaming vs. non-streaming
 

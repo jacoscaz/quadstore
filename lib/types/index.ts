@@ -111,6 +111,10 @@ export interface TSBindingStreamResult {
   iterator: TSReadable<TSBinding>,
 }
 
+export interface TSVoidResult {
+  type: TSResultType.VOID,
+}
+
 export interface TSApproximateSizeResult {
   type: TSResultType.APPROXIMATE_SIZE,
   approximateSize: number,
@@ -154,17 +158,17 @@ export interface TSGetStrategy {
 
 export interface TSStore extends EventEmitter {
   get(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadArrayResult>
-  put(quad: TSQuad, opts?: TSEmptyOpts): Promise<void>
-  multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<void>
-  del(quad: TSQuad, opts: TSEmptyOpts): Promise<void>
-  multiDel(Quads: TSQuad[], opts: TSEmptyOpts): Promise<void>
-  patch(oldQuad: TSQuad, newQuad: TSQuad, opts: TSEmptyOpts): Promise<void>
-  multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts: TSEmptyOpts): Promise<void>
+  put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult>
+  multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult>
+  del(quad: TSQuad, opts: TSEmptyOpts): Promise<TSVoidResult>
+  multiDel(Quads: TSQuad[], opts: TSEmptyOpts): Promise<TSVoidResult>
+  patch(oldQuad: TSQuad, newQuad: TSQuad, opts: TSEmptyOpts): Promise<TSVoidResult>
+  multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts: TSEmptyOpts): Promise<TSVoidResult>
   search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
   getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
   getStream(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadStreamResult>
-  putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<void>
-  delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<void>
+  putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult>
+  delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult>
   searchStream(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
 }
 
@@ -299,18 +303,18 @@ export interface TSRdfStore extends EventEmitter {
   quadstore: TSStore
   dataFactory: DataFactory
   get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult>
-  put(quad: TSRdfQuad, opts?: TSEmptyOpts): Promise<void>
-  multiPut(quads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<void>
-  del(quad: TSRdfQuad, opts: TSEmptyOpts): Promise<void>
-  multiDel(quads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
-  patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void>
-  multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void>
+  put(quad: TSRdfQuad, opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  multiPut(quads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  del(quad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
+  multiDel(quads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult>
+  patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
+  multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult>
   search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
   sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult>
   getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
   getStream(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadStreamResult>
-  putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
-  delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void>
+  putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
+  delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
   searchStream(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
   sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult>
 }

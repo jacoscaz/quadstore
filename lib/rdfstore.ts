@@ -156,25 +156,25 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     }
   }
 
-  async put(quad: TSRdfQuad, opts: TSEmptyOpts | undefined = {}): Promise<void> {
+  async put(quad: TSRdfQuad, opts: TSEmptyOpts | undefined = {}): Promise<TSRdfVoidResult> {
     return await this.quadstore.put(serialization.importQuad(quad, this.quadstore.defaultGraph), opts);
   }
 
-  async multiPut(quads: TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<void> {
+  async multiPut(quads: TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<TSRdfVoidResult> {
     const importedQuads = quads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiPut(importedQuads, opts);
   }
 
-  async del(oldQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void> {
+  async del(oldQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     return await this.quadstore.del(serialization.importQuad(oldQuad, this.quadstore.defaultGraph), opts);
   }
 
-  async multiDel(oldQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+  async multiDel(oldQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     let importedOldQuads = oldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiDel(importedOldQuads, opts);
   }
 
-  async patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<void> {
+  async patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     return await this.quadstore.patch(
       serialization.importQuad(oldQuad, this.quadstore.defaultGraph),
       serialization.importQuad(newQuad, this.quadstore.defaultGraph),
@@ -182,7 +182,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     );
   }
 
-  async multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<void> {
+  async multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     const importedOldQuads = oldQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
     const importedNewQuads = newQuads.map(quad => serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiPatch(importedOldQuads, importedNewQuads, opts);
@@ -228,14 +228,14 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     };
   }
 
-  async putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
+  async putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     // @ts-ignore
     const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.putStream(importedQuadsIterator, opts);
   }
 
-  async delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<void> {
+  async delStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     // @ts-ignore TODO: fix typings so that IReadable aligns with AsyncIterator
     const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());

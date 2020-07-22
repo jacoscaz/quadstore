@@ -16,13 +16,14 @@ import {
   TSSearchStage,
   TSStore,
   TSStoreOpts,
-  TSTermName
+  TSTermName,
+  TSVoidResult
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
 import encode from 'encoding-down';
 import levelup from 'levelup';
-import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {TransformIterator} from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
 import * as _ from './utils/lodash.js';
@@ -120,40 +121,46 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async put(newQuad: TSQuad, opts?: TSEmptyOpts) {
+  async put(newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch(this._quadToBatch(newQuad, 'put'));
+    return { type: TSResultType.VOID };
   }
 
-  async multiPut(newQuads: TSQuad[], opts?: TSEmptyOpts) {
+  async multiPut(newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
+    return { type: TSResultType.VOID };
   }
 
-  async del(oldQuad: TSQuad, opts?: TSEmptyOpts) {
+  async del(oldQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch(this._quadToBatch(oldQuad, 'del'));
+    return { type: TSResultType.VOID };
   }
 
-  async multiDel(oldQuads: TSQuad[], opts?: TSEmptyOpts) {
+  async multiDel(oldQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
+    return { type: TSResultType.VOID };
   }
 
-  async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts) {
+  async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch([
       ...(this._quadToBatch(oldQuad, 'del')),
       ...(this._quadToBatch(newQuad, 'put')),
     ]);
+    return { type: TSResultType.VOID };
   }
 
-  async multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts) {
+  async multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
     // @ts-ignore
     await this.db.batch([
       ...(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del'))),
       ...(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put'))),
     ]);
+    return { type: TSResultType.VOID };
   }
 
   async get(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadArrayResult> {
@@ -216,7 +223,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await search.searchStream(this, stages);
   }
 
-  async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts) {
+  async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -229,9 +236,10 @@ class QuadStore extends events.EventEmitter implements TSStore {
     };
     const iterator = new TransformIterator(source).transform(transformOpts);
     await utils.streamToArray(iterator);
+    return { type: TSResultType.VOID };
   }
 
-  async delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts) {
+  async delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
     if (_.isNil(opts)) opts = {};
     assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(_.isObject(opts), 'The "opts" argument is not an object.');
@@ -244,6 +252,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     };
     const iterator = new TransformIterator(source).transform(transformOpts);
     await utils.streamToArray(iterator);
+    return { type: TSResultType.VOID };
   }
 
   protected _isQuad(obj: any): boolean {

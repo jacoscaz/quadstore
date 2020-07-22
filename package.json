@@ -63,6 +63,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@types/sparqljs": "^3.0.1",
     "asynciterator": "^3.0.0",
     "encoding-down": "^6.3.0",
     "js-sorted-set": "^0.6.0",

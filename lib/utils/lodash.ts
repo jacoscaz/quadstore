@@ -1,6 +1,5 @@
 
 import flatMap from 'lodash.flatmap';
-import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 
 export const isFunction = (f: any): boolean => {
@@ -35,5 +34,4 @@ export const isArray = Array.isArray;
 export const extend = Object.assign;
 
 export { flatMap }
-export { groupBy }
 export { mapValues }

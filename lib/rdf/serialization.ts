@@ -21,7 +21,7 @@ const xsdBoolean = xsd + 'boolean';
 const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
 export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
-  const [, encoding, datatype, value, language] = term.split('^');
+  const [, encoding, datatype, value, language] = term.split('>');
   switch (datatype) {
     case xsdString:
       if (language !== '') {
@@ -34,27 +34,28 @@ export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Liter
 }
 
 export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
-  if (term.language) {
-    return `^^${xsdString}^${term.value}^${term.language}`;
+  const { language, datatype, value } = term;
+  if (language) {
+    return `>>${xsdString}>${value}>${language}`;
   }
-  if (!term.datatype || term.datatype.value === xsdString) {
-    return `^^${term.datatype.value}^${term.value}^`;
+  if (!datatype || datatype.value === xsdString) {
+    return `>>${xsdString}>${value}>`;
   }
-  switch (term.datatype.value) {
+  switch (datatype.value) {
     case xsdInteger:
     case xsdDouble:
       if (rangeBoundary) {
-        return `^number:${fpstring.encode(term.value.slice(1, -1))}`;
+        return `>number:${fpstring.encode(value)}>`;
       }
-      return `^number:${fpstring.encode(term.value.slice(1, -1))}^${term.datatype.value}^${term.value}^`;
+      return `>number:${fpstring.encode(value)}>${datatype.value}>${value}>`;
     case xsdDateTime:
-      const timestamp = new Date(term.value.slice(1, -1)).valueOf();
+      const timestamp = new Date(value).valueOf();
       if (rangeBoundary) {
-        return `^datetime:${fpstring.encode(timestamp)}`;
+        return `>datetime:${fpstring.encode(timestamp)}`;
       }
-      return `^datetime:${fpstring.encode(timestamp)}^${term.datatype.value}^${term.value}^`;
+      return `>datetime:${fpstring.encode(timestamp)}>${datatype.value}>${value}>`;
     default:
-      return `^^${term.datatype.value}^${term.value}^`;
+      return `>>${datatype.value}>${value}>`;
   }
 }
 
@@ -73,7 +74,7 @@ export const exportTerm = (term: string, isGraph: boolean, defaultGraphValue: st
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '^':
+    case '>':
       if (isGraph) {
         throw new Error(`Invalid graph term "${term}" (graph cannot be a literal).`);
       }
@@ -158,7 +159,7 @@ const exportQuadSubject = (term: string, dataFactory: DataFactory): Quad_Subject
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '^':
+    case '>':
       throw new Error('No literals as subject');
     default:
       return dataFactory.namedNode(term);
@@ -174,7 +175,7 @@ const exportQuadPredicate = (term: string, dataFactory: DataFactory): Quad_Predi
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '^':
+    case '>':
       throw new Error('No literals as predicates');
     default:
       return dataFactory.namedNode(term);
@@ -190,7 +191,7 @@ const exportQuadObject = (term: string, dataFactory: DataFactory): Quad_Object =
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '^':
+    case '>':
       return exportLiteralTerm(term, dataFactory);
     default:
       return dataFactory.namedNode(term);
@@ -209,7 +210,7 @@ const exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: D
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '^':
+    case '>':
       throw new Error('No literals as graphs');
     default:
       return dataFactory.namedNode(term);

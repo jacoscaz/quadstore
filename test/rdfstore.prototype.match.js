@@ -188,20 +188,20 @@ module.exports = () => {
           factory.quad(
             factory.namedNode('http://ex.com/s'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"5"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('5', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           ),
           factory.quad(
             factory.namedNode('http://ex.com/s2'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"7"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('7', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         // console.log(await store._debugQuads());
-        const match = { gt: factory.literal('"6"', 'http://www.w3.org/2001/XMLSchema#integer') };
+        const match = { gt: factory.literal('6', 'http://www.w3.org/2001/XMLSchema#integer') };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
@@ -214,19 +214,19 @@ module.exports = () => {
           factory.quad(
             factory.namedNode('http://ex.com/s'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"5"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('5', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           ),
           factory.quad(
             factory.namedNode('http://ex.com/s2'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"7"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('7', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
-        const match = { gte: factory.literal('"7.0"', 'http://www.w3.org/2001/XMLSchema#double') };
+        const match = { gte: factory.literal('7.0', 'http://www.w3.org/2001/XMLSchema#double') };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
@@ -240,20 +240,20 @@ module.exports = () => {
           factory.quad(
             factory.namedNode('http://ex.com/s'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"5"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('5', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           ),
           factory.quad(
             factory.namedNode('http://ex.com/s2'),
             factory.namedNode('http://ex.com/p'),
-            factory.literal('"7"', 'http://www.w3.org/2001/XMLSchema#integer'),
+            factory.literal('7', 'http://www.w3.org/2001/XMLSchema#integer'),
             factory.namedNode('http://ex.com/g')
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const match = {
-          gt: factory.literal('"7.0"', 'http://www.w3.org/2001/XMLSchema#double'),
+          gt: factory.literal('7.0', 'http://www.w3.org/2001/XMLSchema#double'),
         };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
         stripTermSerializedValue(matchedQuads);

@@ -275,7 +275,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * @returns {}
    */
   protected _quadToBatch(quad: TSQuad, type: 'del'|'put') {
-    const value = JSON.stringify(quad);
+    const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
     return this.indexes.map(i => ({
         type,
         value,

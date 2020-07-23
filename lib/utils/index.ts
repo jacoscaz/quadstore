@@ -3,14 +3,6 @@ import { isFunction, isObject } from './lodash.js';
 import {TSReadable, TSTermName} from '../types/index.js';
 import { EventEmitter} from 'events';
 import nanoid from './nanoid.js';
-import { Readable } from 'stream';
-import { AsyncIterator, TransformIterator } from 'asynciterator';
-
-export const wait = (delay: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
-}
 
 export const termNames: TSTermName[] = ['subject', 'predicate', 'object', 'graph'];
 
@@ -24,41 +16,11 @@ export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
   });
 }
 
-export const streamToString = <T>(readStream: TSReadable<T>): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    let buffer = '';
-    readStream
-      .on('data', (chunk) => {
-        // @ts-ignore
-        buffer += chunk.toString();
-      })
-      .on('end', () => {
-        resolve(buffer);
-      })
-      .on('error', (err) => {
-        reject(err);
-      });
-  });
-}
-
 export const isReadableStream = (obj: any): boolean => {
   return isObject(obj)
     && isFunction(obj.on)
     && isFunction(obj.read);
 }
-
-export const isPromise = (obj: any): boolean => {
-  return isObject(obj)
-    && isFunction(obj.then);
-}
-
-
-export const isAbstractLevelDownClass = (obj: any): boolean => {
-  return isFunction(obj)
-    && isFunction(obj.prototype.batch)
-    && isFunction(obj.prototype.iterator);
-}
-
 
 export const isAbstractLevelDOWNInstance = (obj: any): boolean => {
   return isObject(obj)
@@ -89,31 +51,6 @@ export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnErr
 
 export const waitForEvent = resolveOnEvent;
 
-export const wrapError = (err: Error, message: string): Error => {
-  const wrapperError = new Error(message);
-  wrapperError.stack += '\nCaused by:' + err.stack;
-  return wrapperError;
-}
-
-export const defineReadOnlyProperty = (obj: object, key: string, value: any): void => {
-  Object.defineProperty(obj, key, {
-    value,
-    writable: false,
-    enumerable: true,
-    configurable: true
-  });
-}
-
-export const noop = () => {};
-
-export const hasAllTerms = (coll: any): boolean => {
-  return typeof(coll) === 'object'
-    && 'subject' in coll
-    && 'predicate' in coll
-    && 'object' in coll
-    && 'graph' in coll;
-}
-
 export const genDefaultIndexes = (): TSTermName[][] => {
   return [
     ['subject', 'predicate', 'object', 'graph'],
@@ -122,7 +59,6 @@ export const genDefaultIndexes = (): TSTermName[][] => {
     ['object', 'subject', 'predicate', 'graph'],
     ['predicate', 'object', 'graph', 'subject'],
     ['graph', 'predicate', 'object', 'subject'],
-    // ['predicate', 'object', 'subject', 'graph'], // TODO remove
   ];
 }
 

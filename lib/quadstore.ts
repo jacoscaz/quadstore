@@ -120,8 +120,12 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
+  protected _serializeQuad(quad: TSQuad): string {
+    return `{"subject":"${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+  }
+
   async put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+    const value = this._serializeQuad(quad);
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.put(i.getKey(quad), value);
     }, this.db.batch());
@@ -132,7 +136,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
 
   async multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
     const batch = quads.reduce((quadBatch, quad) => {
-      const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+      const value = this._serializeQuad(quad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(quad), value);
       }, quadBatch);
@@ -163,11 +167,12 @@ class QuadStore extends events.EventEmitter implements TSStore {
   }
 
   async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
+    const value = this._serializeQuad(newQuad);
+    const batch = this.indexes.reduce((indexBatch, i) => {
+      return indexBatch.del(i.getKey(oldQuad)).put(i.getKey(newQuad), value);
+    }, this.db.batch());
     // @ts-ignore
-    await this.db.batch([
-      ...(this._quadToBatch(oldQuad, 'del')),
-      ...(this._quadToBatch(newQuad, 'put')),
-    ]);
+    await batch.write();
     return { type: TSResultType.VOID };
   }
 

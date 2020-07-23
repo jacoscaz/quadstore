@@ -122,17 +122,23 @@ class QuadStore extends events.EventEmitter implements TSStore {
 
   async put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
     const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
-    const batch = this.indexes.reduce((batch, i) => {
-      return batch.put(i.getKey(quad), value);
+    const batch = this.indexes.reduce((indexBatch, i) => {
+      return indexBatch.put(i.getKey(quad), value);
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
     return { type: TSResultType.VOID };
   }
 
-  async multiPut(newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+  async multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+    const batch = quads.reduce((quadBatch, quad) => {
+      const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+      return this.indexes.reduce((indexBatch, index) => {
+        return indexBatch.put(index.getKey(quad), value);
+      }, quadBatch);
+    }, this.db.batch());
     // @ts-ignore
-    await this.db.batch(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put')));
+    await batch.write();
     return { type: TSResultType.VOID };
   }
 
@@ -145,9 +151,14 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.VOID };
   }
 
-  async multiDel(oldQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+  async multiDel(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+    const batch = quads.reduce((quadBatch, quad) => {
+      return this.indexes.reduce((indexBatch, index) => {
+        return indexBatch.del(index.getKey(quad));
+      }, quadBatch);
+    }, this.db.batch());
     // @ts-ignore
-    await this.db.batch(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del')));
+    await batch.write();
     return { type: TSResultType.VOID };
   }
 

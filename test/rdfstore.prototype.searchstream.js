@@ -69,7 +69,6 @@ module.exports = () => {
       const results = await this.store.searchStream(stages);
       should(results.type).equal(enums.resultType.BINDINGS);
       const bindings = await utils.streamToArray(results.iterator);
-      console.log(bindings);
     });
 
 

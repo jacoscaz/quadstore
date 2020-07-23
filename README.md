@@ -23,6 +23,7 @@ Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
         - [QuadStore.prototype.get](#quadstoreprototypeget)
         - [QuadStore.prototype.search](#quadstoreprototypesearch)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
+        - [QuadStore.prototype.multiPut](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
@@ -545,7 +546,7 @@ support for browser-side persistent storage.
 
 We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
 file into an instance of `RdfStore` on Node v12.14.0 running on a 2018 
-MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~14k quads per 
+MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~15k quads per 
 second** and **~4k quads per MB**.
 
     node perf/loadfile.js /Users/jacoscaz/Downloads/1million.rdf 

@@ -227,7 +227,13 @@ export const exportQuad = (quad: TSQuad, defaultGraphValue: string, dataFactory:
 };
 
 export const exportBinding = (binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding => {
-  return _.mapValues(binding, (term: string) => exportTerm(term, false, defaultGraphValue, dataFactory));
+  const exportedBinding: TSRdfBinding = Object.create(null);
+  for (const variableName in binding) {
+    if (binding.hasOwnProperty(variableName)) {
+      exportedBinding[variableName] = exportTerm(binding[variableName], false, defaultGraphValue, dataFactory);
+    }
+  }
+  return exportedBinding;
 };
 
 export const importPattern = (terms: TSRdfPattern, defaultGraph: string): TSPattern => {

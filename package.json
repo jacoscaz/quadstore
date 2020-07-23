@@ -44,8 +44,6 @@
     "@rdfjs/data-model": "^1.1.2",
     "@types/abstract-leveldown": "^5.0.1",
     "@types/levelup": "^4.3.0",
-    "@types/lodash.flatmap": "^4.5.6",
-    "@types/lodash.mapvalues": "^4.6.6",
     "@types/sparqljs": "^3.0.1",
     "abstract-leveldown": "^6.3.0",
     "benchmark": "^2.1.4",
@@ -65,8 +63,6 @@
     "asynciterator": "^3.0.0",
     "js-sorted-set": "^0.6.0",
     "levelup": "^4.4.0",
-    "lodash.flatmap": "^4.5.0",
-    "lodash.mapvalues": "^4.6.0",
     "p-iteration": "^1.1.8",
     "sparqljs": "^3.0.3"
   },

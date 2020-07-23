@@ -1,4 +1,4 @@
-// import _ from '../utils/lodash';
+
 import p from 'p-iteration';
 import {termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';

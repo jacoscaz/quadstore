@@ -177,11 +177,20 @@ class QuadStore extends events.EventEmitter implements TSStore {
   }
 
   async multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+    let batch = this.db.batch();
+    batch = oldQuads.reduce((quadBatch, quad) => {
+      return this.indexes.reduce((indexBatch, index) => {
+        return indexBatch.del(index.getKey(quad));
+      }, quadBatch);
+    }, batch);
+    batch = newQuads.reduce((quadBatch, quad) => {
+      const value = this._serializeQuad(quad);
+      return this.indexes.reduce((indexBatch, index) => {
+        return indexBatch.put(index.getKey(quad), value);
+      }, quadBatch);
+    }, batch);
     // @ts-ignore
-    await this.db.batch([
-      ...(_.flatMap(oldQuads, quad => this._quadToBatch(quad, 'del'))),
-      ...(_.flatMap(newQuads, quad => this._quadToBatch(quad, 'put'))),
-    ]);
+    await batch.write();
     return { type: TSResultType.VOID };
   }
 

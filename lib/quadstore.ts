@@ -21,7 +21,6 @@ import {
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
-import encode from 'encoding-down';
 import levelup from 'levelup';
 import {TransformIterator} from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
@@ -57,7 +56,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
       'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN',
     );
     this.abstractLevelDOWN = opts.backend;
-    this.db = levelup(encode(this.abstractLevelDOWN, {valueEncoding: 'json'}));
+    this.db = levelup(this.abstractLevelDOWN);
     this.defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
     this.indexes = [];
     this.id = utils.nanoid();
@@ -276,10 +275,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * @returns {}
    */
   protected _quadToBatch(quad: TSQuad, type: 'del'|'put') {
+    const value = JSON.stringify(quad);
     return this.indexes.map(i => ({
         type,
+        value,
         key: i.getKey(quad),
-        value: quad,
     }));
   }
 

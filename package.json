@@ -43,11 +43,11 @@
   "devDependencies": {
     "@rdfjs/data-model": "^1.1.2",
     "@types/abstract-leveldown": "^5.0.1",
-    "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.0",
     "@types/lodash.flatmap": "^4.5.6",
     "@types/lodash.groupby": "^4.6.6",
     "@types/lodash.mapvalues": "^4.6.6",
+    "@types/sparqljs": "^3.0.1",
     "abstract-leveldown": "^6.3.0",
     "benchmark": "^2.1.4",
     "fs-extra": "^9.0.1",
@@ -63,9 +63,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@types/sparqljs": "^3.0.1",
     "asynciterator": "^3.0.0",
-    "encoding-down": "^6.3.0",
     "js-sorted-set": "^0.6.0",
     "levelup": "^4.4.0",
     "lodash.flatmap": "^4.5.0",

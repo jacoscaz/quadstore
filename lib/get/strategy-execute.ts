@@ -75,6 +75,8 @@ export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: T
   if (opts.limit) {
     levelOpts.limit = opts.limit;
   }
-  const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts));
+  const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts))
+    // @ts-ignore
+    .map(JSON.parse);
   return iterator;
 };

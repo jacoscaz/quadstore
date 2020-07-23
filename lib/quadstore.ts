@@ -120,9 +120,13 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async put(newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
+  async put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
+    const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+    const batch = this.indexes.reduce((batch, i) => {
+      return batch.put(i.getKey(quad), value);
+    }, this.db.batch());
     // @ts-ignore
-    await this.db.batch(this._quadToBatch(newQuad, 'put'));
+    await batch.write();
     return { type: TSResultType.VOID };
   }
 

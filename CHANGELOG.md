@@ -8,6 +8,10 @@
 - *[new]* added support for user-defined indexes
 - *[new]* added support for complex searches
 - *[new]* added support for basic SPARQL queries
+- **[breaking]** dropped support for matching terms in `del()` and `patch()`
+  methods
+- **[breaking]** refactored `del()`, `put()` and `patch()` into single-quad and
+  multi-quad variants (`multiDel()`, `multiPut()`, `multiPatch()`)
 - **[breaking]** refactored all APIs to return results wrapped in objects
 - **[breaking]** refactored all streaming APIs to use `AsyncIterator` and
   asynchronous entrypoints with the exception of `RDF/JS` methods 
@@ -18,6 +22,7 @@
 - *[internal]* dropped a few dependencies by pulling in the relevant code
 - *[internal]* added index-specific test suites
 - *[internal]* refactored folder structure
+- *[internal]* ported the whole project to Typescript
 
 ## v6.0.1
 

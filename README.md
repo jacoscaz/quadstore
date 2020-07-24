@@ -23,9 +23,11 @@ Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
         - [QuadStore.prototype.get](#quadstoreprototypeget)
         - [QuadStore.prototype.search](#quadstoreprototypesearch)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
-        - [QuadStore.prototype.multiPut](#quadstoreprototypeput)
+        - [QuadStore.prototype.multiPut](#quadstoreprototypemultiput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
+        - [QuadStore.prototype.multiDel](#quadstoreprototypemultidel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
+        - [QuadStore.prototype.multiPatch](#quadstoreprototypemultipatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
         - [QuadStore.prototype.searchStream](#quadstoreprototypesearchstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
@@ -123,20 +125,20 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
-- written in Typescript;
-- retrieval, update, insertion and removal of quads;
-- complex searches;
-- SPARQL queries;
+- fully written in Typescript;
+- basic retrieval, update, insertion and removal of quads;
+- foundational support for complex searches;
+- foundational support for SPARQL queries;
 - [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces.
 
 ### Roadmap
 
 We're currently working on the following features:
 
-- native support for complex searches;
-- native support for SPARQL queries;
+- expanding support for complex searches;
+- expanding support for SPARQL queries;
 - pushing filters down to the database;
-- performance improvements.
+- general performance improvements.
 
 We're also evaluating the following features for future developments:
 
@@ -175,6 +177,23 @@ With the exception of RDF/JS interfaces, `quadstore`'s APIs are promise-based
 and all methods return objects that include both the actual query results and
 relevant metadata such as the sorting criteria used for ordering the results.
 
+```js
+const results = await store.get({});
+console.log(JSON.stringify(results));
+```
+
+```json
+{
+  "type": "QUADS",
+  "items": [
+    { "subject":  "a", "predicate": "a", "object": "c", "graph": "d"},
+    { "subject":  "a", "predicate": "b", "object": "c", "graph": "d"},
+    { "subject":  "b", "predicate": "a", "object": "c", "graph": "d"}
+  ],
+  "sorting": ["subject", "predicate", "object", "graph"]
+} 
+```
+
 #### Result types
 
 Objects returned by `quadstore`'s APIs have the `type` property set to one of
@@ -209,25 +228,6 @@ value of the `type` property.
 All methods returning objects with the `type` property set to either `"QUADS"` or
 `"BINDINGS"` also include a `sorting` property set to an array that represents
 the sorting criteria by which the database is ordering the provided results. 
-
-#### Example
-
-```js
-const results = await store.get({});
-console.log(JSON.stringify(results));
-```
-
-```json
-{
-  "type": "QUADS",
-  "items": [
-    { "subject":  "a", "predicate": "a", "object": "c", "graph": "d"},
-    { "subject":  "a", "predicate": "b", "object": "c", "graph": "d"},
-    { "subject":  "b", "predicate": "a", "object": "c", "graph": "d"}
-  ],
-  "sorting": ["subject", "predicate", "object", "graph"]
-} 
-```
 
 ### Graph API
 
@@ -301,43 +301,53 @@ use of variables.
 
 #### QuadStore.prototype.put()
 
+    const quad = {subject: 's', predicate: 'p', object: 'o', graph: 'g'};
+    await store.put(quad);
+
+Stores a new quad. Does *not* throw or return an error if the quad already exists.
+
+#### QuadStore.prototype.multiPut()
+
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
-    await store.put(quads);
+    await store.multiPut(quads);
 
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
 #### QuadStore.prototype.del()
 
-This method deletes quads. It Does *not* throw or return an error if the 
-specified quads are not present in the store.
+This method deletes a single quad. It Does *not* throw or return an error if the 
+specified quad is not present in the store.
 
-If the first argument is a quad or an array of quads, this method will delete 
-such quads from the store.
+    const quad = {subject: 's', predicate: 'p', object: 'o', graph: 'g'};
+    await store.del(quad);
+    
+#### QuadStore.prototype.multiDel()
+
+This method deletes multiple quads. It Does *not* throw or return an error if
+the specified quads are not present in the store.
 
     const quads = [
         {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
     ];
-    await store.del(quads)
-
-If the first argument is a set of matching terms, this method will delete all 
-quads matching such terms from the store.
-
-    const matchTerms = {graph: 'g'};
-    await store.del(matchTerms);
-    
-In the latter case, this method supports [range matching](#range-matching). 
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
+    await store.multiDel(quads)
 
 #### QuadStore.prototype.patch()
+
+This methods deletes one quad and inserts another quad in a single operation.
+It Does *not* throw or return an error if the specified quads are not present
+in the store (delete) or already present in the store (update).
+
+    const oldQuad = {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'};
+    const newQuads = {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'};
+    await store.patch(oldQuad, newQuad);
+    
+#### QuadStore.prototype.multiPatch()
 
 This methods deletes and inserts quads in a single operation. It Does *not* 
 throw or return an error if the specified quads are not present in the store 
 (delete) or already present in the store (update).
-
-If the first argument is a single quad or an array of quads, it is assumed to 
-be an array of quads to be deleted.
 
     const oldQuads = [
         {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
@@ -345,19 +355,7 @@ be an array of quads to be deleted.
     const newQuads = [
         {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
     ];
-    await store.patch(oldQuads, newQUads);
-
-If the first argument is a set of matching terms, this method will delete all 
-quads matching such terms from the store.
-
-    const matchTerms = {subject: 'so', graph: 'go'}
-    const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
-    ];
-    await store.patch(matchTerms);
-
-In the latter case, this method supports [range matching](#range-matching). 
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
+    await store.multiPatch(oldQuads, newQUads);
 
 #### QuadStore.prototype.getStream()
 
@@ -418,10 +416,9 @@ The `dataFactory` option *must* be an implementation of the
 
 #### Graph API, Quad and Term instances
 
-The `RdfStore` class extends the `QuadStore` class. Instead of plain objects, 
-the `get`, `put`, `del`, `patch`, `query`, `getStream`, `searchStream`, 
-`putStream` and `delStream` methods accept and return iterators and/or arrays
-of `Quad` objects as produced by the `dataFactory.quad` method. 
+The `RdfStore` class extends the `QuadStore` class. All methods inherited from
+the latter return iterators and/or arrays of `Quad` objects as produced by the
+`dataFactory.quad` method (where applicable). 
 
 Matching terms, such as those used in the `get` and `getStream` methods,
 must be `Term` objects as produced by the `dataFactory.namedNode`, 

@@ -1,5 +1,5 @@
 
-import p from 'p-iteration';
+import pReduce from 'p-reduce';
 import {termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
 import SortIterator from './iterators/sort-iterator.js';
@@ -199,7 +199,7 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
 export const searchStream = async (store: QuadStore, stages: TSSearchStage[]): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   const parsedStages = stages.map(parseSearchStage);
   // TODO: optimization pass including pushing filters down to nearest BGP stage
-  return await p.reduce(
+  return await pReduce(
     parsedStages.slice(1),
     applySearchStage.bind(null, store),
     await getBindingsIterator(store, <TSParsedBgpSearchStage>parsedStages[0]),

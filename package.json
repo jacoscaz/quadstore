@@ -63,7 +63,7 @@
     "asynciterator": "^3.0.0",
     "js-sorted-set": "^0.6.0",
     "levelup": "^4.4.0",
-    "p-iteration": "^1.1.8",
+    "p-reduce": "^2.1.0",
     "sparqljs": "^3.0.3"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",

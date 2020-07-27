@@ -18,6 +18,10 @@ Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
     - [Notes](#notes)
 - [Usage](#usage)
     - [Storage](#storage-backends)
+    - [Return Values](#return-values)
+    - [Result Types](#result-types)
+    - [Streaming](#streaming-vs-non-streaming)
+    - [Sorting](#sorting)
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
@@ -175,7 +179,7 @@ We test `quadstore` using the following backends:
 
 With the exception of RDF/JS interfaces, `quadstore`'s APIs are promise-based
 and all methods return objects that include both the actual query results and
-relevant metadata such as the sorting criteria used for ordering the results.
+relevant metadata such as the sorting criteria used for ordering such results.
 
 ```js
 const results = await store.get({});
@@ -201,8 +205,8 @@ the following values:
 
 - `"VOID"` - when there's no data returned by the database, such as with the
   `put` method or `INSERT DATA` SPARQL queries;
-- `"QUADS"` - when a query returns a series of quads;
-- `"BINDINGS"` - when a query returns a series of bindings;
+- `"QUADS"` - when a query returns a collection of quads;
+- `"BINDINGS"` - when a query returns a collection of bindings;
 - `"APPROXIMATE_SIZE"` - when a query returns an approximate count of how many
   matching items are present.
 
@@ -214,7 +218,7 @@ mode or in non-streaming mode.
   
 Streaming methods such as `getStream` and `searchStream` return objects with
 the `iterator` property set to an instance of [`AsyncIterator`][asynciterator-gh],
-a superset of the `stream.Readable` interface. This instance emits either quads
+a subset of the `stream.Readable` interface. This instance emits either quads
 or bindings, depending on the value of the `type` property.
 
 Non-streaming methods such as `get` and `search` return objects with the
@@ -475,7 +479,7 @@ Objects returned by `sparqlStream()` have their `type` property set to
 different values depending on each specific query, as for `sparql()`.
 
 ```js
-const { type, iterator } = await store.sparqlStream(`
+const { iterator } = await store.sparqlStream(`
   SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
 `);
 ```
@@ -491,7 +495,8 @@ const { type, iterator } = await store.sparqlStream(`
       })
       .on('end', () => {});
 
-Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided terms.
+Returns an [RDF/JS stream](http://rdf.js.org/stream-spec/#stream-interface) 
+stream of `Quad` instances matching the provided terms.
 Supports [range-based matching](#rdf-range-matching).
    
 See [QuadStore.prototype.get()](#quadstoreprototypeget).
@@ -522,7 +527,7 @@ Consumes the stream removing each incoming quad.
       .on('error', (err) => {})
       .on('end', () => {});
 
-Removes all quad  matching the provided terms.
+Removes all quads matching the provided terms.
 Supports [range-based matching](#rdf-range-matching).
 
 ## Build systems

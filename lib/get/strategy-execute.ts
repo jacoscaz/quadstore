@@ -51,7 +51,6 @@ const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts: TSEm
 };
 
 export const executeApproximateSize = async (store: QuadStore, strategy: TSGetStrategy, opts: TSEmptyOpts): Promise<number> => {
-  // @ts-ignore
   if (!store.db.approximateSize) {
     return Infinity;
   }
@@ -59,7 +58,6 @@ export const executeApproximateSize = async (store: QuadStore, strategy: TSGetSt
   const start = levelOpts.gte || levelOpts.gt;
   const end = levelOpts.lte || levelOpts.lt;
   return new Promise((resolve, reject) => {
-    // @ts-ignore
     store.db.approximateSize(start, end, (err: Error|null, size: number) => {
       err ? reject(err) : resolve(size);
     });
@@ -76,14 +74,7 @@ export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: T
     levelOpts.limit = opts.limit;
   }
   const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts))
-    .map(quad => {
-      try {
-        // @ts-ignore
-        return JSON.parse(quad);
-      }
-      catch (err) {
-        throw new Error('INVALID JSON: ' + quad);
-      }
-    });
+    // @ts-ignore - how do we fix the typings for this?
+    .map(JSON.parse);
   return iterator;
 };

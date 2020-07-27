@@ -8,13 +8,10 @@
 
 const url = 'sOwnPropMN49CEiq-hXvHJdSymlFURTag61GQfuD8YIWz2Zk5xKB7LV30_Abject';
 
-const nanoid = (size: number = 21): string => {
+export const nanoid = (size: number = 21): string => {
   let id = '';
   while (size--) {
     id += url[Math.random() * 64 | 0];
   }
   return id;
 };
-
-export default nanoid;
-

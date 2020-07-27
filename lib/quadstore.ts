@@ -25,10 +25,19 @@ import levelup from 'levelup';
 import {TransformIterator} from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
-import * as _ from './utils/lodash.js';
-import * as utils from './utils/index.js';
-import * as get from './get/index.js';
-import * as search from './search/index.js';
+import {
+  genDefaultIndexes,
+  nanoid,
+  isAbstractLevelDOWNInstance,
+  isObject,
+  isNil,
+  streamToArray,
+  isArray,
+  isReadableStream,
+  isString,
+} from './utils/index.js';
+import {getApproximateSize, getStream} from './get/index.js';
+import {searchStream} from './search/index.js';
 
 class QuadStore extends events.EventEmitter implements TSStore {
 
@@ -50,19 +59,19 @@ class QuadStore extends events.EventEmitter implements TSStore {
 
   constructor(opts: TSStoreOpts) {
     super();
-    assert(_.isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
+    assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(
-      utils.isAbstractLevelDOWNInstance(opts.backend),
+      isAbstractLevelDOWNInstance(opts.backend),
       'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN',
     );
     this.abstractLevelDOWN = opts.backend;
     this.db = levelup(this.abstractLevelDOWN);
     this.defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
     this.indexes = [];
-    this.id = utils.nanoid();
+    this.id = nanoid();
     this.boundary = opts.boundary || '\uDBFF\uDFFF';
     this.separator = opts.separator || '\u0000\u0000';
-    (opts.indexes || utils.genDefaultIndexes())
+    (opts.indexes || genDefaultIndexes())
       .forEach((index: TSTermName[]) => this._addIndex(index));
     setImmediate(() => { this._initialize(); });
   }
@@ -100,7 +109,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    */
 
   _addIndex(terms: TSTermName[]): void {
-    // assert(utils.hasAllTerms(terms), 'Invalid index (bad terms).');
+    // assert(hasAllTerms(terms), 'Invalid index (bad terms).');
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this.indexes.push({
       terms,
@@ -195,23 +204,23 @@ class QuadStore extends events.EventEmitter implements TSStore {
   }
 
   async get(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadArrayResult> {
-    if (_.isNil(opts)) opts = {};
-    if (_.isNil(pattern)) pattern = {};
-    assert(_.isObject(pattern), 'The "matchTerms" argument is not an object.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
+    if (isNil(opts)) opts = {};
+    if (isNil(pattern)) pattern = {};
+    assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
     const results = await this.getStream(pattern, opts);
-    const quads = await utils.streamToArray(results.iterator);
+    const quads = await streamToArray(results.iterator);
     return { type: TSResultType.QUADS, items: quads, sorting: results.sorting };
   }
 
   async search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
-    if (_.isNil(opts)) opts = {};
-    assert(_.isArray(stages), 'The "patterns" argument is not an array.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
+    if (isNil(opts)) opts = {};
+    assert(isArray(stages), 'The "patterns" argument is not an array.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
     const results = await this.searchStream(stages, opts);
     switch (results.type) {
       case TSResultType.BINDINGS: {
-        const bindings = await utils.streamToArray(results.iterator);
+        const bindings = await streamToArray(results.iterator);
         return { ...results, type: results.type, items: bindings };
       } break;
       default:
@@ -226,11 +235,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
    */
 
   async getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult> {
-    if (_.isNil(pattern)) pattern = {};
-    if (_.isNil(opts)) opts = {};
-    assert(_.isObject(pattern), 'The "matchTerms" argument is not a function..');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await get.getApproximateSize(this, pattern, opts);
+    if (isNil(pattern)) pattern = {};
+    if (isNil(opts)) opts = {};
+    assert(isObject(pattern), 'The "matchTerms" argument is not a function..');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
+    return await getApproximateSize(this, pattern, opts);
   }
 
   /*
@@ -240,24 +249,24 @@ class QuadStore extends events.EventEmitter implements TSStore {
    */
 
   async getStream(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadStreamResult> {
-    if (_.isNil(pattern)) pattern = {};
-    if (_.isNil(opts)) opts = {};
-    assert(_.isObject(pattern), 'The "matchTerms" argument is not an object.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await get.getStream(this, pattern, opts);
+    if (isNil(pattern)) pattern = {};
+    if (isNil(opts)) opts = {};
+    assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
+    return await getStream(this, pattern, opts);
   }
 
   async searchStream(stages: TSSearchStage[], opts?: TSEmptyOpts) {
-    if (_.isNil(opts)) opts = {};
-    assert(_.isArray(stages), 'The "patterns" argument is not an array.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
-    return await search.searchStream(this, stages);
+    if (isNil(opts)) opts = {};
+    assert(isArray(stages), 'The "patterns" argument is not an array.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
+    return await searchStream(this, stages);
   }
 
   async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
-    if (_.isNil(opts)) opts = {};
-    assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
+    if (isNil(opts)) opts = {};
+    assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
       transform: (quad: TSQuad, cb: () => void) => {
         this.put(quad, opts)
@@ -266,14 +275,14 @@ class QuadStore extends events.EventEmitter implements TSStore {
       },
     };
     const iterator = new TransformIterator(source).transform(transformOpts);
-    await utils.streamToArray(iterator);
+    await streamToArray(iterator);
     return { type: TSResultType.VOID };
   }
 
   async delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
-    if (_.isNil(opts)) opts = {};
-    assert(utils.isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(_.isObject(opts), 'The "opts" argument is not an object.');
+    if (isNil(opts)) opts = {};
+    assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
+    assert(isObject(opts), 'The "opts" argument is not an object.');
     const transformOpts = {
       transform: (quad: TSQuad, cb: () => void) => {
         this.del(quad, opts)
@@ -282,15 +291,15 @@ class QuadStore extends events.EventEmitter implements TSStore {
       },
     };
     const iterator = new TransformIterator(source).transform(transformOpts);
-    await utils.streamToArray(iterator);
+    await streamToArray(iterator);
     return { type: TSResultType.VOID };
   }
 
   protected _isQuad(obj: any): boolean {
-    return _.isString(obj.subject)
-      && _.isString(obj.predicate)
-      && _.isString(obj.object)
-      && _.isString(obj.graph);
+    return isString(obj.subject)
+      && isString(obj.predicate)
+      && isString(obj.object)
+      && isString(obj.graph);
   }
 
   /*
@@ -299,24 +308,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  /**
-   * Transforms a quad into a batch of either put or del
-   * operations, one per each of the six indexes.
-   * @param quad
-   * @param type
-   * @returns {}
-   */
-  protected _quadToBatch(quad: TSQuad, type: 'del'|'put') {
-    const value = `{"subject": "${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
-    return this.indexes.map(i => ({
-        type,
-        value,
-        key: i.getKey(quad),
-    }));
-  }
-
   _getTermNames(): TSTermName[] {
-    // @ts-ignore
     return ['subject', 'predicate', 'object', 'graph'];
   }
 
@@ -340,50 +332,50 @@ class QuadStore extends events.EventEmitter implements TSStore {
     };
   }
 
-  protected _mergeTermRanges(a: TSRange, b: TSRange): TSRange {
-    const c = {...b};
-    if (!_.isNil(a.lt)) {
-      if (!_.isNil(c.lt)) {
-        // @ts-ignore
-        if (a.lt < c.lt) {
-          c.lt = a.lt;
-        }
-      } else {
-        c.lt = a.lt;
-      }
-    }
-    if (!_.isNil(a.lte)) {
-      if (!_.isNil(c.lte)) {
-        // @ts-ignore
-        if (a.lte < c.lte) {
-          c.lte = a.lte;
-        }
-      } else {
-        c.lte = a.lte;
-      }
-    }
-    if (!_.isNil(a.gt)) {
-      if (!_.isNil(c.gt)) {
-        // @ts-ignore
-        if (a.gt > c.gt) {
-          c.gt = a.gt;
-        }
-      } else {
-        c.gt = a.gt;
-      }
-    }
-    if (!_.isNil(a.gte)) {
-      if (!_.isNil(c.gte)) {
-        // @ts-ignore
-        if (a.gte > c.gte) {
-          c.gte = a.gte;
-        }
-      } else {
-        c.gte = a.gte;
-      }
-    }
-    return c;
-  }
+  // protected _mergeTermRanges(a: TSRange, b: TSRange): TSRange {
+  //   const c = {...b};
+  //   if (!isNil(a.lt)) {
+  //     if (!isNil(c.lt)) {
+  //       // @ts-ignore
+  //       if (a.lt < c.lt) {
+  //         c.lt = a.lt;
+  //       }
+  //     } else {
+  //       c.lt = a.lt;
+  //     }
+  //   }
+  //   if (!isNil(a.lte)) {
+  //     if (!isNil(c.lte)) {
+  //       // @ts-ignore
+  //       if (a.lte < c.lte) {
+  //         c.lte = a.lte;
+  //       }
+  //     } else {
+  //       c.lte = a.lte;
+  //     }
+  //   }
+  //   if (!isNil(a.gt)) {
+  //     if (!isNil(c.gt)) {
+  //       // @ts-ignore
+  //       if (a.gt > c.gt) {
+  //         c.gt = a.gt;
+  //       }
+  //     } else {
+  //       c.gt = a.gt;
+  //     }
+  //   }
+  //   if (!isNil(a.gte)) {
+  //     if (!isNil(c.gte)) {
+  //       // @ts-ignore
+  //       if (a.gte > c.gte) {
+  //         c.gte = a.gte;
+  //       }
+  //     } else {
+  //       c.gte = a.gte;
+  //     }
+  //   }
+  //   return c;
+  // }
 
   // protected _mergeMatchTerms(a: TSPattern, b: TSPattern, termNames: TSTermName[]): TSPattern {
   //   if (!termNames) {
@@ -391,13 +383,13 @@ class QuadStore extends events.EventEmitter implements TSStore {
   //   }
   //   const c = { ...b };
   //   termNames.forEach((termName) => {
-  //     if (_.isNil(c[termName])) {
-  //       if (!_.isNil(a[termName])) {
+  //     if (isNil(c[termName])) {
+  //       if (!isNil(a[termName])) {
   //         c[termName] = a[termName];
   //       }
   //     } else {
-  //       if (!_.isNil(a[termName])) {
-  //         if (_.isObject(a[termName]) && _.isObject(c[termName])) {
+  //       if (!isNil(a[termName])) {
+  //         if (isObject(a[termName]) && isObject(c[termName])) {
   //           // @ts-ignore
   //           c[termName] = this._mergeTermRanges(a[termName], c[termName]);
   //         } else {

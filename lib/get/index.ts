@@ -1,5 +1,11 @@
 import QuadStore from '../quadstore.js';
-import {TSApproximateSizeResult, TSEmptyOpts, TSPattern, TSQuadStreamResult, TSResultType} from '../types/index.js';
+import {
+  TSApproximateSizeResult,
+  TSEmptyOpts,
+  TSPattern,
+  TSQuadStreamResult,
+  TSResultType,
+} from '../types/index.js';
 import {execute, executeApproximateSize} from './strategy-execute.js';
 import {generate} from './strategy-generate.js';
 

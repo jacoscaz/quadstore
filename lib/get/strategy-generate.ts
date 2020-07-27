@@ -1,11 +1,12 @@
 
 import {
   TSGetStrategy,
-  TSIndex, TSPattern, TSRange,
+  TSPattern,
+  TSRange,
   TSTermName,
 } from '../types/index.js';
 import QuadStore from '../quadstore.js';
-import * as _  from '../utils/lodash.js';
+import {isSimpleObject} from '../utils/index';
 
 
 const strategyCache = new Map();
@@ -39,7 +40,7 @@ const addIndexMatch = (strategy: TSGetStrategy, term: TSTermName, valueOrRange: 
       strategy.gte = true;
       break;
     case 'object':
-      if (!_.isSimpleObject(valueOrRange)) {
+      if (!isSimpleObject(valueOrRange)) {
         throw new Error(`Unsupported`); // TODO improve error message
       }
       if (valueOrRange.lte) {

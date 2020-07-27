@@ -2,7 +2,13 @@
 import { Parser as SparqlParser, SparqlQuery } from 'sparqljs';
 import { handleSparqlUpdate } from './update.js';
 import { handleSparqlQuery } from './query.js';
-import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfQuadStreamResult, TSRdfStore, TSRdfVoidResult} from '../types/index.js';
+import {
+  TSEmptyOpts,
+  TSRdfBindingStreamResult,
+  TSRdfQuadStreamResult,
+  TSRdfStore,
+  TSRdfVoidResult,
+} from '../types/index.js';
 
 const sparqlParser = new SparqlParser();
 

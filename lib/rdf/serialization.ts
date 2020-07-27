@@ -1,16 +1,30 @@
 
-import * as _ from '../utils/lodash.js';
-import { Term, DataFactory, Literal, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from 'rdf-js';
+import {
+  Term,
+  DataFactory,
+  Literal,
+  Quad,
+  Quad_Graph,
+  Quad_Object,
+  Quad_Predicate,
+  Quad_Subject,
+} from 'rdf-js';
 import {
   TSBinding,
   TSPattern,
   TSQuad,
-  TSRange, TSRdfBinding, TSRdfPattern,
+  TSRange,
+  TSRdfBinding,
+  TSRdfPattern,
   TSRdfQuad,
   TSRdfRange,
-  TSRdfSearchStage, TSRdfSimplePattern, TSSearchStage, TSSearchStageType, TSSimplePattern
+  TSRdfSearchStage,
+  TSRdfSimplePattern,
+  TSSearchStage,
+  TSSearchStageType,
+  TSSimplePattern,
 } from '../types/index.js';
-import * as fpstring from './fpstring.js';
+import {fpstringEncode} from './fpstring.js';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
@@ -45,15 +59,15 @@ export const importLiteralTerm = (term: Literal, rangeBoundary = false): string 
     case xsdInteger:
     case xsdDouble:
       if (rangeBoundary) {
-        return `>number:${fpstring.encode(value)}>`;
+        return `>number:${fpstringEncode(value)}>`;
       }
-      return `>number:${fpstring.encode(value)}>${datatype.value}>${value}>`;
+      return `>number:${fpstringEncode(value)}>${datatype.value}>${value}>`;
     case xsdDateTime:
       const timestamp = new Date(value).valueOf();
       if (rangeBoundary) {
-        return `>datetime:${fpstring.encode(timestamp)}`;
+        return `>datetime:${fpstringEncode(timestamp)}`;
       }
-      return `>datetime:${fpstring.encode(timestamp)}>${datatype.value}>${value}>`;
+      return `>datetime:${fpstringEncode(timestamp)}>${datatype.value}>${value}>`;
     default:
       return `>>${datatype.value}>${value}>`;
   }

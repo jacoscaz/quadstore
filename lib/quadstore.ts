@@ -2,6 +2,7 @@
 'use strict';
 
 import {
+  putStreamOpts,
   TSApproximateSizeResult,
   TSBindingArrayResult,
   TSEmptyOpts,
@@ -35,6 +36,7 @@ import {
   isArray,
   isReadableStream,
   isString,
+  serializeQuad, consumeInBatches, consumeOneByOne,
 } from './utils/index.js';
 import {getApproximateSize, getStream} from './get/index.js';
 import {searchStream} from './search/index.js';
@@ -129,12 +131,8 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  protected _serializeQuad(quad: TSQuad): string {
-    return `{"subject":"${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
-  }
-
   async put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const value = this._serializeQuad(quad);
+    const value = serializeQuad(quad);
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.put(i.getKey(quad), value);
     }, this.db.batch());
@@ -145,7 +143,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
 
   async multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
     const batch = quads.reduce((quadBatch, quad) => {
-      const value = this._serializeQuad(quad);
+      const value = serializeQuad(quad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(quad), value);
       }, quadBatch);
@@ -176,7 +174,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
   }
 
   async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const value = this._serializeQuad(newQuad);
+    const value = serializeQuad(newQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.del(i.getKey(oldQuad)).put(i.getKey(newQuad), value);
     }, this.db.batch());
@@ -193,7 +191,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
       }, quadBatch);
     }, batch);
     batch = newQuads.reduce((quadBatch, quad) => {
-      const value = this._serializeQuad(quad);
+      const value = serializeQuad(quad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(quad), value);
       }, quadBatch);
@@ -263,19 +261,16 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await searchStream(this, stages);
   }
 
-  async putStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
+  async putStream(source: TSReadable<TSQuad>, opts?: putStreamOpts): Promise<TSVoidResult> {
     if (isNil(opts)) opts = {};
     assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
-    const transformOpts = {
-      transform: (quad: TSQuad, cb: () => void) => {
-        this.put(quad, opts)
-          .then(cb.bind(null, null))
-          .catch(cb);
-      },
-    };
-    const iterator = new TransformIterator(source).transform(transformOpts);
-    await streamToArray(iterator);
+    const batchSize = (opts && opts.batchSize) || 1;
+    if (batchSize === 1) {
+      await consumeOneByOne<TSQuad>(source, quad => this.put(quad));
+    } else {
+      await consumeInBatches<TSQuad>(source, batchSize, quads => this.multiPut(quads));
+    }
     return { type: TSResultType.VOID };
   }
 
@@ -283,15 +278,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     if (isNil(opts)) opts = {};
     assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
-    const transformOpts = {
-      transform: (quad: TSQuad, cb: () => void) => {
-        this.del(quad, opts)
-          .then(cb.bind(null, null))
-          .catch(cb);
-      },
-    };
-    const iterator = new TransformIterator(source).transform(transformOpts);
-    await streamToArray(iterator);
+    await consumeOneByOne(source, quad => this.del(quad, opts));
     return { type: TSResultType.VOID };
   }
 

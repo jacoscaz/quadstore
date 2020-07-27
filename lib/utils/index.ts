@@ -1,7 +1,8 @@
 
-import {TSReadable, TSTermName} from '../types/index.js';
+import {TSQuad, TSReadable, TSTermName} from '../types/index.js';
 import { EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
+import {AsyncIterator, TransformIterator} from 'asynciterator';
 
 export const termNames: TSTermName[] = ['subject', 'predicate', 'object', 'graph'];
 
@@ -83,4 +84,83 @@ export const genDefaultIndexes = (): TSTermName[][] => {
   ];
 }
 
+export const serializeQuad = (quad: TSQuad): string => {
+  return `{"subject":"${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+};
+
 export { nanoid };
+
+
+class BatchingIterator<T> extends TransformIterator<T, T> {
+
+  constructor(source: AsyncIterator<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<void>) {
+
+    super(source);
+
+    let ind = 0;
+    const buf = new Array(batchSize);
+
+    this._transform = (item: T, done: () => void) => {
+      buf[ind++] = item;
+      if (ind < batchSize) {
+        done();
+        return;
+      }
+      ind = 0;
+      onEachBatch(buf).then(done.bind(null, null)).catch(done);
+    };
+
+    this._flush = (done: () => void) => {
+      if (ind === 0) {
+        done();
+        return;
+      }
+      onEachBatch(buf).then(done.bind(null, null)).catch(done);
+    };
+
+  }
+
+}
+
+export const consumeInBatches = async <T>(iterator: AsyncIterator<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<any>) => {
+  return new Promise((resolve, reject) => {
+    new BatchingIterator(iterator, batchSize, onEachBatch)
+      .on('end', resolve)
+      .on('error', reject);
+  });
+};
+
+export const consumeOneByOne = async <T>(iterator: AsyncIterator<T>, onEachItem: (item: T) => Promise<any>) => {
+  return new Promise((resolve, reject) => {
+    let ended = false;
+    let waiting = false;
+    let working = false;
+    const loop = () => {
+      working = false;
+      waiting = false;
+      const item = iterator.read();
+      if (item === null) {
+        if (ended) {
+          resolve();
+        } else {
+          waiting = true;
+          iterator.once('readable', loop);
+        }
+        return;
+      }
+      working = true;
+      Promise.resolve(onEachItem(item)).then(loop).catch(reject);
+    };
+    iterator.once('end', () => {
+      ended = true;
+      if (waiting) {
+        iterator.removeListener('readable', loop);
+        resolve();
+      }
+      if (!working) {
+        resolve();
+      }
+    });
+    loop();
+  });
+};

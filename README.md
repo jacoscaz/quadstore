@@ -546,13 +546,22 @@ support for browser-side persistent storage.
 
 ## Performance
 
-We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
-file into an instance of `RdfStore` on Node v12.14.0 running on a 2018 
-MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~15k quads per 
-second** and **~4k quads per MB**.
+Although we've yet to develop proper benchmarks, we do keep an eye on write
+speeds by often importing the entire [`21million.rdf`][21mil-rdf] file or a
+subset of it.
 
-    node perf/loadfile.js /Users/jacoscaz/Downloads/1million.rdf 
+The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
+running Node v14.0.0.
+ 
+With the default six indexes and the `leveldown` backend, the `RdfStore` class
+clocks at **~15k quads per second** when importing quads one-by-one and at 
+**~18k quads per second** when importing quads in batches, with a density of
+**~4k quads per MB**. 
+
+    node perf/loadfile.js /path/to/21million.rdf
+    
+[21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz
  
 ## LICENSE
 
-See [LICENSE.md](./LICENSE.md).
+MIT. See [LICENSE.md](./LICENSE.md).

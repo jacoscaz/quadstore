@@ -109,9 +109,9 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
     case 'NamedNode':
       return term.value;
     case 'BlankNode':
-      return '_:' + term.value;
+      return `_:${term.value}`;
     case 'Variable':
-      return '?' + term.value;
+      return `?${term.value}`;
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':

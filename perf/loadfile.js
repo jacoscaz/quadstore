@@ -55,7 +55,8 @@ const remove = util.promisify(fs.remove.bind(fs));
   const streamParser = new n3.StreamParser({ format });
 
   const beforeTime = Date.now();
-  await store.putStream(fileReader.pipe(streamParser));
+  // await store.putStream(fileReader.pipe(streamParser));
+  await store.putStream(fileReader.pipe(streamParser), { batchSize: 20 });
   const afterTime = Date.now();
 
   await store.close();

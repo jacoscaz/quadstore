@@ -33,6 +33,7 @@ import {
   Stream
 } from 'rdf-js';
 import {
+  putStreamOpts,
   TSBinding,
   TSEmptyOpts,
   TSGetOpts,
@@ -250,7 +251,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     };
   }
 
-  async putStream(source: TSReadable<TSRdfQuad>, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
+  async putStream(source: TSReadable<TSRdfQuad>, opts: putStreamOpts): Promise<TSRdfVoidResult> {
     const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.putStream(importedQuadsIterator, opts);

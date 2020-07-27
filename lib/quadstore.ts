@@ -2,7 +2,7 @@
 'use strict';
 
 import {
-  putStreamOpts,
+  TSPutStreamOpts,
   TSApproximateSizeResult,
   TSBindingArrayResult,
   TSEmptyOpts,
@@ -18,7 +18,7 @@ import {
   TSStore,
   TSStoreOpts,
   TSTermName,
-  TSVoidResult
+  TSVoidResult, TSDelStreamOpts
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
@@ -261,7 +261,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await searchStream(this, stages);
   }
 
-  async putStream(source: TSReadable<TSQuad>, opts?: putStreamOpts): Promise<TSVoidResult> {
+  async putStream(source: TSReadable<TSQuad>, opts?: TSPutStreamOpts): Promise<TSVoidResult> {
     if (isNil(opts)) opts = {};
     assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
@@ -274,11 +274,16 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.VOID };
   }
 
-  async delStream(source: TSReadable<TSQuad>, opts: TSEmptyOpts): Promise<TSVoidResult> {
+  async delStream(source: TSReadable<TSQuad>, opts: TSDelStreamOpts): Promise<TSVoidResult> {
     if (isNil(opts)) opts = {};
     assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
-    await consumeOneByOne(source, quad => this.del(quad, opts));
+    const batchSize = (opts && opts.batchSize) || 1;
+    if (batchSize === 1) {
+      await consumeOneByOne(source, quad => this.del(quad, opts));
+    } else {
+      await consumeInBatches(source, batchSize, quads => this.multiDel(quads));
+    }
     return { type: TSResultType.VOID };
   }
 

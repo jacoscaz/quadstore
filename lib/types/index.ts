@@ -20,14 +20,14 @@ export interface TSReadable<T> extends AsyncIterator<T> {
   read(): T|null;
 }
 
-export const enum TSResultType {
+export enum TSResultType {
   VOID = 'void',
   QUADS = 'quads',
   BINDINGS = 'bindings',
   APPROXIMATE_SIZE = 'approximate_size',
 }
 
-export const enum TSSearchStageType {
+export enum TSSearchStageType {
   BGP = 'bgp',
   LT = 'lt',
   LTE = 'lte',
@@ -36,7 +36,7 @@ export const enum TSSearchStageType {
 }
 
 
-export const enum TSFilterSearchStageType {
+export enum TSFilterSearchStageType {
   GT = 'gt',
   GTE = 'gte',
   LT = 'lt',

@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('../dist-cjs/lib/utils/lodash');
+const _ = require('../dist-cjs/lib/utils');
 const utils = require('../dist-cjs/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');

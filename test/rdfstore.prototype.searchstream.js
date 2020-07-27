@@ -1,11 +1,11 @@
 
 'use strict';
 
-const _ = require('../dist-cjs/lib/utils/lodash');
+const _ = require('../dist-cjs/lib/utils');
 const should = require('should');
-const enums = require('../dist-cjs/lib/utils/enums');
 const utils = require('../dist-cjs/lib/utils');
 const factory = require('@rdfjs/data-model');
+const {TSResultType} = require('../dist-cjs/lib/types');
 
 
 module.exports = () => {
@@ -67,7 +67,7 @@ module.exports = () => {
         }
       ];
       const results = await this.store.searchStream(stages);
-      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.type).equal(TSResultType.BINDINGS);
       const bindings = await utils.streamToArray(results.iterator);
     });
 

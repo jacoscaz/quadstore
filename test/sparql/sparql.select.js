@@ -1,8 +1,8 @@
 
-const _ = require('../../dist-cjs/lib/utils/lodash');
+const _ = require('../../dist-cjs/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const enums = require('../../dist-cjs/lib/utils/enums');
+const {TSResultType} = require('../../dist-cjs/lib/types');
 
 module.exports = () => {
   describe('SELECT', () => {
@@ -47,7 +47,7 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> <http://ex.com/o>. }
       `);
-      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).have.length(2);
     });
 
@@ -58,7 +58,7 @@ module.exports = () => {
           ?s <http://ex.com/p2> ?o.
         }
       `);
-      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).have.length(2);
     });
 
@@ -69,7 +69,7 @@ module.exports = () => {
           FILTER (?s < <http://ex.com/s2>)
         }
       `);
-      should(results.type).equal(enums.resultType.BINDINGS);
+      should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).have.length(1);
     });
 

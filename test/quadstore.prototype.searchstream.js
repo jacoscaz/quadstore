@@ -1,10 +1,10 @@
 
 'use strict';
 
-const _ = require('../dist-cjs/lib/utils/lodash');
+const _ = require('../dist-cjs/lib/utils');
 const should = require('should');
 const utils = require('../dist-cjs/lib/utils');
-const enums = require('../dist-cjs/lib/utils/enums');
+const { TSResultType } = require('../dist-cjs/lib/types');
 
 module.exports = () => {
 
@@ -28,7 +28,7 @@ module.exports = () => {
           { type: 'bgp', pattern: { subject: '?s', predicate: 'p2', object: '?o'} },
         ];
         const results = await this.store.searchStream(stages);
-        should(results.type).equal(enums.resultType.BINDINGS);
+        should(results.type).equal(TSResultType.BINDINGS);
         const bindings = await utils.streamToArray(results.iterator);
       });
 

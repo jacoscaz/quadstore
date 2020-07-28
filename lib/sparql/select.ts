@@ -1,14 +1,13 @@
-
 import {
-  TSEmptyOpts, TSFilterSearchStage,
-  TSFilterSearchStageType,
-  TSRdfBindingStreamResult, TSRdfFilterSearchStage,
-  TSRdfSearchStage, TSRdfSimplePattern,
+  TSRdfBindingStreamResult,
+  TSRdfFilterSearchStage, TSRdfQuadStreamResult,
+  TSRdfSearchStage,
+  TSRdfSimplePattern,
   TSRdfStore,
   TSSearchStageType
 } from '../types/index.js';
-import {Term, Quad_Graph} from 'rdf-js';
-import {BgpPattern, FilterPattern, GraphPattern, Pattern, SelectQuery} from 'sparqljs';
+import {Term} from 'rdf-js';
+import {BgpPattern, FilterPattern, GraphPattern, Pattern} from 'sparqljs';
 
 const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage => {
   if (whereGroup.type !== 'filter') {
@@ -43,7 +42,13 @@ const sparqlBgpPatternToStages = (pattern: BgpPattern, graph?: Term): TSRdfSearc
   }));
 }
 
-export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pattern[] }, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult> => {
+export interface TSHandleSparqlSelectOpts {
+  construct?: {
+    patterns: TSRdfSimplePattern[]
+  }
+}
+
+export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pattern[] }, opts: TSHandleSparqlSelectOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
   const stages: TSRdfSearchStage[] = []; // TODO: pipeline
   if (parsed.where) {
     parsed.where.forEach((pattern) => {
@@ -70,6 +75,9 @@ export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pa
           throw new Error(`Unsupported WHERE group type "${pattern.type}"`);
       }
     });
+  }
+  if (opts.construct) {
+    stages.push({ type: TSSearchStageType.CONSTRUCT, patterns: opts.construct.patterns });
   }
   const results = <TSRdfBindingStreamResult>(await store.searchStream(stages, opts));
   return results;

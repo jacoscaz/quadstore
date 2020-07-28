@@ -1,10 +1,14 @@
-
-import {TSQuad, TSReadable, TSTermName} from '../types/index.js';
-import { EventEmitter} from 'events';
+import {TSQuad, TSReadable, TSSimplePattern, TSTermName} from '../types/index.js';
+import {EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
 
-export const termNames: TSTermName[] = ['subject', 'predicate', 'object', 'graph'];
+export const termNames: TSTermName[] = [
+  TSTermName.SUBJECT,
+  TSTermName.PREDICATE,
+  TSTermName.OBJECT,
+  TSTermName.GRAPH,
+];
 
 export const isFunction = (f: any): boolean => {
   return typeof(f) === 'function';
@@ -75,12 +79,12 @@ export const waitForEvent = resolveOnEvent;
 
 export const genDefaultIndexes = (): TSTermName[][] => {
   return [
-    ['subject', 'predicate', 'object', 'graph'],
-    ['object', 'graph', 'subject', 'predicate'],
-    ['graph', 'subject', 'predicate', 'object'],
-    ['object', 'subject', 'predicate', 'graph'],
-    ['predicate', 'object', 'graph', 'subject'],
-    ['graph', 'predicate', 'object', 'subject'],
+    [TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.GRAPH],
+    [TSTermName.OBJECT, TSTermName.GRAPH, TSTermName.SUBJECT, TSTermName.PREDICATE],
+    [TSTermName.GRAPH, TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.OBJECT],
+    [TSTermName.OBJECT, TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.GRAPH],
+    [TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.GRAPH, TSTermName.SUBJECT],
+    [TSTermName.GRAPH, TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.SUBJECT],
   ];
 }
 
@@ -164,3 +168,4 @@ export const consumeOneByOne = async <T>(iterator: AsyncIterator<T>, onEachItem:
     loop();
   });
 };
+

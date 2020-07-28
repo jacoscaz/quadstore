@@ -11,7 +11,14 @@ export interface TSEmptyOpts {}
 // ********************************** COMMON **********************************
 // ****************************************************************************
 
-export type TSTermName = 'subject' | 'predicate' | 'object' | 'graph';
+export enum TSTermName {
+  SUBJECT = 'subject',
+  PREDICATE = 'predicate',
+  OBJECT = 'object',
+  GRAPH = 'graph',
+}
+
+// export type TSTermName = 'subject' | 'predicate' | 'object' | 'graph';
 
 export interface TSReadable<T> extends AsyncIterator<T> {
   on(eventName: 'data', fn: (chunk: T) => void): this;
@@ -33,6 +40,7 @@ export enum TSSearchStageType {
   LTE = 'lte',
   GT = 'gt',
   GTE = 'gte',
+  CONSTRUCT = 'construct',
 }
 
 
@@ -54,24 +62,24 @@ export interface TSIndex {
 }
 
 export interface TSPattern {
-  subject?: string,
-  predicate?: string,
-  object?: string|TSRange,
-  graph?: string,
+  [TSTermName.SUBJECT]?: string,
+  [TSTermName.PREDICATE]?: string,
+  [TSTermName.OBJECT]?: string|TSRange,
+  [TSTermName.GRAPH]?: string,
 }
 
 export interface TSSimplePattern {
-  subject?: string,
-  predicate?: string,
-  object?: string,
-  graph?: string,
+  [TSTermName.SUBJECT]?: string,
+  [TSTermName.PREDICATE]?: string,
+  [TSTermName.OBJECT]?: string,
+  [TSTermName.GRAPH]?: string,
 }
 
 export interface TSQuad {
-  subject: string,
-  predicate: string,
-  object: string,
-  graph: string,
+  [TSTermName.SUBJECT]: string,
+  [TSTermName.PREDICATE]: string,
+  [TSTermName.OBJECT]: string,
+  [TSTermName.GRAPH]: string,
 }
 
 export interface TSRange {
@@ -100,13 +108,13 @@ export interface TSQuadStreamResult {
 export interface TSBindingArrayResult {
   type: TSResultType.BINDINGS,
   items: TSBinding[],
-  sorting: TSTermName[],
+  sorting: string[],
   variables: TSVariables,
 }
 
 export interface TSBindingStreamResult {
   type: TSResultType.BINDINGS,
-  sorting: TSTermName[],
+  sorting: string[],
   variables: TSVariables,
   iterator: TSReadable<TSBinding>,
 }
@@ -131,7 +139,12 @@ export interface TSFilterSearchStage {
   args: string[],
 }
 
-export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage;
+export interface TSConstructSearchStage {
+  type: TSSearchStageType.CONSTRUCT,
+  patterns: TSSimplePattern[],
+}
+
+export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage|TSConstructSearchStage;
 
 export interface TSStoreOpts {
   backend: AbstractLevelDOWN,
@@ -222,7 +235,9 @@ export interface TSParsedFilterSearchStage extends TSFilterSearchStage {
   variables: TSVariables,
 }
 
-export type TSParsedSearchStage = TSParsedBgpSearchStage | TSParsedFilterSearchStage;
+export interface TSParsedConstructSearchStage extends TSConstructSearchStage {}
+
+export type TSParsedSearchStage = TSParsedBgpSearchStage|TSParsedFilterSearchStage|TSParsedConstructSearchStage;
 
 
 // ****************************************************************************
@@ -239,17 +254,17 @@ export interface TSRdfRange {
 }
 
 export interface TSRdfPattern {
-  subject?: Quad_Subject,
-  predicate?: Quad_Predicate,
-  object?: Quad_Object|TSRdfRange,
-  graph?: Quad_Graph,
+  [TSTermName.SUBJECT]?: Quad_Subject,
+  [TSTermName.PREDICATE]?: Quad_Predicate,
+  [TSTermName.OBJECT]?: Quad_Object|TSRdfRange,
+  [TSTermName.GRAPH]?: Quad_Graph,
 }
 
 export interface TSRdfSimplePattern {
-  subject?: Quad_Subject,
-  predicate?: Quad_Predicate,
-  object?: Quad_Object,
-  graph?: Quad_Graph,
+  [TSTermName.SUBJECT]?: Quad_Subject,
+  [TSTermName.PREDICATE]?: Quad_Predicate,
+  [TSTermName.OBJECT]?: Quad_Object,
+  [TSTermName.GRAPH]?: Quad_Graph,
 }
 
 export interface TSRdfBinding {
@@ -271,13 +286,13 @@ export interface TSRdfQuadStreamResult {
 export interface TSRdfBindingArrayResult {
   type: TSResultType.BINDINGS,
   items: TSRdfBinding[],
-  sorting: TSTermName[],
+  sorting: string[],
   variables: TSVariables,
 }
 
 export interface TSRdfBindingStreamResult {
   type: TSResultType.BINDINGS,
-  sorting: TSTermName[],
+  sorting: string[],
   variables: TSVariables,
   iterator: TSReadable<TSRdfBinding>,
 }
@@ -292,12 +307,17 @@ export interface TSRdfBgpSearchStage {
   pattern: TSRdfSimplePattern,
 }
 
+export interface TSRdfConstructSearchStage {
+  type: TSSearchStageType.CONSTRUCT,
+  patterns: TSRdfSimplePattern[],
+}
+
 export interface TSRdfFilterSearchStage {
   type: TSSearchStageType.GT|TSSearchStageType.GTE|TSSearchStageType.LT|TSSearchStageType.LTE,
   args: (Variable|Literal)[],
 }
 
-export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage;
+export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage|TSRdfConstructSearchStage;
 
 export interface TSRdfStoreOpts {
   backend: AbstractLevelDOWN,

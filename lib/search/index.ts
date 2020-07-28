@@ -1,4 +1,3 @@
-
 import pReduce from 'p-reduce';
 import {termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
@@ -9,24 +8,26 @@ import {
   TSBgpSearchStage,
   TSBinding,
   TSBindingStreamResult,
+  TSConstructSearchStage,
   TSFilterSearchStage,
   TSParsedBgpSearchStage,
+  TSParsedConstructSearchStage,
   TSParsedFilterSearchStage,
   TSParsedSearchStage,
-  TSPattern,
   TSQuad,
   TSQuadStreamResult,
   TSResultType,
   TSSearchStage,
+  TSSearchStageType,
+  TSSimplePattern,
   TSTermName,
   TSTermsToVarsMap,
   TSVariables,
   TSVarsToTermsMap,
-  TSSearchStageType, TSSimplePattern,
 } from '../types';
 
 import QuadStore from '../quadstore.js';
-
+import {replaceBindingInPattern} from './construct.js';
 
 
 const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
@@ -142,6 +143,10 @@ const parseFilterSearchStage = (stage: TSFilterSearchStage): TSParsedFilterSearc
   return { ...stage, variables };
 }
 
+const parseMaterializeSearchStage = (stage: TSConstructSearchStage): TSParsedConstructSearchStage => {
+  return stage;
+};
+
 const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
   switch (stage.type) {
     case TSSearchStageType.BGP:
@@ -151,6 +156,8 @@ const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
     case TSSearchStageType.GT:
     case TSSearchStageType.GTE:
       return parseFilterSearchStage(stage);
+    case TSSearchStageType.CONSTRUCT:
+      return parseMaterializeSearchStage(stage);
     default:
       // @ts-ignore
       throw new Error(`Unsupported search stage type "${stage.type}"`);
@@ -175,13 +182,29 @@ const applyFilterSearchStage = async (store: QuadStore, prevResult: TSBindingStr
   return { ...prevResult, iterator };
 }
 
+const applyConstructSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedConstructSearchStage): Promise<TSQuadStreamResult> => {
+  const { patterns } = nextStage;
+  return {
+    type: TSResultType.QUADS,
+    iterator: prevResult.iterator.transform({
+      transform: (binding, done: () => void, push: (quad: TSQuad) => void) => {
+        patterns.forEach((pattern) => {
+          push(replaceBindingInPattern(pattern, binding));
+        });
+        done();
+      },
+    }),
+    sorting: [],
+  };
+}
+
 const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   switch (nextStage.type) {
     case TSSearchStageType.BGP:
       if (prevResult.type !== TSResultType.BINDINGS) {
         throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
       }
-      return await applyBgpSearchStage(store, prevResult, <TSParsedBgpSearchStage>nextStage);
+      return await applyBgpSearchStage(store, prevResult, nextStage);
     case TSSearchStageType.LT:
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
@@ -189,7 +212,12 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
       if (prevResult.type !== TSResultType.BINDINGS) {
         throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
       }
-      return await applyFilterSearchStage(store, prevResult, <TSParsedFilterSearchStage>nextStage);
+      return await applyFilterSearchStage(store, prevResult, nextStage);
+    case TSSearchStageType.CONSTRUCT:
+      if (prevResult.type !== TSResultType.BINDINGS) {
+        throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
+      }
+      return await applyConstructSearchStage(store, prevResult, nextStage);
     default:
       // @ts-ignore
       throw new Error(`Unsupported search stage type "${nextStage.type}"`);
@@ -199,10 +227,16 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
 export const searchStream = async (store: QuadStore, stages: TSSearchStage[]): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   const parsedStages = stages.map(parseSearchStage);
   // TODO: optimization pass including pushing filters down to nearest BGP stage
+  if (parsedStages.length < 1) {
+    throw new Error(`Search with no stages`);
+  }
+  if (parsedStages[0].type !== TSSearchStageType.BGP) {
+    throw new Error(`The first stage in a search must be of type "BGP"`);
+  }
   return await pReduce(
     parsedStages.slice(1),
     applySearchStage.bind(null, store),
-    await getBindingsIterator(store, <TSParsedBgpSearchStage>parsedStages[0]),
+    await getBindingsIterator(store, parsedStages[0]),
   );
 };
 

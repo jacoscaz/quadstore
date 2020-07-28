@@ -1,47 +1,19 @@
 import {ArrayIterator} from 'asynciterator';
-import {TSEmptyOpts, TSRdfBinding, TSRdfQuad, TSRdfStore, TSRdfVoidResult, TSResultType, TSTermName} from '../types/index.js';
+import {
+  TSEmptyOpts,
+  TSRdfBinding,
+  TSRdfQuad,
+  TSRdfQuadStreamResult,
+  TSRdfStore,
+  TSRdfVoidResult,
+  TSResultType,
+  TSTermName
+} from '../types/index.js';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
 import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
-import {termNames, waitForEvent} from '../utils/index.js';
-import * as select from './select.js';
-
-const parseSubject = (subject: NamedNode | BlankNode | Variable | Literal): Quad_Subject => {
-  if (subject.termType === 'Literal') {
-    throw new Error('Literals not supported');
-  }
-  return subject;
-}
-
-const parsePredicate = (predicate: Literal | BlankNode | NamedNode | Variable | PropertyPath): Quad_Predicate => {
-  if ('type' in predicate) {
-    throw new Error('Property paths are not supported');
-  }
-  if (predicate.termType === 'Literal') {
-    throw new Error('Literals not supported');
-  }
-  if (predicate.termType === 'BlankNode') {
-    throw new Error('Blank nodes not supported');
-  }
-  return predicate;
-};
-
-const graphTripleToQuad = (store: TSRdfStore, triple: Triple, graph: Quad_Graph): TSRdfQuad => {
-  return store.dataFactory.quad(
-    parseSubject(triple.subject),
-    parsePredicate(triple.predicate),
-    triple.object,
-    graph,
-  );
-};
-
-const bgpTripleToQuad = (store: TSRdfStore, triple: Triple): TSRdfQuad => {
-  return store.dataFactory.quad(
-    parseSubject(triple.subject),
-    parsePredicate(triple.predicate),
-    triple.object,
-    store.dataFactory.defaultGraph(),
-  );
-};
+import {consumeOneByOne, termNames, waitForEvent} from '../utils/index.js';
+import {handleSparqlSelect, TSHandleSparqlSelectOpts}  from './select.js';
+import {bgpTripleToQuad, graphTripleToQuad, sparqlPatternToPatterns} from './utils.js';
 
 const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperation, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
   const quads: TSRdfQuad[] = [];
@@ -60,14 +32,7 @@ const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperati
       }
     });
   }
-  const iterator = new ArrayIterator(quads).transform({
-    transform(quad, done: () => void) {
-      store.put(quad)
-        .then(done.bind(null, null))
-        .catch(done);
-    },
-  });
-  await waitForEvent(iterator, 'end', true);
+  await store.multiPut(quads, {});
   return { type: TSResultType.VOID };
 };
 
@@ -88,108 +53,38 @@ const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperati
       }
     });
   }
-  const iterator = new ArrayIterator(quads).transform({
-    transform(quad, done: () => void) {
-      store.del(quad, {})
-        .then(done.bind(null, null))
-        .catch(done);
-    },
-  });
-  await waitForEvent(iterator, 'end', true);
+  await store.multiDel(quads, {});
   return { type: TSResultType.VOID };
 };
 
-const replaceBindingInPattern = (quad: TSRdfQuad, binding: TSRdfBinding): TSRdfQuad => {
-  const p: TSRdfQuad = { ...quad };
-  termNames.forEach((termName: TSTermName)  => {
-    const term = p[termName];
-    if (term.termType !== 'Variable') {
-      return;
-    }
-    const bindingValue = binding[`?${term.value}`];
-    if (!bindingValue) {
-      return;
-    }
-    switch (termName) {
-      case 'subject':
-        if (bindingValue.termType === 'Literal') {
-          throw new Error('Invalid');
-        }
-        if (bindingValue.termType === 'DefaultGraph') {
-          throw new Error('Invalid');
-        }
-        p[termName] = bindingValue;
-        break;
-      case 'predicate':
-        if (bindingValue.termType === 'DefaultGraph') {
-          throw new Error('Invalid');
-        }
-        if (bindingValue.termType === 'BlankNode') {
-          throw new Error('Invalid');
-        }
-        if (bindingValue.termType === 'Literal') {
-          throw new Error('Invalid');
-        }
-        p[termName] = bindingValue;
-
-        break;
-      case 'object':
-        if (bindingValue.termType === 'DefaultGraph') {
-          throw new Error('Invalid');
-        }
-        p[termName] = bindingValue;
-        break;
-      case 'graph':
-        if (bindingValue.termType === 'Literal') {
-          throw new Error('Invalid');
-        }
-        p[termName] = bindingValue;
-        break;
-      default:
-        throw new Error(`Unexpected term "${termName}"`);
-    }
-  });
-  return p;
-};
-
-const sparqlPatternToQuads = (store: TSRdfStore, pattern: Quads, binding: TSRdfBinding = {}): TSRdfQuad[] => {
-  const quads: TSRdfQuad[] = [];
-  switch (pattern.type) {
-    case 'bgp':
-      quads.push(...pattern.triples.map(triple => bgpTripleToQuad(store, triple)));
-      break;
-    case 'graph':
-      quads.push(...pattern.triples.map(triple => graphTripleToQuad(store, triple, pattern.name)));
-      break;
-    default:
-      // @ts-ignore
-      throw new Error(`Unsupported SPARQL pattern type "${pattern.type}`);
-  }
-  return quads.map(quad => replaceBindingInPattern(quad, binding));
-};
-
 const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
-  const results = await select.handleSparqlSelect(store, { where: update.where }, opts);
-  const iterator = results.iterator.transform({
-    transform: (binding: TSRdfBinding, done: () => void) => {
-      const deleteQuads: TSRdfQuad[] = [];
-      const insertQuads: TSRdfQuad[] = [];
-      if (update.delete) {
-        update.delete.forEach((pattern: Quads) => {
-          deleteQuads.push(...sparqlPatternToQuads(store, pattern, binding));
-        });
-      }
-      if (update.insert) {
-        update.insert.forEach((pattern: Quads) => {
-          insertQuads.push(...sparqlPatternToQuads(store, pattern, binding));
-        });
-      }
-      store.multiPatch(deleteQuads, insertQuads, {})
-        .then(done.bind(null, null))
-        .catch(done);
-    },
+  const deletePatterns = update.delete
+    ? update.delete.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
+    : [];
+  const insertPatterns = update.insert
+    ? update.insert.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
+    : [];
+  const selectOpts: TSHandleSparqlSelectOpts = {};
+  selectOpts.construct = { patterns: [...deletePatterns, ...insertPatterns] };
+  const results = <TSRdfQuadStreamResult>await handleSparqlSelect(store, { where: update.where }, selectOpts);
+  let i = 0;
+  const dl = deletePatterns.length;
+  const tl = dl + insertPatterns.length;
+  const toDelete = new Array(deletePatterns.length);
+  const toInsert = new Array(insertPatterns.length);
+  await consumeOneByOne(results.iterator,async (quad) => {
+    if (i < dl) {
+      toDelete[i] = quad;
+      i += 1;
+    } else if (i < tl) {
+      toInsert[i - dl] = quad;
+      i += 1;
+    }
+    if (i === tl) {
+      await store.multiPatch(toDelete, toInsert, {});
+      i = 0;
+    }
   });
-  await waitForEvent(iterator, 'end', true);
   return { type: TSResultType.VOID };
 };
 

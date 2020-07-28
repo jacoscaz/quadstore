@@ -37,6 +37,7 @@ import {
   isReadableStream,
   isString,
   serializeQuad, consumeInBatches, consumeOneByOne,
+  termNames,
 } from './utils/index.js';
 import {getApproximateSize, getStream} from './get/index.js';
 import {searchStream} from './search/index.js';
@@ -300,10 +301,6 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  _getTermNames(): TSTermName[] {
-    return ['subject', 'predicate', 'object', 'graph'];
-  }
-
   protected _getTermValueComparator(): (a: string, b: string) => -1|0|1 {
     return (a: string, b: string) => {
       if (a < b) return -1;
@@ -312,12 +309,12 @@ class QuadStore extends events.EventEmitter implements TSStore {
     }
   }
 
-  protected _getQuadComparator(termNames: TSTermName[]) {
-    if (!termNames) termNames = this._getTermNames();
+  protected _getQuadComparator(_termNames: TSTermName[]) {
+    if (!_termNames) _termNames = termNames;
     const valueComparator = this._getTermValueComparator();
     return (a: TSQuad, b: TSQuad) => {
-      for (let i = 0, n = termNames.length, r: -1|0|1; i <= n; i += 1) {
-        r = valueComparator(a[termNames[i]], b[termNames[i]]);
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+        r = valueComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }
       return 0;

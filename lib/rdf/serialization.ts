@@ -1,14 +1,4 @@
-
-import {
-  Term,
-  DataFactory,
-  Literal,
-  Quad,
-  Quad_Graph,
-  Quad_Object,
-  Quad_Predicate,
-  Quad_Subject,
-} from 'rdf-js';
+import {DataFactory, Literal, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term,} from 'rdf-js';
 import {
   TSBinding,
   TSPattern,
@@ -295,6 +285,11 @@ export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string)
       return {
         type: stage.type,
         args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph)),
+      };
+    case TSSearchStageType.CONSTRUCT:
+      return {
+        type: stage.type,
+        patterns: stage.patterns.map(pattern => importSimplePattern(pattern, defaultGraph)),
       };
   }
 }

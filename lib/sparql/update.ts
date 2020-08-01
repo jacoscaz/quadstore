@@ -11,7 +11,7 @@ import {
 } from '../types/index.js';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
 import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
-import {consumeOneByOne, termNames, waitForEvent} from '../utils/index.js';
+import {consumeOneByOne, termNames, waitForEvent, flatMap} from '../utils/index.js';
 import {handleSparqlSelect, TSHandleSparqlSelectOpts}  from './select.js';
 import {bgpTripleToQuad, graphTripleToQuad, sparqlPatternToPatterns} from './utils.js';
 
@@ -59,10 +59,10 @@ const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperati
 
 const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts?: TSSparqlOpts): Promise<TSRdfVoidResult> => {
   const deletePatterns = update.delete
-    ? update.delete.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
+    ? flatMap(update.delete, pattern => sparqlPatternToPatterns(store, pattern))
     : [];
   const insertPatterns = update.insert
-    ? update.insert.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
+    ? flatMap(update.insert, pattern => sparqlPatternToPatterns(store, pattern))
     : [];
   const selectOpts: TSHandleSparqlSelectOpts = opts ? { ...opts } : {};
   selectOpts.construct = { patterns: [...deletePatterns, ...insertPatterns] };

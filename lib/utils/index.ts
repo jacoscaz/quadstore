@@ -2,6 +2,7 @@ import {TSQuad, TSReadable, TSSimplePattern, TSTermName} from '../types/index.js
 import {EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {flatMap} from './flatmap.js';
 
 export const termNames: TSTermName[] = [
   TSTermName.SUBJECT,
@@ -169,3 +170,4 @@ export const consumeOneByOne = async <T>(iterator: AsyncIterator<T>, onEachItem:
   });
 };
 
+export { flatMap };

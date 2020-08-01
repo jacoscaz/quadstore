@@ -11,7 +11,7 @@ type TLevelOpts = {
   offset?: number,
 };
 
-const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts: TSEmptyOpts) => {
+const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts?: TSEmptyOpts) => {
   const levelOpts: TLevelOpts = {};
   if (strategy.lt.length > 0) {
     if (strategy.lte) {
@@ -50,7 +50,7 @@ const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts: TSEm
   return levelOpts;
 };
 
-export const executeApproximateSize = async (store: QuadStore, strategy: TSGetStrategy, opts: TSEmptyOpts): Promise<number> => {
+export const executeApproximateSize = async (store: QuadStore, strategy: TSGetStrategy, opts?: TSEmptyOpts): Promise<number> => {
   if (!store.db.approximateSize) {
     return Infinity;
   }
@@ -65,13 +65,15 @@ export const executeApproximateSize = async (store: QuadStore, strategy: TSGetSt
   // TODO: handle opts.limit and opts.offset
 };
 
-export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts: TSGetOpts): Promise<AsyncIterator<TSQuad>> => {
+export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts?: TSGetOpts): Promise<AsyncIterator<TSQuad>> => {
   const levelOpts: TLevelOpts = generateLevelOpts(store, strategy, opts);
-  if (opts.offset) {
-    levelOpts.offset = opts.offset;
-  }
-  if (opts.limit) {
-    levelOpts.limit = opts.limit;
+  if (opts) {
+    if (opts.offset) {
+      levelOpts.offset = opts.offset;
+    }
+    if (opts.limit) {
+      levelOpts.limit = opts.limit;
+    }
   }
   const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts))
     // @ts-ignore - how do we fix the typings for this?

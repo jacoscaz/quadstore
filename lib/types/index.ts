@@ -157,6 +157,7 @@ export interface TSStoreOpts {
 export interface TSGetOpts {
   limit?: number,
   offset?: number,
+  defaultGraphMode?: TSDefaultGraphMode,
 }
 
 export interface TSGetStrategy {
@@ -177,20 +178,29 @@ export interface TSDelStreamOpts {
   batchSize?: number,
 }
 
+export enum TSDefaultGraphMode {
+  DEFAULT = 'default',
+  MERGE = 'merge'
+}
+
+export interface TSSearchOpts {
+  defaultGraphMode?: TSDefaultGraphMode
+}
+
 export interface TSStore extends EventEmitter {
-  get(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadArrayResult>
+  get(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadArrayResult>
   put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult>
   multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult>
-  del(quad: TSQuad, opts: TSEmptyOpts): Promise<TSVoidResult>
-  multiDel(Quads: TSQuad[], opts: TSEmptyOpts): Promise<TSVoidResult>
-  patch(oldQuad: TSQuad, newQuad: TSQuad, opts: TSEmptyOpts): Promise<TSVoidResult>
-  multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts: TSEmptyOpts): Promise<TSVoidResult>
-  search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
-  getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
-  getStream(pattern: TSPattern, opts: TSGetOpts): Promise<TSQuadStreamResult>
+  del(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult>
+  multiDel(Quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult>
+  patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult>
+  multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult>
+  search(stages: TSSearchStage[], opts?: TSSearchOpts): Promise<TSQuadArrayResult|TSBindingArrayResult>
+  getApproximateSize(pattern: TSPattern, opts?: TSGetOpts): Promise<TSApproximateSizeResult>
+  getStream(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadStreamResult>
   putStream(source: TSReadable<TSQuad>, opts?: TSPutStreamOpts): Promise<TSVoidResult>
   delStream(source: TSReadable<TSQuad>, opts?: TSDelStreamOpts): Promise<TSVoidResult>
-  searchStream(stages: TSSearchStage[], opts?: TSEmptyOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
+  searchStream(stages: TSSearchStage[], opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
 }
 
 
@@ -327,22 +337,26 @@ export interface TSRdfStoreOpts {
   dataFactory: DataFactory,
 }
 
+export interface TSSparqlOpts {
+  defaultGraphMode?: TSDefaultGraphMode,
+}
+
 export interface TSRdfStore extends EventEmitter {
   quadstore: TSStore
   dataFactory: DataFactory
-  get(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadArrayResult>
+  get(pattern: TSRdfPattern, opts?: TSGetOpts): Promise<TSRdfQuadArrayResult>
   put(quad: TSRdfQuad, opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
   multiPut(quads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
-  del(quad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
-  multiDel(quads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult>
-  patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult>
-  multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult>
-  search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
-  sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult>
-  getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult>
-  getStream(pattern: TSRdfPattern, opts: TSGetOpts): Promise<TSRdfQuadStreamResult>
+  del(quad: TSRdfQuad, opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  multiDel(quads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts?: TSEmptyOpts): Promise<TSRdfVoidResult>
+  search(stages: TSRdfSearchStage[], opts?: TSSearchOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult>
+  sparql(query: string, opts?: TSSparqlOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult>
+  getApproximateSize(pattern: TSRdfPattern, opts?: TSGetOpts): Promise<TSApproximateSizeResult>
+  getStream(pattern: TSRdfPattern, opts?: TSGetOpts): Promise<TSRdfQuadStreamResult>
   putStream(source: TSReadable<TSRdfQuad>, opts?: TSPutStreamOpts): Promise<TSRdfVoidResult>
   delStream(source: TSReadable<TSRdfQuad>, opts?: TSDelStreamOpts): Promise<TSRdfVoidResult>
-  searchStream(stages: TSRdfSearchStage[], opts?: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
-  sparqlStream(query: string, opts?: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult>
+  searchStream(stages: TSRdfSearchStage[], opts?: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
+  sparqlStream(query: string, opts?: TSSparqlOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult>
 }

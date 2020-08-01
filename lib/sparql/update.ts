@@ -6,7 +6,7 @@ import {
   TSRdfQuadStreamResult,
   TSRdfStore,
   TSRdfVoidResult,
-  TSResultType,
+  TSResultType, TSSparqlOpts,
   TSTermName
 } from '../types/index.js';
 import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
@@ -15,7 +15,7 @@ import {consumeOneByOne, termNames, waitForEvent} from '../utils/index.js';
 import {handleSparqlSelect, TSHandleSparqlSelectOpts}  from './select.js';
 import {bgpTripleToQuad, graphTripleToQuad, sparqlPatternToPatterns} from './utils.js';
 
-const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperation, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
+const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperation, opts?: TSSparqlOpts): Promise<TSRdfVoidResult> => {
   const quads: TSRdfQuad[] = [];
   if ('insert' in update && Array.isArray(update.insert)) {
     update.insert.forEach((sparqlQuadPattern: Quads) => {
@@ -36,7 +36,7 @@ const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperati
   return { type: TSResultType.VOID };
 };
 
-const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
+const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts?: TSEmptyOpts): Promise<TSRdfVoidResult> => {
   const quads: TSRdfQuad[] = [];
   if ('delete' in update && Array.isArray(update.delete)) {
     update.delete.forEach((sparqlQuadPattern: Quads) => {
@@ -57,14 +57,14 @@ const handleSparqlDelete = async (store: TSRdfStore, update: InsertDeleteOperati
   return { type: TSResultType.VOID };
 };
 
-const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
+const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteOperation, opts?: TSSparqlOpts): Promise<TSRdfVoidResult> => {
   const deletePatterns = update.delete
     ? update.delete.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
     : [];
   const insertPatterns = update.insert
     ? update.insert.flatMap(pattern => sparqlPatternToPatterns(store, pattern))
     : [];
-  const selectOpts: TSHandleSparqlSelectOpts = {};
+  const selectOpts: TSHandleSparqlSelectOpts = opts ? { ...opts } : {};
   selectOpts.construct = { patterns: [...deletePatterns, ...insertPatterns] };
   const results = <TSRdfQuadStreamResult>await handleSparqlSelect(store, { where: update.where }, selectOpts);
   let i = 0;
@@ -88,7 +88,7 @@ const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteO
   return { type: TSResultType.VOID };
 };
 
-export const handleSparqlUpdate = async (store: TSRdfStore, parsed: Update, opts: TSEmptyOpts): Promise<TSRdfVoidResult> => {
+export const handleSparqlUpdate = async (store: TSRdfStore, parsed: Update, opts?: TSSparqlOpts): Promise<TSRdfVoidResult> => {
   const { updates } = parsed;
   if (updates.length > 1) {
     throw new Error(`Unsupported number of update groups in query (> 1)`);

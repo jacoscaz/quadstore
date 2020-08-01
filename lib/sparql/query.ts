@@ -1,10 +1,16 @@
 
 import {handleSparqlSelect} from './select.js';
-import {TSEmptyOpts, TSRdfBindingStreamResult, TSRdfQuadStreamResult, TSRdfStore} from '../types/index.js';
+import {
+  TSEmptyOpts,
+  TSRdfBindingStreamResult,
+  TSRdfQuadStreamResult,
+  TSRdfStore,
+  TSSparqlOpts
+} from '../types/index.js';
 import {Query} from 'sparqljs';
 import {handleSparqlConstruct} from './construct';
 
-export const handleSparqlQuery = async (store: TSRdfStore, parsed: Query, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
+export const handleSparqlQuery = async (store: TSRdfStore, parsed: Query, opts?: TSSparqlOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
   switch (parsed.queryType) {
     case 'SELECT':
       return await handleSparqlSelect(store, parsed, opts);

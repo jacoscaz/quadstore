@@ -52,7 +52,8 @@ import {
   TSReadable,
   TSResultType,
   TSSearchStage,
-  TSStoreOpts, TSDelStreamOpts,
+  TSStoreOpts,
+  TSDelStreamOpts, TSSparqlOpts, TSSearchOpts,
 } from './types/index.js';
 
 class RdfStore extends EventEmitter implements TSRdfStore, Store {
@@ -156,7 +157,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
-  async sparql(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult> {
+  async sparql(query: string, opts?: TSSparqlOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult|TSRdfVoidResult> {
     if (isNil(opts)) opts = {};
     assert(isString(query), 'The "query" argument is not an array.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
@@ -217,7 +218,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return { type: results.type, items, sorting: results.sorting };
   }
 
-  async search(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
+  async search(stages: TSRdfSearchStage[], opts: TSSearchOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
     const importedStages: TSSearchStage[] = stages.map(stage => importSearchStage(stage, this.quadstore.defaultGraph));
     const result = await this.quadstore.search(importedStages, opts);
     switch (result.type) {
@@ -263,7 +264,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     return await this.quadstore.delStream(importedQuadsIterator, opts);
   }
 
-  async searchStream(stages: TSRdfSearchStage[], opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
+  async searchStream(stages: TSRdfSearchStage[], opts: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (isNil(opts)) opts = {};
     const importedStages: TSSearchStage[] = stages.map(stage => importSearchStage(stage, this.quadstore.defaultGraph));
     const results = await this.quadstore.searchStream(importedStages, opts);
@@ -285,7 +286,7 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
     }
   }
 
-  async sparqlStream(query: string, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult> {
+  async sparqlStream(query: string, opts?: TSSparqlOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult> {
     if (isNil(opts)) opts = {};
     return await sparqlStream(this, query, opts);
   }

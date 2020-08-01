@@ -7,7 +7,7 @@ import {
   TSRdfBindingStreamResult,
   TSRdfQuadStreamResult,
   TSRdfStore,
-  TSRdfVoidResult,
+  TSRdfVoidResult, TSSparqlOpts,
 } from '../types/index.js';
 
 const sparqlParser = new SparqlParser();
@@ -16,7 +16,7 @@ export const parse = (query: string): SparqlQuery => {
   return sparqlParser.parse(query);
 };
 
-export const sparqlStream = async (store: TSRdfStore, query: string, opts: TSEmptyOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult|TSRdfVoidResult> => {
+export const sparqlStream = async (store: TSRdfStore, query: string, opts?: TSSparqlOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult|TSRdfVoidResult> => {
   const parsed: SparqlQuery = parse(query);
   switch (parsed.type) {
     case 'query':

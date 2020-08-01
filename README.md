@@ -293,8 +293,8 @@ Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties:
 #### QuadStore.prototype.search()
 
     const pipeline = [
-      {subject: '?s', predicate: 'p1', object: '?o'},
-      {subject: '?s', predicate: 'p2', object: 'o2'},
+      { type: 'bgp', pattern: {subject: '?s', predicate: 'p1', object: '?o'} },
+      { type: 'bgp', pattern: {subject: '?s', predicate: 'p2', object: 'o2'} },
       { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
     ];
     const { items } = await store.search(pipeline);
@@ -372,8 +372,8 @@ See [QuadStore.prototype.get()](#quadstoreprototypeget).
 #### QuadStore.prototype.searchStream()
 
     const pipeline = [
-      {subject: '?s', predicate: 'p1', object: '?o'},
-      {subject: '?s', predicate: 'p2', object: 'o2'},
+      { type: 'bgp', pattern: {subject: '?s', predicate: 'p1', object: '?o'} },
+      { type: 'bgp', pattern: {subject: '?s', predicate: 'p2', object: 'o2'} },
       { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
     ];
     const { iterator } = await store.searchStream(pipeline);
@@ -471,6 +471,13 @@ const { type, items } = await store.sparql(`
   SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
 `);
 ```
+
+The `sparql()` also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.defaultGraphMode`: this can be set to either `default` or `merge` and
+  allows client to specify whether the default graph used in queries should be
+  the actual default graph or the union of all graphs present in the database.
 
 #### RdfStore.prototype.sparqlStream()
 

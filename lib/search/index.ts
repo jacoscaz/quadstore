@@ -18,7 +18,7 @@ import {
   TSQuadStreamResult,
   TSResultType,
   TSSearchStage,
-  TSSearchStageType,
+  TSSearchStageType, TSSearchOpts,
   TSSimplePattern,
   TSTermName,
   TSTermsToVarsMap,
@@ -30,9 +30,9 @@ import QuadStore from '../quadstore.js';
 import {replaceBindingInPattern} from './construct.js';
 
 
-const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
+const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
   const {variables, pattern, termsToVarsMap} = parsedPattern;
-  const results = await QuadStore.prototype.getStream.call(store, pattern, {});
+  const results = await store.getStream(pattern, opts);
   const sorting: TSTermName[] = results.sorting.reduce((acc: TSTermName[], termName: TSTermName) => {
     if (termsToVarsMap[termName]) {
       // @ts-ignore
@@ -56,7 +56,7 @@ const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpS
   return { type: TSResultType.BINDINGS, iterator, sorting, variables };
 };
 
-const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
+const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
   const nextCommonVarsToTermsMap: TSVarsToTermsMap = {};
   const nextAdditionalSortingTerms: string[] = [];
   for (const variableName in nextStage.variables) {
@@ -82,7 +82,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
       termsToVarsMap: nextStage.termsToVarsMap,
       varsToTermsMap: nextStage.varsToTermsMap,
       variables: nextStage.variables,
-    });
+    }, opts);
     // @ts-ignore
     const comparator = QuadStore.prototype._getQuadComparator.call(store, nextSorting);
     // @ts-ignore
@@ -164,8 +164,8 @@ const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
   }
 }
 
-const applyBgpSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage): Promise<TSBindingStreamResult> => {
-  return await nestedLoopJoin(store, prevResult, nextStage);
+const applyBgpSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
+  return await nestedLoopJoin(store, prevResult, nextStage, opts);
 }
 
 const applyFilterSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedFilterSearchStage): Promise<TSBindingStreamResult> => {
@@ -198,13 +198,13 @@ const applyConstructSearchStage = async (store: QuadStore, prevResult: TSBinding
   };
 }
 
-const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
+const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage, opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   switch (nextStage.type) {
     case TSSearchStageType.BGP:
       if (prevResult.type !== TSResultType.BINDINGS) {
         throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
       }
-      return await applyBgpSearchStage(store, prevResult, nextStage);
+      return await applyBgpSearchStage(store, prevResult, nextStage, opts);
     case TSSearchStageType.LT:
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
@@ -224,7 +224,7 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
   }
 }
 
-export const searchStream = async (store: QuadStore, stages: TSSearchStage[]): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
+export const searchStream = async (store: QuadStore, stages: TSSearchStage[], opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   const parsedStages = stages.map(parseSearchStage);
   // TODO: optimization pass including pushing filters down to nearest BGP stage
   if (parsedStages.length < 1) {
@@ -235,8 +235,10 @@ export const searchStream = async (store: QuadStore, stages: TSSearchStage[]): P
   }
   return await pReduce(
     parsedStages.slice(1),
-    applySearchStage.bind(null, store),
-    await getBindingsIterator(store, parsedStages[0]),
+    (prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage) => {
+      return applySearchStage(store, prevResult, nextStage, opts);
+    },
+    await getBindingsIterator(store, parsedStages[0], opts),
   );
 };
 

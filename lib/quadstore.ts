@@ -18,7 +18,10 @@ import {
   TSStore,
   TSStoreOpts,
   TSTermName,
-  TSVoidResult, TSDelStreamOpts
+  TSVoidResult,
+  TSDelStreamOpts,
+  TSSearchOpts,
+  TSGetOpts,
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
@@ -202,7 +205,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.VOID };
   }
 
-  async get(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadArrayResult> {
+  async get(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadArrayResult> {
     if (isNil(opts)) opts = {};
     if (isNil(pattern)) pattern = {};
     assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
@@ -212,7 +215,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.QUADS, items: quads, sorting: results.sorting };
   }
 
-  async search(stages: TSSearchStage[], opts: TSEmptyOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
+  async search(stages: TSSearchStage[], opts: TSSearchOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
     if (isNil(opts)) opts = {};
     assert(isArray(stages), 'The "patterns" argument is not an array.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
@@ -247,7 +250,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async getStream(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSQuadStreamResult> {
+  async getStream(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadStreamResult> {
     if (isNil(pattern)) pattern = {};
     if (isNil(opts)) opts = {};
     assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
@@ -255,11 +258,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
     return await getStream(this, pattern, opts);
   }
 
-  async searchStream(stages: TSSearchStage[], opts?: TSEmptyOpts) {
+  async searchStream(stages: TSSearchStage[], opts?: TSSearchOpts) {
     if (isNil(opts)) opts = {};
     assert(isArray(stages), 'The "patterns" argument is not an array.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
-    return await searchStream(this, stages);
+    return await searchStream(this, stages, opts);
   }
 
   async putStream(source: TSReadable<TSQuad>, opts?: TSPutStreamOpts): Promise<TSVoidResult> {

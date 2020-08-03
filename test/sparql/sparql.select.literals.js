@@ -13,7 +13,7 @@ const xsdBoolean = xsd + 'boolean';
 const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
 module.exports = () => {
-  describe.only('literal filters', () => {
+  describe('literal filters', () => {
 
     beforeEach(async function () {
       const quads = [

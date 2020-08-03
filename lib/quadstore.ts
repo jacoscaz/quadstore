@@ -304,7 +304,7 @@ class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  protected _getTermValueComparator(): (a: string, b: string) => -1|0|1 {
+  getTermComparator(): (a: string, b: string) => -1|0|1 {
     return (a: string, b: string) => {
       if (a < b) return -1;
       else if (a === b) return 0;
@@ -312,12 +312,11 @@ class QuadStore extends events.EventEmitter implements TSStore {
     }
   }
 
-  protected _getQuadComparator(_termNames: TSTermName[]) {
-    if (!_termNames) _termNames = termNames;
-    const valueComparator = this._getTermValueComparator();
+  getQuadComparator(_termNames: TSTermName[] = termNames): (a: TSQuad, b: TSQuad) => -1|0|1 {
+    const termComparator = this.getTermComparator();
     return (a: TSQuad, b: TSQuad) => {
       for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
-        r = valueComparator(a[_termNames[i]], b[_termNames[i]]);
+        r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }
       return 0;

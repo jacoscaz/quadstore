@@ -201,6 +201,8 @@ export interface TSStore extends EventEmitter {
   putStream(source: TSReadable<TSQuad>, opts?: TSPutStreamOpts): Promise<TSVoidResult>
   delStream(source: TSReadable<TSQuad>, opts?: TSDelStreamOpts): Promise<TSVoidResult>
   searchStream(stages: TSSearchStage[], opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult>
+  getTermComparator(): (a: string, b: string) => -1|0|1
+  getQuadComparator(termNames?: TSTermName[]): (a: TSQuad, b: TSQuad) => -1|0|1
 }
 
 
@@ -359,4 +361,6 @@ export interface TSRdfStore extends EventEmitter {
   delStream(source: TSReadable<TSRdfQuad>, opts?: TSDelStreamOpts): Promise<TSRdfVoidResult>
   searchStream(stages: TSRdfSearchStage[], opts?: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult>
   sparqlStream(query: string, opts?: TSSparqlOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult|TSRdfVoidResult>
+  getTermComparator(): (a: Term, b: Term) => -1|0|1
+  getQuadComparator(termNames?: TSTermName[]): (a: Quad, b: Quad) => -1|0|1
 }

@@ -31,10 +31,10 @@ module.exports = () => {
       await store.multiPut(quadsArray);
       await store.multiPatch(oldQuads, newQuads);
       const { items: quads } = await store.get({});
-      newQuads.sort(store._getQuadComparator());
-      quads.sort(store._getQuadComparator());
+      newQuads.sort(store.getQuadComparator());
+      quads.sort(store.getQuadComparator());
       should(quads).have.length(expected.length);
-      should(quads).be.deepEqual(expected.sort(store._getQuadComparator()));
+      should(quads).be.deepEqual(expected.sort(store.getQuadComparator()));
     });
 
   });

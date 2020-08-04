@@ -2,7 +2,8 @@
 'use strict';
 
 const _ = require('../dist-cjs/lib/utils');
-const should = require('should');
+const should = require('./should');
+const { quadArrayEqual } = require('./utils');
 
 module.exports = () => {
 
@@ -31,10 +32,7 @@ module.exports = () => {
       await store.multiPut(quadsArray);
       await store.multiPatch(oldQuads, newQuads);
       const { items: quads } = await store.get({});
-      newQuads.sort(store.getQuadComparator());
-      quads.sort(store.getQuadComparator());
-      should(quads).have.length(expected.length);
-      should(quads).be.deepEqual(expected.sort(store.getQuadComparator()));
+      should(quads).be.equalToQuadArray(expected, store);
     });
 
   });

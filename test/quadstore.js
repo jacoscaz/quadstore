@@ -26,6 +26,7 @@ module.exports = () => {
     require('./quadstore.prototype.getstream')();
     require('./quadstore.prototype.searchstream')();
     require('./quadstore.prototype.put')();
+    require('./quadstore.prototype.multiput')();
     require('./quadstore.prototype.del')();
     require('./quadstore.prototype.patch')();
 

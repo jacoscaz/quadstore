@@ -55,7 +55,7 @@ import {
   TSResultType,
   TSSearchStage,
   TSStoreOpts,
-  TSDelStreamOpts, TSSparqlOpts, TSSearchOpts, TSTermName,
+  TSDelStreamOpts, TSSparqlOpts, TSSearchOpts, TSTermName, TSRdfBinding,
 } from './types/index.js';
 
 class RdfStore extends EventEmitter implements TSRdfStore, Store {
@@ -317,6 +317,17 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
   getQuadComparator(_termNames: TSTermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) {
     const termComparator = this.getTermComparator();
     return (a: Quad, b: Quad) => {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+        r = termComparator(a[_termNames[i]], b[_termNames[i]]);
+        if (r !== 0) return r;
+      }
+      return 0;
+    };
+  }
+
+  getBindingComparator(_termNames: string[]): (a: TSRdfBinding, b: TSRdfBinding) => -1|0|1 {
+    const termComparator = this.getTermComparator();
+    return (a: TSRdfBinding, b: TSRdfBinding) => {
       for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;

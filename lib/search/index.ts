@@ -2,7 +2,7 @@ import pReduce from 'p-reduce';
 import {termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
 import SortIterator from './iterators/sort-iterator.js';
-import ai from 'asynciterator';
+import { AsyncIterator } from 'asynciterator';
 import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator.js';
 import {
   TSBgpSearchStage,
@@ -40,7 +40,7 @@ const getBindingsIterator = async (store: QuadStore, parsedPattern: TSParsedBgpS
     }
     return acc;
   }, <TSTermName[]>[]);
-  let iterator: ai.AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void) {
+  let iterator: AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void) {
     const binding: TSBinding = {};
     for (const term in termsToVarsMap) {
       if (termsToVarsMap.hasOwnProperty(term)) {
@@ -70,7 +70,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
   }
   const joinedSorting: string[] = [...prevResult.sorting, ...nextAdditionalSortingTerms];
   const nextSorting = joinedSorting.filter(variableName => nextStage.variables.hasOwnProperty(variableName));
-  const getInnerIterator = async (outerBinding: TSBinding): Promise<ai.AsyncIterator<TSBinding>> => {
+  const getInnerIterator = async (outerBinding: TSBinding): Promise<AsyncIterator<TSBinding>> => {
     const innerPattern: TSSimplePattern = {...nextStage.pattern};
     for (const variableName in nextCommonVarsToTermsMap) {
       innerPattern[nextCommonVarsToTermsMap[variableName]] = outerBinding[variableName];
@@ -83,10 +83,8 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
       varsToTermsMap: nextStage.varsToTermsMap,
       variables: nextStage.variables,
     }, opts);
-    // @ts-ignore
-    const comparator = QuadStore.prototype._getQuadComparator.call(store, nextSorting);
-    // @ts-ignore
-    return new SortIterator<IBaseBinding>(<ai.AsyncIterator<IBaseBinding>>iterator, comparator);
+    const comparator = store.getBindingComparator(nextSorting);
+    return new SortIterator(iterator, comparator);
   };
   const mergeItems = (firstBinding: TSBinding, secondBinding: TSBinding) => ({
     ...firstBinding,

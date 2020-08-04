@@ -1,79 +1,41 @@
 
-'use strict';
-
-const _ = require('../dist-cjs/lib/utils');
-const should = require('should');
+const should = require('./should');
 
 module.exports = () => {
 
   describe('QuadStore.prototype.put()', () => {
 
-    it('should store a single quad correctly (as object) (cb)',  async function () {
+    it('should store a single quad', async function () {
       const store = this.store;
-      const newQuad = { subject: 's', predicate: 'p', object: 'o', graph: 'c' };
+      const newQuad = {subject: 's', predicate: 'p', object: 'o', graph: 'c'};
       await store.put(newQuad);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(1);
-      should(foundQuads[0]).deepEqual(newQuad);
+      const {items: foundQuads} = await store.get({});
+      should(foundQuads).be.equalToQuadArray([newQuad], store);
     });
 
-    it('should store a single quad correctly (as array) (promise)', async function () {
-      const store = this.store;
-      const newQuads = [{ subject: 's', predicate: 'p', object: 'o', graph: 'c' }];
-      await store.multiPut(newQuads);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(1);
-      should(foundQuads[0]).deepEqual(newQuads[0]);
-    });
-
-    it('should store multiple quads correctly (cb)',  async function () {
+    it('should store multiple quads', async function () {
       const store = this.store;
       const newQuads = [
-        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
-        { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
+        {subject: 's', predicate: 'p', object: 'o', graph: 'c'},
+        {subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2'},
       ];
-      await store.multiPut(newQuads);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(2);
-      should(foundQuads[0]).deepEqual(newQuads[0]);
-      should(foundQuads[1]).deepEqual(newQuads[1]);
+      await store.put(newQuads[0]);
+      await store.put(newQuads[1]);
+      const {items: foundQuads} = await store.get({});
+      should(foundQuads).be.equalToQuadArray(newQuads, store);
     });
 
-    it('should store multiple quads correctly (promise)', async function () {
+    it('should not duplicate quads', async function () {
       const store = this.store;
       const newQuads = [
-        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
-        { subject: 's1', predicate: 'p1', object: 'o1', graph: 'c1' }
+        {subject: 's', predicate: 'p', object: 'o', graph: 'c'},
+        {subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2'},
       ];
-      await store.multiPut(newQuads);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(2);
-      should(foundQuads[0]).deepEqual(newQuads[0]);
-      should(foundQuads[1]).deepEqual(newQuads[1]);
-    });
-
-    it('should not duplicate quads (cb)',  async function () {
-      const store = this.store;
-      const newQuads = [
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
-      ];
-      await store.multiPut(newQuads);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(1);
-      should(foundQuads[0]).deepEqual(newQuads[0]);
-    });
-
-    it('should not duplicate quads (promise)', async function () {
-      const store = this.store;
-      const newQuads = [
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' }
-      ];
-      await store.multiPut(newQuads);
-      const { items: foundQuads } = await store.get({});
-      should(foundQuads).have.length(1);
-      should(foundQuads[0]).deepEqual(newQuads[0]);
+      await store.put(newQuads[0]);
+      await store.put(newQuads[1]);
+      await store.put(newQuads[1]);
+      const {items: foundQuads} = await store.get({});
+      should(foundQuads).be.equalToQuadArray(newQuads, store);
     });
 
   });

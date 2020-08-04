@@ -21,7 +21,7 @@ import {
   TSVoidResult,
   TSDelStreamOpts,
   TSSearchOpts,
-  TSGetOpts,
+  TSGetOpts, TSBinding,
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
@@ -315,6 +315,17 @@ class QuadStore extends events.EventEmitter implements TSStore {
   getQuadComparator(_termNames: TSTermName[] = termNames): (a: TSQuad, b: TSQuad) => -1|0|1 {
     const termComparator = this.getTermComparator();
     return (a: TSQuad, b: TSQuad) => {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+        r = termComparator(a[_termNames[i]], b[_termNames[i]]);
+        if (r !== 0) return r;
+      }
+      return 0;
+    };
+  }
+
+  getBindingComparator(_termNames: string[]): (a: TSBinding, b: TSBinding) => -1|0|1 {
+    const termComparator = this.getTermComparator();
+    return (a: TSBinding, b: TSBinding) => {
       for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;

@@ -1,4 +1,4 @@
-import QuadStore from '../quadstore.js';
+import {QuadStore} from '../quadstore.js';
 import {TSEmptyOpts, TSGetOpts, TSGetStrategy, TSQuad} from '../types/index.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
 

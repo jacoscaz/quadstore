@@ -5,7 +5,7 @@ import {
   TSRange,
   TSTermName,
 } from '../types/index.js';
-import QuadStore from '../quadstore.js';
+import {QuadStore} from '../quadstore.js';
 import {isSimpleObject} from '../utils/index';
 
 

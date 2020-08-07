@@ -45,7 +45,7 @@ import {
 import {getApproximateSize, getStream} from './get/index.js';
 import {searchStream} from './search/index.js';
 
-class QuadStore extends events.EventEmitter implements TSStore {
+export class QuadStore extends events.EventEmitter implements TSStore {
 
   readonly db: AbstractLevelDOWN;
   readonly abstractLevelDOWN: AbstractLevelDOWN;
@@ -404,5 +404,3 @@ class QuadStore extends events.EventEmitter implements TSStore {
   // };
 
 }
-
-export default QuadStore;

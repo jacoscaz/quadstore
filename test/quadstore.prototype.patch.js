@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('../dist-cjs/lib/utils');
+const _ = require('../dist/cjs/lib/utils');
 const should = require('./should');
 const { quadArrayEqual } = require('./utils');
 

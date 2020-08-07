@@ -1,7 +1,7 @@
 
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist-cjs/lib/types');
+const {TSResultType} = require('../../dist/cjs/lib/types');
 
 module.exports = () => {
   describe('SELECT', () => {

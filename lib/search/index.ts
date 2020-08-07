@@ -26,7 +26,7 @@ import {
   TSVarsToTermsMap,
 } from '../types';
 
-import QuadStore from '../quadstore.js';
+import {QuadStore} from '../quadstore.js';
 import {replaceBindingInPattern} from './construct.js';
 
 

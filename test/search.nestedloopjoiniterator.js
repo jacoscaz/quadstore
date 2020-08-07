@@ -1,8 +1,8 @@
 const AsyncIterator = require('asynciterator');
-const NestedLoopJoinIterator = require('../dist-cjs/lib/search/iterators/nested-loop-join-iterator').default;
+const NestedLoopJoinIterator = require('../dist/cjs/lib/search/iterators/nested-loop-join-iterator').default;
 const should = require('should');
 const utils = require('./utils');
-const { streamToArray } = require('../dist-cjs/lib/utils');
+const { streamToArray } = require('../dist/cjs/lib/utils');
 
 module.exports = () => {
 

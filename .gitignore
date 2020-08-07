@@ -327,8 +327,8 @@ $RECYCLE.BIN/
 #
 
 # Dist directories built via the Typescript compiler
-dist-esm
-dist-cjs
+dist/esm
+dist/cjs
 
 # Optional rdf-test-suite cache directory
 .rdf-test-suite-cache

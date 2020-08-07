@@ -1,4 +1,4 @@
-import QuadStore from '../quadstore.js';
+import {QuadStore} from '../quadstore.js';
 import {
   TSApproximateSizeResult,
   TSDefaultGraphMode,

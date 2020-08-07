@@ -11,7 +11,7 @@ import {
 } from './utils/index.js';
 import assert from 'assert';
 import {EventEmitter} from 'events';
-import QuadStore from './quadstore.js';
+import {QuadStore} from './quadstore.js';
 import {
   importSimpleTerm,
   importPattern,
@@ -58,7 +58,7 @@ import {
   TSDelStreamOpts, TSSparqlOpts, TSSearchOpts, TSTermName, TSRdfBinding,
 } from './types/index.js';
 
-class RdfStore extends EventEmitter implements TSRdfStore, Store {
+export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   readonly quadstore: QuadStore;
   readonly dataFactory: DataFactory;
@@ -337,5 +337,3 @@ class RdfStore extends EventEmitter implements TSRdfStore, Store {
   }
 
 }
-
-export default RdfStore;

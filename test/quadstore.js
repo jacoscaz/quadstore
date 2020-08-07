@@ -1,8 +1,8 @@
 
 'use strict';
 
-const _ = require('../dist-cjs/lib/utils');
-const utils = require('../dist-cjs/lib/utils');
+const _ = require('../dist/cjs/lib/utils');
+const utils = require('../dist/cjs/lib/utils');
 const QuadStore = require('..').QuadStore;
 
 module.exports = () => {

@@ -142,11 +142,11 @@ We're currently working on the following features:
 - expanding support for complex searches;
 - expanding support for SPARQL queries;
 - pushing filters down to the database;
+- quad generation, see [generation in LevelGraph][r2]
 - general performance improvements.
 
 We're also evaluating the following features for future developments:
 
-- quad generation, see [generation in LevelGraph][r2]
 - [RDF*][rdfstar-blog] (see also [these slides][rdfstar-slides])
 
 [r1]: https://github.com/levelgraph/levelgraph#searches

@@ -24,4 +24,4 @@ before_install:
   - export LINKXX="g++-4.9";
 
 before_script:
-  - npm run ts:build:cjs
+  - npm run ts:build

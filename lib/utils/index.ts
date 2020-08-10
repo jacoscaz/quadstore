@@ -3,6 +3,7 @@ import {EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
+import {pReduce} from './p-reduce';
 
 export const termNames: TSTermName[] = [
   TSTermName.SUBJECT,
@@ -171,3 +172,4 @@ export const consumeOneByOne = async <T>(iterator: AsyncIterator<T>, onEachItem:
 };
 
 export { flatMap };
+export { pReduce };

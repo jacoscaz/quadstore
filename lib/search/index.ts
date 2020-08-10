@@ -1,5 +1,5 @@
-import pReduce from 'p-reduce';
-import {termNames} from '../utils/index.js';
+
+import {termNames, pReduce} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
 import SortIterator from './iterators/sort-iterator.js';
 import { AsyncIterator } from 'asynciterator';

@@ -537,19 +537,14 @@ Consumes the stream removing each incoming quad.
 Removes all quads matching the provided terms.
 Supports [range-based matching](#rdf-range-matching).
 
-## Build systems
-
-`quadstore` is built targeting both the ES and CommonJS module specifications.
-Modern runtimes and build systems should automatically load the correct set of
-modules as long as they are able to understand the `type`, `main`, `module` and
-`exports` properties of `package.json` files as explained in [the official
-Node.js documentation on ES modules][n-esm]. Tree-shaking is supported via the 
-ESM build. 
-
 ## Browser usage
 
 The [`level-js`](https://github.com/Level/level-js) backend for levelDB offers
-support for browser-side persistent storage. 
+support for browser-side persistent storage. Any modern build system / bundler
+should be able to work with Quadstore. Support for tree-shaking will come when
+we figure out a way to [build an ES version][issues-97].
+
+[issues-97]: https://github.com/beautifulinteractions/node-quadstore/issues/97 
 
 ## Performance
 

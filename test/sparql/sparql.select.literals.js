@@ -1,8 +1,8 @@
 
-const _ = require('../../dist/cjs/lib/utils');
+const _ = require('../../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist/cjs/lib/types');
+const {TSResultType} = require('../../dist/lib/types');
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';

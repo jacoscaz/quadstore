@@ -1,11 +1,11 @@
 
 'use strict';
 
-const _ = require('../dist/cjs/lib/utils');
+const _ = require('../dist/lib/utils');
 const should = require('should');
-const utils = require('../dist/cjs/lib/utils');
+const utils = require('../dist/lib/utils');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../dist/cjs/lib/types');
+const {TSResultType} = require('../dist/lib/types');
 
 
 module.exports = () => {

@@ -1,10 +1,10 @@
 
 'use strict';
 
-const _ = require('../dist/cjs/lib/utils');
+const _ = require('../dist/lib/utils');
 const should = require('should');
-const utils = require('../dist/cjs/lib/utils');
-const { TSResultType } = require('../dist/cjs/lib/types');
+const utils = require('../dist/lib/utils');
+const { TSResultType } = require('../dist/lib/types');
 
 module.exports = () => {
 

@@ -1,5 +1,5 @@
 
-const {fpstringEncode} = require('../dist/cjs/lib/rdf/fpstring');
+const {fpstringEncode} = require('../dist/lib/rdf/fpstring');
 
 /*
  * https://stackoverflow.com/a/12646864

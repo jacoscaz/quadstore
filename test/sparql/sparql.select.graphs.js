@@ -1,8 +1,8 @@
 
-const _ = require('../../dist/cjs/lib/utils');
+const _ = require('../../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType, TSDefaultGraphMode} = require('../../dist/cjs/lib/types');
+const {TSResultType, TSDefaultGraphMode} = require('../../dist/lib/types');
 
 module.exports = () => {
   describe('named graphs', () => {

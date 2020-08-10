@@ -6,8 +6,8 @@ const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
 const util = require('util');
-const utils = require('../dist/cjs/lib/utils');
-const RdfStore = require('../dist/cjs').RdfStore;
+const utils = require('../dist/lib/utils');
+const RdfStore = require('../dist').RdfStore;
 const leveldown = require('leveldown');
 const dataFactory = require('n3').DataFactory;
 const childProcess = require('child_process');
@@ -55,8 +55,8 @@ const remove = util.promisify(fs.remove.bind(fs));
   const streamParser = new n3.StreamParser({ format });
 
   const beforeTime = Date.now();
-  // await store.putStream(fileReader.pipe(streamParser));
-  await store.putStream(fileReader.pipe(streamParser), { batchSize: 10000 });
+  await store.putStream(fileReader.pipe(streamParser));
+  // await store.putStream(fileReader.pipe(streamParser), { batchSize: 1 });
   const afterTime = Date.now();
 
   await store.close();

@@ -225,14 +225,23 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     const result = await this.quadstore.search(importedStages, opts);
     switch (result.type) {
       case TSResultType.QUADS:
-        return {...result, items: result.items.map(quad => exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory))};
+        return {
+          ...result,
+          items: result.items.map(
+            quad => exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory)
+          ),
+        };
       case TSResultType.BINDINGS:
-        return {...result, items: result.items.map(binding => exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory))};
+        return {
+          ...result,
+          items: result.items.map(
+            binding => exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory)
+          ),
+        };
       default:
         // @ts-ignore
         throw new Error(`Unsupported result type "${result.type}"`);
     }
-
   }
 
 
@@ -281,7 +290,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
         iterator = results.iterator.map((quad: TSQuad) => {
           return exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
         });
-        return { ...results, iterator };
+        return { ...results, iterator };
       default:
         // @ts-ignore
         throw new Error(`Unsupported result type "${results.type}"`);
@@ -308,16 +317,16 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   getTermComparator(): (a: Term, b: Term) => (-1 | 0 | 1) {
     return (a: Term, b: Term): -1|0|1 => {
-      const _a = importSimpleTerm(a, false, this.quadstore.defaultGraph);
-      const _b = importSimpleTerm(b, false, this.quadstore.defaultGraph);
-      return _a < _b ? -1 : (a === b ? 0 : 1);
+      return a.termType === b.termType
+        ? a.value < b.value ? -1 : (a.value === b.value ? 0 : 1)
+        : a.termType < b.termType ? -1 : (a.termType === b.termType ? 0 : 1)
     };
   }
 
   getQuadComparator(_termNames: TSTermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) {
     const termComparator = this.getTermComparator();
     return (a: Quad, b: Quad) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }
@@ -328,7 +337,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
   getBindingComparator(_termNames: string[]): (a: TSRdfBinding, b: TSRdfBinding) => -1|0|1 {
     const termComparator = this.getTermComparator();
     return (a: TSRdfBinding, b: TSRdfBinding) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }

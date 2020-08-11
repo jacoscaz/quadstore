@@ -90,7 +90,7 @@ export const exportTerm = (term: string, isGraph: boolean, defaultGraphValue: st
 
 export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue: string): string => {
   if (!term) {
-    if (isGraph) {
+    if (isGraph) {
       return defaultGraphValue;
     }
     throw new Error(`Nil non-graph term, cannot import.`);

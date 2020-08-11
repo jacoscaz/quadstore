@@ -43,13 +43,29 @@ module.exports = () => {
     });
 
 
-    it('should select with a single pattern', async function () {
-      const results = await this.store.sparql(`
-        CONSTRUCT { ?s <http://ex.com/p2> <http://ex.com/o2> . }
+    it('should construct with a single pattern', async function () {
+      const result = await this.store.sparql(`
+        CONSTRUCT { ?s <http://ex.com/p3> <http://ex.com/o3> . }
         WHERE { ?s <http://ex.com/p> <http://ex.com/o>. }
       `);
-      should(results.type).equal(TSResultType.QUADS);
-      should(results.items).have.length(2);
+      should(result.type).equal(TSResultType.QUADS);
+      should(result.items).be.equalToQuadArray(
+        [
+          factory.quad(
+            factory.namedNode('http://ex.com/s'),
+            factory.namedNode('http://ex.com/p3'),
+            factory.namedNode('http://ex.com/o3'),
+            factory.defaultGraph(),
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s2'),
+            factory.namedNode('http://ex.com/p3'),
+            factory.namedNode('http://ex.com/o3'),
+            factory.defaultGraph(),
+          ),
+        ],
+        this.store,
+      );
     });
 
 

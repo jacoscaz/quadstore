@@ -1,7 +1,7 @@
 
 const should = require('should');
 
-const equalToQuadArray = function (expected, store, message) {
+const equalToItemArray = function (expected, comparator, message) {
   this.params = {
     message,
     expected,
@@ -12,7 +12,6 @@ const equalToQuadArray = function (expected, store, message) {
   should(expected).be.an.Array();
   should(actual).be.an.Array();
   should(expected.length).eql(actual.length);
-  const comparator = store.getQuadComparator();
   const sortedActual = actual.slice();
   sortedActual.sort(comparator);
   const sortedExpected = actual.slice();
@@ -22,6 +21,17 @@ const equalToQuadArray = function (expected, store, message) {
   }
 };
 
+
+const equalToQuadArray = function (expected, store, message) {
+  return equalToItemArray.call(this, expected, store.getQuadComparator(), message);
+};
+
 should.Assertion.add('equalToQuadArray', equalToQuadArray, false);
+
+const equalToBindingArray = function (expected, store, variables, message) {
+  return equalToItemArray.call(this, expected, store.getBindingComparator(variables), message);
+};
+
+should.Assertion.add('equalToBindingArray', equalToBindingArray, false);
 
 module.exports = should;

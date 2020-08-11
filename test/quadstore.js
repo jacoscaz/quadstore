@@ -23,8 +23,8 @@ module.exports = () => {
 
     require('./quadstore.counting')();
     require('./quadstore.prototype.get')();
-    require('./quadstore.prototype.getstream')();
-    require('./quadstore.prototype.searchstream')();
+    require('./quadstore.prototype.search')();
+    require('./quadstore.prototype.search.construct')();
     require('./quadstore.prototype.put')();
     require('./quadstore.prototype.multiput')();
     require('./quadstore.prototype.del')();

@@ -2,44 +2,45 @@
 'use strict';
 
 import {
-  TSPutStreamOpts,
   TSApproximateSizeResult,
+  TSBinding,
   TSBindingArrayResult,
+  TSDelStreamOpts,
   TSEmptyOpts,
+  TSGetOpts,
   TSIndex,
   TSPattern,
+  TSPutStreamOpts,
   TSQuad,
   TSQuadArrayResult,
   TSQuadStreamResult,
-  TSRange,
   TSReadable,
   TSResultType,
+  TSSearchOpts,
   TSSearchStage,
   TSStore,
   TSStoreOpts,
   TSTermName,
   TSVoidResult,
-  TSDelStreamOpts,
-  TSSearchOpts,
-  TSGetOpts, TSBinding,
 } from './types/index.js';
 import assert from 'assert';
 import events from 'events';
 import levelup from 'levelup';
-import {TransformIterator} from 'asynciterator';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
 import {
+  consumeInBatches,
+  consumeOneByOne,
   genDefaultIndexes,
-  nanoid,
   isAbstractLevelDOWNInstance,
-  isObject,
-  isNil,
-  streamToArray,
   isArray,
+  isNil,
+  isObject,
   isReadableStream,
   isString,
-  serializeQuad, consumeInBatches, consumeOneByOne,
+  nanoid,
+  serializeQuad,
+  streamToArray,
   termNames,
 } from './utils/index.js';
 import {getApproximateSize, getStream} from './get/index.js';
@@ -221,11 +222,12 @@ export class QuadStore extends events.EventEmitter implements TSStore {
     assert(isObject(opts), 'The "opts" argument is not an object.');
     const results = await this.searchStream(stages, opts);
     switch (results.type) {
-      case TSResultType.BINDINGS: {
-        const bindings = await streamToArray(results.iterator);
-        return { ...results, type: results.type, items: bindings };
-      } break;
+      case TSResultType.QUADS:
+        return { ...results, items: await streamToArray(results.iterator) };
+      case TSResultType.BINDINGS:
+        return { ...results, items: await streamToArray(results.iterator) };
       default:
+        // @ts-ignore
         throw new Error(`Unsupported result type "${results.type}"`);
     }
   }
@@ -315,7 +317,7 @@ export class QuadStore extends events.EventEmitter implements TSStore {
   getQuadComparator(_termNames: TSTermName[] = termNames): (a: TSQuad, b: TSQuad) => -1|0|1 {
     const termComparator = this.getTermComparator();
     return (a: TSQuad, b: TSQuad) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }
@@ -326,7 +328,7 @@ export class QuadStore extends events.EventEmitter implements TSStore {
   getBindingComparator(_termNames: string[]): (a: TSBinding, b: TSBinding) => -1|0|1 {
     const termComparator = this.getTermComparator();
     return (a: TSBinding, b: TSBinding) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i <= n; i += 1) {
+      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
       }

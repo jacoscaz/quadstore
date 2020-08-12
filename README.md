@@ -44,7 +44,6 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
         - [RdfStore.prototype.import](#rdfstoreprototypeimport)
         - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
         - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
-- [Build systems](#build-systems)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)

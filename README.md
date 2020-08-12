@@ -1,12 +1,11 @@
 
-
 # QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg?branch=master)](https://travis-ci.org/beautifulinteractions/node-quadstore)
 
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
 
-A LevelDB-backed graph database for Node.js and the browser. 
-Written in Typescript, supports quads, RDF/JS interfaces and SPARQL queries.
+A LevelDB-backed graph database for Node.js and the browser, written in Typescript.
+Supports quads, RDF/JS interfaces and SPARQL queries.
 
 ## Table of contents
 
@@ -127,11 +126,13 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v7.0.1-alpha.3** available on NPM under the `alpha` tag or
+as `quadstore@7.0.1-alpha.3`
 
 - fully written in Typescript;
-- basic retrieval, update, insertion and removal of quads;
+- retrieval, update, insertion and removal of quads;
 - foundational support for complex searches;
+- foundational support for quad generation;
 - foundational support for SPARQL queries;
 - [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces.
 
@@ -158,8 +159,8 @@ We're also evaluating the following features for future developments:
 
 - uses [Semantic Versioning](https://semver.org), pre-releases are tagged
   accordingly;
-- the `master` branch is kept in sync with NPM and all development work happens
-  on the `devel` branch and/or issue-specific branches;
+- the `production` branch mirrors what is available under the `latest` tag on NPM;
+- the `master` branch is the active, development branch;
 - requires Node.js >= 10.0.0.
 
 ## Usage
@@ -462,9 +463,9 @@ values depending on each specific query:
   set to `"BINDINGS"`;
 - `CONSTRUCT` queries will result in objects objects having their `type`
   property set to `"QUADS"`;
-- `UPDATE` properties such as `INSERT DATA`, `DELETE DATA` and 
-  `INSERT/DELETE WHERE` queries will result in objects having their `type`
-  property set to `"VOID"`.
+- `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and 
+  `INSERT/DELETE WHERE` will result in objects having their `type` property set
+  to `"VOID"`.
   
 ```js
 const { type, items } = await store.sparql(`

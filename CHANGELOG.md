@@ -8,6 +8,7 @@
 - *[new]* added support for user-defined indexes
 - *[new]* added support for complex searches
 - *[new]* added support for basic SPARQL queries
+- **[breaking]** moved to using `master` as the development branch
 - **[breaking]** dropped support for matching terms in `del()` and `patch()`
   methods
 - **[breaking]** refactored `del()`, `put()` and `patch()` into single-quad and

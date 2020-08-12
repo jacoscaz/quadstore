@@ -1,9 +1,9 @@
 
 // https://github.com/rubensworks/rdf-test-suite.js/blob/master/lib/testcase/sparql/IQueryEngine.ts
 
-const enums = require('../lib/utils/enums');
-const sparql = require('../lib/sparql');
-const RdfStore = require('../').RdfStore;
+const types = require('../dist/lib/types');
+const sparql = require('../dist/lib/sparql');
+const RdfStore = require('../dist').RdfStore;
 const memdown = require('memdown');
 const dataFactory = require('@rdfjs/data-model');
 
@@ -12,12 +12,13 @@ const parse = async (queryString, options) => {
 };
 
 const query = async (data, queryString, options) => {
+
   const backend = memdown();
+
   const store = new RdfStore({
     backend,
     dataFactory,
   });
-
 
   const compareResults = (a, b) => {
     console.log(arguments);
@@ -31,11 +32,11 @@ const query = async (data, queryString, options) => {
     }
   }
 
-  await store.put(data);
+  await store.multiPut(data);
   const results = await store.sparql(queryString);
 
   switch (results.type) {
-    case enums.resultType.BINDINGS:
+    case types.TSResultType.BINDINGS:
       return {
         type: 'bindings',
         value: results.items,

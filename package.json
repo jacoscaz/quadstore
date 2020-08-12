@@ -18,7 +18,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "mocha ./test",
-    "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/",
+    "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t \"^((?!syn).)*$\" -o summary",
     "ts:build": "tsc --project ./tsconfig.json",
     "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
     "publish:alpha": "npm publish --tag alpha"

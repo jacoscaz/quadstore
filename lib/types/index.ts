@@ -41,6 +41,7 @@ export enum TSSearchStageType {
   GT = 'gt',
   GTE = 'gte',
   CONSTRUCT = 'construct',
+  PROJECT = 'project',
 }
 
 
@@ -144,7 +145,12 @@ export interface TSConstructSearchStage {
   patterns: TSSimplePattern[],
 }
 
-export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage|TSConstructSearchStage;
+export interface TSProjectSearchStage {
+  type: TSSearchStageType.PROJECT,
+  variables: string[],
+}
+
+export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage|TSConstructSearchStage|TSProjectSearchStage;
 
 export interface TSStoreOpts {
   backend: AbstractLevelDOWN,
@@ -250,7 +256,9 @@ export interface TSParsedFilterSearchStage extends TSFilterSearchStage {
 
 export interface TSParsedConstructSearchStage extends TSConstructSearchStage {}
 
-export type TSParsedSearchStage = TSParsedBgpSearchStage|TSParsedFilterSearchStage|TSParsedConstructSearchStage;
+export interface TSParsedProjectSearchStage extends TSProjectSearchStage {}
+
+export type TSParsedSearchStage = TSParsedBgpSearchStage|TSParsedFilterSearchStage|TSParsedConstructSearchStage|TSParsedProjectSearchStage;
 
 
 // ****************************************************************************
@@ -330,7 +338,12 @@ export interface TSRdfFilterSearchStage {
   args: (Variable|Literal)[],
 }
 
-export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage|TSRdfConstructSearchStage;
+export interface TSRdfProjectSearchStage {
+  type: TSSearchStageType.PROJECT,
+  variables: string[],
+}
+
+export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage|TSRdfConstructSearchStage|TSRdfProjectSearchStage;
 
 export interface TSRdfStoreOpts {
   backend: AbstractLevelDOWN,

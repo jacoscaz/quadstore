@@ -1,8 +1,7 @@
-
-import {termNames, pReduce} from '../utils/index.js';
+import {pReduce, termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
 import SortIterator from './iterators/sort-iterator.js';
-import { AsyncIterator } from 'asynciterator';
+import {AsyncIterator} from 'asynciterator';
 import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator.js';
 import {
   TSBgpSearchStage,
@@ -13,12 +12,14 @@ import {
   TSParsedBgpSearchStage,
   TSParsedConstructSearchStage,
   TSParsedFilterSearchStage,
+  TSParsedProjectSearchStage,
   TSParsedSearchStage,
   TSQuad,
   TSQuadStreamResult,
   TSResultType,
+  TSSearchOpts,
   TSSearchStage,
-  TSSearchStageType, TSSearchOpts,
+  TSSearchStageType,
   TSSimplePattern,
   TSTermName,
   TSTermsToVarsMap,
@@ -156,6 +157,8 @@ const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
       return parseFilterSearchStage(stage);
     case TSSearchStageType.CONSTRUCT:
       return parseMaterializeSearchStage(stage);
+    case TSSearchStageType.PROJECT:
+      return <TSParsedSearchStage>stage;
     default:
       // @ts-ignore
       throw new Error(`Unsupported search stage type "${stage.type}"`);
@@ -194,7 +197,43 @@ const applyConstructSearchStage = async (store: QuadStore, prevResult: TSBinding
     }),
     sorting: [],
   };
-}
+};
+
+const applyProjectSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedProjectSearchStage): Promise<TSBindingStreamResult> => {
+
+  const { variables: projectionVariables } = nextStage;
+  const { variables: prevResultVariables } = prevResult;
+  const nextResultVariables: TSVariables = Object.create(null);
+
+  for (let v = 0, pVar; v < projectionVariables.length; v += 1) {
+    pVar = projectionVariables[v];
+    if (pVar === '*') {
+      return prevResult;
+    }
+    if (!prevResultVariables[pVar]) {
+      throw new Error(`Unknown variable "${pVar}"`);
+    }
+    nextResultVariables[pVar] = true;
+  }
+
+  const nextResultSorting = prevResult.sorting.filter(variable => nextResultVariables[variable]);
+
+  const nextResultIterator = prevResult.iterator.map((binding: TSBinding) => {
+    const projectedBinding: TSBinding = {};
+    for (let i = 0, pVar; i < projectionVariables.length; i += 1) {
+      pVar = projectionVariables[i];
+      projectedBinding[pVar] = binding[pVar];
+    }
+    return projectedBinding;
+  });
+
+  return {
+    ...prevResult,
+    iterator: nextResultIterator,
+    sorting: nextResultSorting,
+    variables: nextResultVariables,
+  };
+};
 
 const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage, opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   switch (nextStage.type) {
@@ -216,6 +255,11 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
         throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
       }
       return await applyConstructSearchStage(store, prevResult, nextStage);
+    case TSSearchStageType.PROJECT:
+      if (prevResult.type !== TSResultType.BINDINGS) {
+        throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
+      }
+      return await applyProjectSearchStage(store, prevResult, nextStage);
     default:
       // @ts-ignore
       throw new Error(`Unsupported search stage type "${nextStage.type}"`);

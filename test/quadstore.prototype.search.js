@@ -8,7 +8,7 @@ const { TSResultType } = require('../dist/lib/types');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.searchStream()', () => {
+  describe('QuadStore.prototype.search()', () => {
 
     beforeEach(async function () {
       this.quads = [

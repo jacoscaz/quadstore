@@ -13,7 +13,7 @@ const xsdBoolean = xsd + 'boolean';
 const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
 module.exports = () => {
-  describe('literals', () => {
+  describe('filters on numeric literals', () => {
 
     beforeEach(async function () {
       const quads = [
@@ -30,53 +30,37 @@ module.exports = () => {
         factory.quad(
           factory.namedNode('http://ex.com/s2'),
           factory.namedNode('http://ex.com/p'),
-          factory.literal('2020-01-01T00:00:00.000Z', factory.namedNode(xsdDateTime)),
+          factory.literal('42', factory.namedNode(xsdInteger)),
         ),
         factory.quad(
           factory.namedNode('http://ex.com/s2'),
           factory.namedNode('http://ex.com/p'),
-          factory.literal('true', factory.namedNode(xsdBoolean)),
+          factory.literal('-1', factory.namedNode(xsdInteger)),
         ),
         factory.quad(
           factory.namedNode('http://ex.com/s2'),
           factory.namedNode('http://ex.com/p2'),
-          factory.literal('42', factory.namedNode(xsdInteger)),
+          factory.literal('3.14', factory.namedNode(xsdDouble)),
         ),
       ];
       await this.store.multiPut(quads);
     });
 
-    it('should bind to the object of quads matched by an integer object literal', async function () {
+    it('should filter by lower than', async function () {
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "7"^^<${xsdInteger}> . }
+        SELECT ?o { ?s ?p ?o . FILTER(?o < 1) . }
       `);
       should(results.type).equal(TSResultType.BINDINGS);
-      should(results.items).have.length(1);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) }
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
     });
 
-    it('should bind to the object of quads matched by a double object literal', async function () {
-      const results = await this.store.sparql(`
-        SELECT * { ?s ?p "7.0"^^<${xsdDouble}> . }
-      `);
-      should(results.type).equal(TSResultType.BINDINGS);
-      should(results.items).have.length(1);
-    });
 
-    it('should not bind to the object of quads matched by a literal with the wrong datatype', async function () {
-      const results = await this.store.sparql(`
-        SELECT * { ?s ?p "7.0"^^<${xsdInteger}> . }
-      `);
-      should(results.type).equal(TSResultType.BINDINGS);
-      should(results.items).have.length(0);
-    });
-
-    it('should bind to the object of quads matched by a datetime object literal', async function () {
-      const results = await this.store.sparql(`
-        SELECT * { ?s ?p "2020-01-01T00:00:00.000Z"^^<${xsdDateTime}> . }
-      `);
-      should(results.type).equal(TSResultType.BINDINGS);
-      should(results.items).have.length(1);
-    });
 
   });
 

@@ -4,7 +4,7 @@ const factory = require('@rdfjs/data-model');
 const {TSResultType} = require('../../dist/lib/types');
 
 module.exports = () => {
-  describe('SELECT', () => {
+  describe('CONSTRUCT', () => {
 
     beforeEach(async function () {
       const quads = [

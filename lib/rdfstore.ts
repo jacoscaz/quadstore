@@ -317,9 +317,19 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   getTermComparator(): (a: Term, b: Term) => (-1 | 0 | 1) {
     return (a: Term, b: Term): -1|0|1 => {
-      return a.termType === b.termType
-        ? a.value < b.value ? -1 : (a.value === b.value ? 0 : 1)
-        : a.termType < b.termType ? -1 : (a.termType === b.termType ? 0 : 1)
+      if (a.termType !== b.termType) {
+        return a.termType < b.termType ? -1 : 1;
+      }
+      if (a.termType !== 'Literal' || b.termType !== 'Literal') {
+        return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
+      }
+      if (a.datatype !== b.datatype) {
+        return a.datatype < b.datatype ? -1 : 1;
+      }
+      if (a.language !== b.language) {
+        return a.language < b.language ? -1 : 1;
+      }
+      return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
     };
   }
 

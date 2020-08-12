@@ -1,14 +1,24 @@
 import {
   TSDefaultGraphMode,
   TSRdfBindingStreamResult,
-  TSRdfFilterSearchStage, TSRdfQuadStreamResult,
+  TSRdfFilterSearchStage,
+  TSRdfQuadStreamResult,
   TSRdfSearchStage,
   TSRdfSimplePattern,
   TSRdfStore,
   TSSearchStageType,
 } from '../types/index.js';
 import {Term} from 'rdf-js';
-import {BgpPattern, FilterPattern, GraphPattern, Pattern} from 'sparqljs';
+import {
+  BgpPattern,
+  FilterPattern,
+  GraphPattern,
+  Pattern,
+  SelectQuery,
+  Variable,
+  VariableExpression,
+  Wildcard
+} from 'sparqljs';
 
 const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage => {
   if (whereGroup.type !== 'filter') {
@@ -43,43 +53,64 @@ const sparqlBgpPatternToStages = (pattern: BgpPattern, graph?: Term): TSRdfSearc
 }
 
 export interface TSHandleSparqlSelectOpts {
-  construct?: {
-    patterns: TSRdfSimplePattern[]
-  },
   defaultGraphMode?: TSDefaultGraphMode,
 }
 
-export const handleSparqlSelect = async (store: TSRdfStore, parsed: { where?: Pattern[] }, opts?: TSHandleSparqlSelectOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
-  const stages: TSRdfSearchStage[] = []; // TODO: pipeline
-  if (parsed.where) {
-    parsed.where.forEach((pattern) => {
-      switch (pattern.type) {
-        case 'graph':
-          const graphPattern = <GraphPattern>pattern;
-          pattern.patterns.forEach((innerPattern) => {
-            switch (innerPattern.type) {
-              case 'bgp':
-                stages.push(...sparqlBgpPatternToStages(innerPattern, graphPattern.name));
-                break;
-              default:
-                throw new Error(`Unsupported WHERE group pattern type "${innerPattern.type}"`);
-            }
-          });
-          break;
-        case 'bgp':
-          stages.push(...sparqlBgpPatternToStages(pattern));
-          break;
-        case 'filter':
-          stages.push(parseSparqlFilter(pattern));
-          break;
-        default:
-          throw new Error(`Unsupported WHERE group type "${pattern.type}"`);
+export const sparqlWherePatternArrayToStages = (group: Pattern[]) => {
+  const stages: TSRdfSearchStage[] = [];
+  group.forEach((pattern) => {
+    switch (pattern.type) {
+      case 'graph':
+        const graphPattern = <GraphPattern>pattern;
+        pattern.patterns.forEach((innerPattern) => {
+          switch (innerPattern.type) {
+            case 'bgp':
+              stages.push(...sparqlBgpPatternToStages(innerPattern, graphPattern.name));
+              break;
+            default:
+              throw new Error(`Unsupported WHERE group pattern type "${innerPattern.type}"`);
+          }
+        });
+        break;
+      case 'bgp':
+        stages.push(...sparqlBgpPatternToStages(pattern));
+        break;
+      case 'filter':
+        stages.push(parseSparqlFilter(pattern));
+        break;
+      default:
+        throw new Error(`Unsupported WHERE group type "${pattern.type}"`);
+    }
+  });
+  return stages;
+};
+
+export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery, opts?: TSHandleSparqlSelectOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
+  if (!parsed.where) {
+    // TODO: is the "WHERE" block mandatory for UPDATE queries?
+    throw new Error('missing WHERE pattern group');
+  }
+  const stages: TSRdfSearchStage[] = sparqlWherePatternArrayToStages(parsed.where);
+  if (!parsed.variables) {
+    throw new Error('missing projection in SELECT query');
+  }
+  stages.push({
+    type: TSSearchStageType.PROJECT,
+    // @ts-ignore
+    variables: parsed.variables.map((variable: Variable | Wildcard) => {
+      if ('termType' in variable) {
+        switch (variable.termType) {
+          case 'Wildcard':
+            return '*';
+          case 'Variable':
+            return `?${variable.value}`;
+          default:
+            throw new Error('Unsupported');
+        }
       }
-    });
-  }
-  if (opts && opts.construct) {
-    stages.push({ type: TSSearchStageType.CONSTRUCT, patterns: opts.construct.patterns });
-  }
+      return `?${variable.variable.value}`;
+    }),
+  });
   const results = <TSRdfBindingStreamResult>(await store.searchStream(stages, opts));
   return results;
 };

@@ -1,7 +1,7 @@
 import {DataFactory, Literal, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term,} from 'rdf-js';
 import {
   TSBinding,
-  TSPattern,
+  TSPattern, TSProjectSearchStage,
   TSQuad,
   TSRange,
   TSRdfBinding,
@@ -22,12 +22,12 @@ const xsdInteger = xsd + 'integer';
 const xsdDouble = xsd + 'double';
 const xsdDateTime = xsd + 'dateTime';
 const xsdBoolean = xsd + 'boolean';
-const RdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
+const rdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
 export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
   const [, encoding, datatype, value, language] = term.split('>');
   switch (datatype) {
-    case xsdString:
+    case rdfLangString:
       if (language !== '') {
         return dataFactory.literal(value, language);
       }
@@ -39,8 +39,8 @@ export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Liter
 
 export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
   const { language, datatype, value } = term;
-  if (language) {
-    return `>>${xsdString}>${value}>${language}`;
+  if (language !== '') {
+    return `>>${rdfLangString}>${value}>${language}`;
   }
   if (!datatype || datatype.value === xsdString) {
     return `>>${xsdString}>${value}>`;
@@ -291,5 +291,7 @@ export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string)
         type: stage.type,
         patterns: stage.patterns.map(pattern => importSimplePattern(pattern, defaultGraph)),
       };
+    case TSSearchStageType.PROJECT:
+      return <TSProjectSearchStage>stage;
   }
 }

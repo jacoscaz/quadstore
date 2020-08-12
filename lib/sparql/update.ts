@@ -1,18 +1,17 @@
-import {ArrayIterator} from 'asynciterator';
 import {
   TSEmptyOpts,
-  TSRdfBinding,
   TSRdfQuad,
   TSRdfQuadStreamResult,
+  TSRdfSearchStage,
   TSRdfStore,
   TSRdfVoidResult,
-  TSResultType, TSSparqlOpts,
-  TSTermName
+  TSResultType, TSSearchOpts,
+  TSSearchStageType,
+  TSSparqlOpts
 } from '../types/index.js';
-import {BgpPattern, GraphQuads, InsertDeleteOperation, PropertyPath, Quads, Update, Triple} from 'sparqljs';
-import {DefaultGraph, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Variable, NamedNode, BlankNode, Literal} from 'rdf-js';
-import {consumeOneByOne, termNames, waitForEvent, flatMap} from '../utils/index.js';
-import {handleSparqlSelect, TSHandleSparqlSelectOpts}  from './select.js';
+import {InsertDeleteOperation, Quads, Update} from 'sparqljs';
+import {consumeOneByOne, flatMap} from '../utils/index.js';
+import {sparqlWherePatternArrayToStages, TSHandleSparqlSelectOpts} from './select.js';
 import {bgpTripleToQuad, graphTripleToQuad, sparqlPatternToPatterns} from './utils.js';
 
 const handleSparqlInsert = async (store: TSRdfStore, update: InsertDeleteOperation, opts?: TSSparqlOpts): Promise<TSRdfVoidResult> => {
@@ -64,9 +63,17 @@ const handleSparqlInsertDelete = async (store: TSRdfStore, update: InsertDeleteO
   const insertPatterns = update.insert
     ? flatMap(update.insert, pattern => sparqlPatternToPatterns(store, pattern))
     : [];
-  const selectOpts: TSHandleSparqlSelectOpts = opts ? { ...opts } : {};
-  selectOpts.construct = { patterns: [...deletePatterns, ...insertPatterns] };
-  const results = <TSRdfQuadStreamResult>await handleSparqlSelect(store, { where: update.where }, selectOpts);
+  if (!update.where) {
+    // TODO: is the "WHERE" block mandatory for UPDATE queries?
+    throw new Error('missing WHERE pattern group');
+  }
+  const stages: TSRdfSearchStage[] = sparqlWherePatternArrayToStages(update.where);
+  stages.push({
+    type: TSSearchStageType.CONSTRUCT,
+    patterns: [...deletePatterns, ...insertPatterns],
+  });
+  const searchOpts: TSSearchOpts = opts ? { ...opts } : {};
+  const results = <TSRdfQuadStreamResult>await store.searchStream(stages, searchOpts);
   let i = 0;
   const dl = deletePatterns.length;
   const tl = dl + insertPatterns.length;

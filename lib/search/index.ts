@@ -275,12 +275,21 @@ export const searchStream = async (store: QuadStore, stages: TSSearchStage[], op
   if (parsedStages[0].type !== TSSearchStageType.BGP) {
     throw new Error(`The first stage in a search must be of type "BGP"`);
   }
-  return await pReduce(
+  const result = await pReduce(
     parsedStages.slice(1),
     (prevResult: TSQuadStreamResult|TSBindingStreamResult, nextStage: TSParsedSearchStage) => {
       return applySearchStage(store, prevResult, nextStage, opts);
     },
     await getBindingsIterator(store, parsedStages[0], opts),
   );
+  if (opts) {
+    if (opts.offset) {
+      result.iterator = result.iterator.skip(opts.offset);
+    }
+    if (opts.limit) {
+      result.iterator = result.iterator.take(opts.limit);
+    }
+  }
+  return result;
 };
 

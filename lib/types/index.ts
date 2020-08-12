@@ -190,6 +190,8 @@ export enum TSDefaultGraphMode {
 }
 
 export interface TSSearchOpts {
+  limit?: number,
+  offset?: number,
   defaultGraphMode?: TSDefaultGraphMode
 }
 

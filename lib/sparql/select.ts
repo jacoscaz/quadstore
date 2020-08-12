@@ -5,7 +5,7 @@ import {
   TSRdfQuadStreamResult,
   TSRdfSearchStage,
   TSRdfSimplePattern,
-  TSRdfStore,
+  TSRdfStore, TSSearchOpts,
   TSSearchStageType,
 } from '../types/index.js';
 import {Term} from 'rdf-js';
@@ -87,7 +87,7 @@ export const sparqlWherePatternArrayToStages = (group: Pattern[]) => {
 
 export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery, opts?: TSHandleSparqlSelectOpts): Promise<TSRdfBindingStreamResult|TSRdfQuadStreamResult> => {
   if (!parsed.where) {
-    // TODO: is the "WHERE" block mandatory for UPDATE queries?
+    // TODO: is the "WHERE" block mandatory for SELECT queries?
     throw new Error('missing WHERE pattern group');
   }
   const stages: TSRdfSearchStage[] = sparqlWherePatternArrayToStages(parsed.where);
@@ -111,6 +111,18 @@ export const handleSparqlSelect = async (store: TSRdfStore, parsed: SelectQuery,
       return `?${variable.variable.value}`;
     }),
   });
-  const results = <TSRdfBindingStreamResult>(await store.searchStream(stages, opts));
+  const searchOpts: TSSearchOpts = opts ? { ...opts } : {};
+  if (parsed.limit) {
+    searchOpts.limit = parsed.limit;
+  }
+  if (parsed.offset) {
+    searchOpts.offset = parsed.offset;
+  }
+  if ('distinct' in parsed) throw new Error(`unsupported DISTINCT operator`);
+  if ('having' in parsed) throw new Error(`unsupported HAVING operator`);
+  if ('order' in parsed) throw new Error(`unsupported ORDER operator`);
+  if ('group' in parsed) throw new Error(`unsupported GROUP operator`);
+  if ('from' in parsed) throw new Error(`unsupported FROM operator`);
+  const results = <TSRdfBindingStreamResult>(await store.searchStream(stages, searchOpts));
   return results;
 };

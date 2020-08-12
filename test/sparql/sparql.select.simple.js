@@ -52,7 +52,7 @@ module.exports = () => {
     });
 
     it('should bind to the subject of a quad matched by predicate and object', async function () {
-      const { type, items } = await this.store.sparql(`
+      const {type, items} = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> "42"^^<${xsdInteger}> . }
       `);
       should(type).equal(TSResultType.BINDINGS);
@@ -63,7 +63,7 @@ module.exports = () => {
     });
 
     it('should bind to the predicate of a quad matched by subject and object', async function () {
-      const { type, items } = await this.store.sparql(`
+      const {type, items} = await this.store.sparql(`
         SELECT * { <http://ex.com/s2> ?p "42"^^<${xsdInteger}> . }
       `);
       should(type).equal(TSResultType.BINDINGS);
@@ -74,7 +74,7 @@ module.exports = () => {
     });
 
     it('should bind to the object of a quad matched by subject and predicate', async function () {
-      const { type, items } = await this.store.sparql(`
+      const {type, items} = await this.store.sparql(`
         SELECT * { <http://ex.com/s2> <http://ex.com/p> ?o . }
       `);
       should(type).equal(TSResultType.BINDINGS);
@@ -87,7 +87,7 @@ module.exports = () => {
     });
 
     it('should bind to the graph of a quad matched by subject, predicate and object', async function () {
-      const { type, items } = await this.store.sparql(`
+      const {type, items} = await this.store.sparql(`
         SELECT * { GRAPH ?g { <http://ex.com/s2> <http://ex.com/p> "42"^^<${xsdInteger}> . } . }
       `);
       should(type).equal(TSResultType.BINDINGS);
@@ -98,7 +98,7 @@ module.exports = () => {
     });
 
     it('should bind to the subject and object of two quads matched by predicate', async function () {
-      const { type, items } = await this.store.sparql(`
+      const {type, items} = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> ?o . }
       `);
       should(type).equal(TSResultType.BINDINGS);

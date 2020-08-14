@@ -91,7 +91,11 @@ export const genDefaultIndexes = (): TSTermName[][] => {
 }
 
 export const serializeQuad = (quad: TSQuad): string => {
-  return `{"subject":"${quad.subject}","predicate":"${quad.predicate}","object":"${quad.object}","graph":"${quad.graph}"}`;
+  return JSON.stringify(quad);
+};
+
+export const deserializeQuad = (str: string): TSQuad => {
+  return JSON.parse(str);
 };
 
 export { nanoid };

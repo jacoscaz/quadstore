@@ -1,6 +1,7 @@
 import {QuadStore} from '../quadstore.js';
 import {TSEmptyOpts, TSGetOpts, TSGetStrategy, TSQuad} from '../types/index.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {deserializeQuad} from './../utils';
 
 type TLevelOpts = {
   lt?: string,
@@ -75,8 +76,6 @@ export const execute = async (store: QuadStore, strategy: TSGetStrategy, opts?: 
       levelOpts.limit = opts.limit;
     }
   }
-  const iterator = <AsyncIterator<TSQuad>>new TransformIterator(store.db.createValueStream(levelOpts))
-    // @ts-ignore - how do we fix the typings for this?
-    .map(JSON.parse);
-  return iterator;
+  return (<AsyncIterator<string>>new TransformIterator(store.db.createValueStream(levelOpts)))
+    .map(deserializeQuad);
 };

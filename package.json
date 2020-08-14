@@ -18,7 +18,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "mocha ./test",
-    "test-rdf": "rdf-test-suite -c .rdf-test-suite-cache/ test-rdf/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -t \"^((?!syn).)*$\" -o summary",
+    "test-rdf:sparql11": "rdf-test-suite -c .rdf-test-suite-cache/ dist/lib/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -o summary",
+    "test-rdf:sparql10": "rdf-test-suite -c .rdf-test-suite-cache/ dist/lib/engine.js https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl -o summary",
     "ts:build": "tsc --project ./tsconfig.json",
     "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
     "publish:alpha": "npm publish --tag alpha"
@@ -35,6 +36,7 @@
     "@rdfjs/data-model": "^1.1.2",
     "@types/abstract-leveldown": "^5.0.1",
     "@types/levelup": "^4.3.0",
+    "@types/memdown": "^3.0.0",
     "@types/sparqljs": "^3.0.1",
     "abstract-leveldown": "^6.3.0",
     "benchmark": "^2.1.4",

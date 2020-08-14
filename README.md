@@ -36,6 +36,7 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
     - [RDF Interface](#rdf-interface)
+        - [SPARQL support](#sparql-support)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
         - [RdfStore.prototype.sparql](#rdfstoreprototypesparql)
@@ -400,6 +401,22 @@ specification through the specialized `RdfStore` class, which currently
 implements the `Source`, `Sink` and `Store` interfaces. Additionally, the 
 `RdfStore` class also supports `SPARQL` queries.
 
+#### SPARQL support
+
+We're using the [`rdf-test-suite`][rdf-test-suite-npm] package to validate our
+support for SPARQL queries against official test suites published by the W3C.
+
+We're currently testing against the following manifests:
+
+- [SPARQL 1.0][w3c-sparql10-manifest]: 207/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][w3c-sparql11-manifest]: 84/271 tests passing (`npm run test-rdf:sparql11`,
+  limited to the [SPARQL 1.1 Query spec][w3c-sparql11-query-spec])
+
+[w3c-sparql10-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
+[w3c-sparql11-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
+[w3c-sparql11-query-spec]: http://www.w3.org/TR/sparql11-query/
+[rdf-test-suite-npm]: https://www.npmjs.com/package/rdf-test-suite
+
 #### RdfStore class
 
     const RdfStore = require('quadstore').RdfStore;
@@ -478,7 +495,7 @@ properties:
 - `opts.defaultGraphMode`: this can be set to either `default` or `merge` and
   allows client to specify whether the default graph used in queries should be
   the actual default graph or the union of all graphs present in the database.
-
+  
 #### RdfStore.prototype.sparqlStream()
 
 The `sparqlStream()` method provides support for streaming SPARQL queries.

@@ -56,7 +56,7 @@ const remove = util.promisify(fs.remove.bind(fs));
 
   const beforeTime = Date.now();
   await store.putStream(fileReader.pipe(streamParser));
-  // await store.putStream(fileReader.pipe(streamParser), { batchSize: 1 });
+  // await store.putStream(fileReader.pipe(streamParser), { batchSize: 1000 });
   const afterTime = Date.now();
 
   await store.close();

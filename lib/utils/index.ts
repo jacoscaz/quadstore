@@ -125,7 +125,7 @@ class BatchingIterator<T> extends TransformIterator<T, T> {
         done();
         return;
       }
-      onEachBatch(buf).then(done.bind(null, null)).catch(done);
+      onEachBatch(buf.slice(0, ind)).then(done.bind(null, null)).catch(done);
     };
 
   }

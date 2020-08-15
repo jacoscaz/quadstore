@@ -42,6 +42,10 @@ export enum TSSearchStageType {
   GTE = 'gte',
   CONSTRUCT = 'construct',
   PROJECT = 'project',
+  EQ = 'eq',
+  NEQ = 'neq',
+  STARTS_WITH = 'startswith',
+  STARTS_WITHOUT = 'startswithout',
 }
 
 
@@ -50,6 +54,10 @@ export enum TSFilterSearchStageType {
   GTE = 'gte',
   LT = 'lt',
   LTE = 'lte',
+  EQ = 'eq',
+  NEQ = 'neq',
+  STARTS_WITH = 'startswith',
+  STARTS_WITHOUT = 'startswithout',
 }
 
 // ****************************************************************************
@@ -136,7 +144,13 @@ export interface TSBgpSearchStage {
 }
 
 export interface TSFilterSearchStage {
-  type: TSSearchStageType.GT|TSSearchStageType.GTE|TSSearchStageType.LT|TSSearchStageType.LTE,
+  type: TSSearchStageType.GT|TSSearchStageType.GTE
+    |TSSearchStageType.LT
+    |TSSearchStageType.LTE
+    |TSSearchStageType.EQ
+    |TSSearchStageType.NEQ
+    |TSSearchStageType.STARTS_WITH
+    |TSSearchStageType.STARTS_WITHOUT,
   args: string[],
 }
 
@@ -336,7 +350,14 @@ export interface TSRdfConstructSearchStage {
 }
 
 export interface TSRdfFilterSearchStage {
-  type: TSSearchStageType.GT|TSSearchStageType.GTE|TSSearchStageType.LT|TSSearchStageType.LTE,
+  type: TSSearchStageType.GT
+    |TSSearchStageType.GTE
+    |TSSearchStageType.LT
+    |TSSearchStageType.LTE
+    |TSSearchStageType.EQ
+    |TSSearchStageType.NEQ
+    |TSSearchStageType.STARTS_WITH
+    |TSSearchStageType.STARTS_WITHOUT,
   args: (Variable|Literal)[],
 }
 

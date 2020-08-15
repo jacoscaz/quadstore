@@ -46,6 +46,21 @@ module.exports = () => {
       await this.store.multiPut(quads);
     });
 
+    it('should filter by "="', async function () {
+      const results = await this.store.sparql(`
+        SELECT ?o { ?s ?p ?o . FILTER(?o = 7) . }
+      `);
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('7', factory.namedNode(xsdInteger)) },
+          { '?o': factory.literal('7.0', factory.namedNode(xsdDouble)) },
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
+    });
+
     it('should filter by lower than', async function () {
       const results = await this.store.sparql(`
         SELECT ?o { ?s ?p ?o . FILTER(?o < 1) . }

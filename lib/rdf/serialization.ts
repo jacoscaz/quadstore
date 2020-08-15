@@ -88,7 +88,7 @@ export const exportTerm = (term: string, isGraph: boolean, defaultGraphValue: st
   }
 }
 
-export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue: string): string => {
+export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string => {
   if (!term) {
     if (isGraph) {
       return defaultGraphValue;
@@ -105,7 +105,7 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':
-      return importLiteralTerm(term, false);
+      return importLiteralTerm(term, rangeBoundary);
     default:
       // @ts-ignore
       throw new Error(`Unexpected termType: "${term.termType}".`);
@@ -282,9 +282,21 @@ export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string)
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
     case TSSearchStageType.GTE:
+    case TSSearchStageType.STARTS_WITH:
+    case TSSearchStageType.STARTS_WITHOUT:
       return {
         type: stage.type,
         args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph)),
+      };
+    case TSSearchStageType.EQ:
+      return {
+        type: TSSearchStageType.STARTS_WITH,
+        args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph, true)),
+      };
+    case TSSearchStageType.NEQ:
+      return {
+        type: TSSearchStageType.STARTS_WITHOUT,
+        args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph, true)),
       };
     case TSSearchStageType.CONSTRUCT:
       return {

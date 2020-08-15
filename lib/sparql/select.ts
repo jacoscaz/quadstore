@@ -31,14 +31,30 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
     throw new Error(`Unsupported filter expression type "${whereGroup.expression.type}"`);
   }
   switch (whereGroup.expression.operator) {
-    case '<':// @ts-ignore
+    case '<':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
       return { type: TSSearchStageType.LT, args: whereGroup.expression.args };
-    case '<=':// @ts-ignore
+    case '<=':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
       return { type: TSSearchStageType.LTE, args: whereGroup.expression.args };
-    case '>':// @ts-ignore
+    case '>':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
       return { type: TSSearchStageType.GT, args: whereGroup.expression.args };
-    case '>=':// @ts-ignore
+    case '>=':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
       return { type: TSSearchStageType.GTE, args: whereGroup.expression.args };
+    case '=':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
+      return { type: TSSearchStageType.EQ, args: whereGroup.expression.args };
+    case '!=':
+      // TODO: fix this ts-ignore
+      // @ts-ignore
+      return { type: TSSearchStageType.EQ, args: whereGroup.expression.args };
     default:
       throw new Error(`Unsupported filter operator "${whereGroup.expression.operator}"`);
   }

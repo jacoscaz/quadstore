@@ -31,9 +31,9 @@ class RdfStoreQueryEngine implements IQueryEngine {
     const result = await store.sparql(queryString);
     switch (result.type) {
       case TSResultType.BINDINGS:
-        return this.prepareBindingResult(store, result);
+        return await this.prepareBindingResult(store, result);
       case TSResultType.QUADS:
-        return this.prepareQuadResult(store, result);
+        return await this.prepareQuadResult(store, result);
       default:
         throw new Error(`Unsupported`);
     }

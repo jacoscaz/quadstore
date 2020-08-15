@@ -154,6 +154,10 @@ const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
     case TSSearchStageType.GTE:
+    case TSSearchStageType.EQ:
+    case TSSearchStageType.NEQ:
+    case TSSearchStageType.STARTS_WITH:
+    case TSSearchStageType.STARTS_WITHOUT:
       return parseFilterSearchStage(stage);
     case TSSearchStageType.CONSTRUCT:
       return parseMaterializeSearchStage(stage);
@@ -246,6 +250,10 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
     case TSSearchStageType.LTE:
     case TSSearchStageType.GT:
     case TSSearchStageType.GTE:
+    case TSSearchStageType.EQ:
+    case TSSearchStageType.NEQ:
+    case TSSearchStageType.STARTS_WITH:
+    case TSSearchStageType.STARTS_WITHOUT:
       if (prevResult.type !== TSResultType.BINDINGS) {
         throw new Error(`Unsupported search stage of type "${nextStage.type}" after a stage that produces results of type "${prevResult.type}"`);
       }

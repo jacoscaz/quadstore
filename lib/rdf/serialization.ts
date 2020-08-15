@@ -25,7 +25,7 @@ const xsdBoolean = xsd + 'boolean';
 const rdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
 export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
-  const [, encoding, datatype, value, language] = term.split('>');
+  const [, encoding, datatype, language, value] = term.split('>');
   switch (datatype) {
     case rdfLangString:
       if (language !== '') {
@@ -40,10 +40,10 @@ export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Liter
 export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
   const { language, datatype, value } = term;
   if (language !== '') {
-    return `>>${rdfLangString}>${value}>${language}`;
+    return `>>${rdfLangString}>${language}>${value}`;
   }
   if (!datatype || datatype.value === xsdString) {
-    return `>>${xsdString}>${value}>`;
+    return `>>${xsdString}>>${value}`;
   }
   switch (datatype.value) {
     case xsdInteger:
@@ -51,15 +51,15 @@ export const importLiteralTerm = (term: Literal, rangeBoundary = false): string 
       if (rangeBoundary) {
         return `>number:${fpstringEncode(value)}>`;
       }
-      return `>number:${fpstringEncode(value)}>${datatype.value}>${value}>`;
+      return `>number:${fpstringEncode(value)}>${datatype.value}>>${value}>`;
     case xsdDateTime:
       const timestamp = new Date(value).valueOf();
       if (rangeBoundary) {
         return `>datetime:${fpstringEncode(timestamp)}`;
       }
-      return `>datetime:${fpstringEncode(timestamp)}>${datatype.value}>${value}>`;
+      return `>datetime:${fpstringEncode(timestamp)}>${datatype.value}>>${value}>`;
     default:
-      return `>>${datatype.value}>${value}>`;
+      return `>>${datatype.value}>>${value}>`;
   }
 }
 

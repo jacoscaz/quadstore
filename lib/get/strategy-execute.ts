@@ -19,13 +19,13 @@ const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts?: TSE
       levelOpts.lte = strategy.index.name
         + store.separator
         + strategy.lt.join(store.separator)
-        + store.separator
+        + (strategy.ltr ? '' : store.separator)
         + store.boundary;
     } else {
       levelOpts.lt = strategy.index.name
         + store.separator
         + strategy.lt.join(store.separator)
-        + store.separator;
+        + (strategy.ltr ? '' : store.separator);
     }
   } else {
     levelOpts.lt = strategy.index.name
@@ -37,7 +37,7 @@ const generateLevelOpts = (store: QuadStore, strategy: TSGetStrategy, opts?: TSE
       levelOpts.gte = strategy.index.name
         + store.separator
         + strategy.gt.join(store.separator)
-        + store.separator;
+        + (strategy.gtr ? '' : store.separator);
     } else {
       levelOpts.gt = strategy.index.name
         + store.separator

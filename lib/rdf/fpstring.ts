@@ -53,11 +53,11 @@ const flipMantissa = (mantissaChars: string): string => {
   return (10 - parseFloat(mantissaChars)).toPrecision(17).slice(0, 18);
 };
 
-export const fpstringEncode = (n: string|number): string => {
+export const fpstringEncode = (stringOrNumber: string|number): string => {
 
-  if (typeof(n) !== 'number') {
-    n = parseFloat(n);
-  }
+  const n = typeof stringOrNumber !== 'number'
+    ? parseFloat(stringOrNumber)
+    : stringOrNumber;
 
   // CASE 3: n === 0
   if (n === 0) {
@@ -86,7 +86,7 @@ export const fpstringEncode = (n: string|number): string => {
       // CASE 5: n >= 1
       return joinParts(5, exponentChars, mantissaChars);
     default:
-      throw new Error('should not be here');
+      throw new Error(`should not be here - "${exponentSign}${mantissaSign}" "${stringOrNumber}"`);
   }
 
 };

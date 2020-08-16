@@ -24,7 +24,7 @@ module.exports = () => {
         ),
         factory.quad(
           factory.namedNode('http://ex.com/s'),
-          factory.namedNode('http://ex.com/p2'),
+          factory.namedNode('http://ex.com/p'),
           factory.literal('7.0', factory.namedNode(xsdDouble)),
         ),
         factory.quad(
@@ -39,7 +39,7 @@ module.exports = () => {
         ),
         factory.quad(
           factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p2'),
+          factory.namedNode('http://ex.com/p'),
           factory.literal('3.14', factory.namedNode(xsdDouble)),
         ),
       ];
@@ -48,7 +48,7 @@ module.exports = () => {
 
     it('should filter by "="', async function () {
       const results = await this.store.sparql(`
-        SELECT ?o { ?s ?p ?o . FILTER(?o = 7) . }
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o = 7) . }
       `);
       should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
@@ -61,14 +61,62 @@ module.exports = () => {
       );
     });
 
-    it('should filter by lower than', async function () {
+    it('should filter by "<"', async function () {
       const results = await this.store.sparql(`
-        SELECT ?o { ?s ?p ?o . FILTER(?o < 1) . }
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o < 1) . }
       `);
       should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) }
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
+    });
+
+    it('should filter by "<="', async function () {
+      const results = await this.store.sparql(`
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o <= 3.14) . }
+      `);
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('3.14', factory.namedNode(xsdDouble)) },
+          { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) },
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
+    });
+
+    it('should filter by ">"', async function () {
+      const results = await this.store.sparql(`
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o > 3.14) . }
+      `);
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('7', factory.namedNode(xsdInteger)) },
+          { '?o': factory.literal('7.0', factory.namedNode(xsdDouble)) },
+          { '?o': factory.literal('42', factory.namedNode(xsdInteger)) },
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
+    });
+
+    it('should filter by ">="', async function () {
+      const results = await this.store.sparql(`
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o >= 3.14) . }
+      `);
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('42', factory.namedNode(xsdInteger)) },
+          { '?o': factory.literal('3.14', factory.namedNode(xsdDouble)) },
+          { '?o': factory.literal('7', factory.namedNode(xsdInteger)) },
+          { '?o': factory.literal('7.0', factory.namedNode(xsdDouble)) },
         ],
         this.store,
         Object.keys(results.variables),

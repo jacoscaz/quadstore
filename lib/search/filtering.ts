@@ -4,10 +4,14 @@ import {TSBinding, TSParsedFilterSearchStage, TSSearchStageType} from '../types/
 const compileGtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] > stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] > stage.args[1];
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] > binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] > binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
@@ -15,10 +19,14 @@ const compileGtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding)
 const compileGteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] >= stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] >= stage.args[1];
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] >= binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] >= binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
@@ -26,10 +34,14 @@ const compileGteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding
 const compileLtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] < stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] < stage.args[1];
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] < binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] < binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
@@ -37,10 +49,14 @@ const compileLtFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding)
 const compileLteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] <= stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] <= stage.args[1] + '\uDBFF\uDFFF';
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] <= binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] <= binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
@@ -48,10 +64,14 @@ const compileLteFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding
 const compileEqFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] === stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] === stage.args[1];
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] === binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] === binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 }
@@ -59,10 +79,14 @@ const compileEqFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding)
 const compileNeqFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]] !== stage.args[1];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] !== stage.args[1];
+    }
   }
   if (variableCount === 2) {
-    return (binding: TSBinding) => binding[stage.args[0]] !== binding[stage.args[1]];
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]] !== binding[stage.args[1]];
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 }
@@ -70,7 +94,9 @@ const compileNeqFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding
 const compileStartsWithFilter = (stage: TSParsedFilterSearchStage): (binding: TSBinding) => boolean => {
   const variableCount = Object.keys(stage.variables).length;
   if (variableCount === 1) {
-    return (binding: TSBinding) => binding[stage.args[0]].indexOf(stage.args[1]) === 0;
+    return (binding: TSBinding) => {
+      return binding[stage.args[0]].indexOf(stage.args[1]) === 0;
+    }
   }
   throw new Error(`Invalid number of arguments for filter type "${stage.type}"`);
 };
@@ -101,20 +127,5 @@ export const compileFilter = (stage: TSParsedFilterSearchStage): (binding: TSBin
       return compileStartsWithFilter(stage);
     case TSSearchStageType.STARTS_WITHOUT:
       return compileStartsWithoutFilter(stage);
-  }
-};
-
-export const getFilterTermRange = (stage: TSParsedFilterSearchStage) => {
-  switch (stage.type) {
-    case TSSearchStageType.LT:
-      return { lt: stage.args[1] };
-    case TSSearchStageType.LTE:
-      return { lte: stage.args[1] };
-    case TSSearchStageType.GT:
-      return { gt: stage.args[1] };
-    case TSSearchStageType.GTE:
-      return { gte: stage.args[1] };
-    default:
-      return null;
   }
 };

@@ -17,15 +17,31 @@ import {
 import {fpstringEncode} from './fpstring.js';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
+
 const xsdString  = xsd + 'string';
-const xsdInteger = xsd + 'integer';
-const xsdDouble = xsd + 'double';
-const xsdDateTime = xsd + 'dateTime';
-const xsdBoolean = xsd + 'boolean';
 const rdfLangString = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString';
 
+const xsdDateTime = xsd + 'dateTime';
+const xsdBoolean = xsd + 'boolean';
+
+const xsdInteger = xsd + 'integer';
+const xsdDecimal = xsd + 'decimal';
+const xsdDouble = xsd + 'double';
+const xsdNonPositiveInteger = xsd + 'nonPositiveInteger';
+const xsdNegativeInteger = xsd + 'negativeInteger';
+const xsdLong = xsd + 'long';
+const xsdInt = xsd + 'int';
+const xsdShort = xsd + 'short';
+const xsdByte = xsd + 'byte';
+const xsdNonNegativeInteger = xsd + 'nonNegativeInteger';
+const xsdUnsignedLong = xsd + 'unsignedLong';
+const xsdUnsignedInt = xsd + 'unsignedInt';
+const xsdUnsignedShort = xsd + 'unsignedShort';
+const xsdUnsignedByte = xsd + 'unsignedByte';
+const xsdPositiveInteger = xsd + 'positiveInteger';
+
 export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
-  const [, encoding, datatype, language, value] = term.split('>');
+  const [, encoding, datatype, language, value] = term.split('\u0001');
   switch (datatype) {
     case rdfLangString:
       if (language !== '') {
@@ -40,26 +56,39 @@ export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Liter
 export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
   const { language, datatype, value } = term;
   if (language !== '') {
-    return `>>${rdfLangString}>${language}>${value}`;
+    return `\u0001\u0001${rdfLangString}\u0001${language}\u0001${value}`;
   }
   if (!datatype || datatype.value === xsdString) {
-    return `>>${xsdString}>>${value}`;
+    return `\u0001\u0001${xsdString}\u0001\u0001${value}`;
   }
   switch (datatype.value) {
     case xsdInteger:
     case xsdDouble:
+    case xsdDecimal:
+    case xsdNonPositiveInteger:
+    case xsdNegativeInteger:
+    case xsdLong:
+    case xsdInt:
+    case xsdShort:
+    case xsdByte:
+    case xsdNonNegativeInteger:
+    case xsdUnsignedLong:
+    case xsdUnsignedInt:
+    case xsdUnsignedShort:
+    case xsdUnsignedByte:
+    case xsdPositiveInteger:
       if (rangeBoundary) {
-        return `>number:${fpstringEncode(value)}>`;
+        return `\u0001number:${fpstringEncode(value)}\u0001`;
       }
-      return `>number:${fpstringEncode(value)}>${datatype.value}>>${value}>`;
+      return `\u0001number:${fpstringEncode(value)}\u0001${datatype.value}\u0001\u0001${value}\u0001`;
     case xsdDateTime:
       const timestamp = new Date(value).valueOf();
       if (rangeBoundary) {
-        return `>datetime:${fpstringEncode(timestamp)}`;
+        return `\u0001datetime:${fpstringEncode(timestamp)}`;
       }
-      return `>datetime:${fpstringEncode(timestamp)}>${datatype.value}>>${value}>`;
+      return `\u0001datetime:${fpstringEncode(timestamp)}\u0001${datatype.value}\u0001\u0001${value}\u0001`;
     default:
-      return `>>${datatype.value}>>${value}>`;
+      return `\u0001\u0001${datatype.value}\u0001\u0001${value}\u0001`;
   }
 }
 
@@ -78,7 +107,7 @@ export const exportTerm = (term: string, isGraph: boolean, defaultGraphValue: st
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '>':
+    case '\u0001':
       if (isGraph) {
         throw new Error(`Invalid graph term "${term}" (graph cannot be a literal).`);
       }
@@ -163,7 +192,7 @@ const exportQuadSubject = (term: string, dataFactory: DataFactory): Quad_Subject
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '>':
+    case '\u0001':
       throw new Error('No literals as subject');
     default:
       return dataFactory.namedNode(term);
@@ -179,7 +208,7 @@ const exportQuadPredicate = (term: string, dataFactory: DataFactory): Quad_Predi
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '>':
+    case '\u0001':
       throw new Error('No literals as predicates');
     default:
       return dataFactory.namedNode(term);
@@ -195,7 +224,7 @@ const exportQuadObject = (term: string, dataFactory: DataFactory): Quad_Object =
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '>':
+    case '\u0001':
       return exportLiteralTerm(term, dataFactory);
     default:
       return dataFactory.namedNode(term);
@@ -214,7 +243,7 @@ const exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: D
         return dataFactory.variable(term.substr(1));
       }
       throw new Error('DataFactory does not support variables');
-    case '>':
+    case '\u0001':
       throw new Error('No literals as graphs');
     default:
       return dataFactory.namedNode(term);
@@ -243,16 +272,16 @@ export const exportBinding = (binding: TSBinding, defaultGraphValue: string, dat
 export const importPattern = (terms: TSRdfPattern, defaultGraph: string): TSPattern => {
   const importedTerms: TSPattern = {};
   if (terms.subject) {
-    importedTerms.subject = importSimpleTerm(terms.subject, false, defaultGraph);
+    importedTerms.subject = importTerm(terms.subject, false, defaultGraph, true);
   }
   if (terms.predicate) {
-    importedTerms.predicate = importSimpleTerm(terms.predicate, false, defaultGraph);
+    importedTerms.predicate = importTerm(terms.predicate, false, defaultGraph, true);
   }
   if (terms.object) {
     importedTerms.object = importTerm(terms.object, false, defaultGraph, true);
   }
   if (terms.graph) {
-    importedTerms.graph = importSimpleTerm(terms.graph, true, defaultGraph);
+    importedTerms.graph = importTerm(terms.graph, true, defaultGraph, true);
   }
   return importedTerms;
 };
@@ -286,7 +315,7 @@ export const importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string)
     case TSSearchStageType.STARTS_WITHOUT:
       return {
         type: stage.type,
-        args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph)),
+        args: stage.args.map(arg => importSimpleTerm(arg, false, defaultGraph, true)),
       };
     case TSSearchStageType.EQ:
       return {

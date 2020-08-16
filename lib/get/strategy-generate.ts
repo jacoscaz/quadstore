@@ -46,16 +46,20 @@ const addIndexMatch = (strategy: TSGetStrategy, term: TSTermName, valueOrRange: 
       if (valueOrRange.lte) {
         strategy.lt.push(valueOrRange.lte);
         strategy.lte = true;
+        strategy.ltr = true;
       } else if (valueOrRange.lt) {
         strategy.lt.push(valueOrRange.lt);
         strategy.lte = false;
+        strategy.ltr = true;
       }
       if (valueOrRange.gte) {
         strategy.gt.push(valueOrRange.gte);
         strategy.gte = true;
+        strategy.gtr = true;
       } else if (valueOrRange.gt) {
         strategy.gt.push(valueOrRange.gt);
         strategy.gte = false;
+        strategy.gtr = true;
       }
       break;
     default:
@@ -68,6 +72,9 @@ const canAddIndexMatch = (strategy: TSGetStrategy) => {
     return false;
   }
   if (strategy.lt.length !== strategy.gt.length) {
+    return false;
+  }
+  if (strategy.gtr || strategy.ltr) {
     return false;
   }
   if (last(strategy.lt) !== last(strategy.gt)) {
@@ -111,6 +118,8 @@ export const generate = (store: QuadStore, pattern: TSPattern) => {
     const localStrategy = {
       index,
       query: pattern,
+      gtr: false,
+      ltr: false,
       lt: [],
       gte: false,
       gt: [],

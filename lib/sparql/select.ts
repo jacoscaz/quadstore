@@ -36,6 +36,7 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
       // @ts-ignore
       return { type: TSSearchStageType.LT, args: whereGroup.expression.args };
     case '<=':
+    case '=<':
       // TODO: fix this ts-ignore
       // @ts-ignore
       return { type: TSSearchStageType.LTE, args: whereGroup.expression.args };
@@ -44,6 +45,7 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
       // @ts-ignore
       return { type: TSSearchStageType.GT, args: whereGroup.expression.args };
     case '>=':
+    case '=>':
       // TODO: fix this ts-ignore
       // @ts-ignore
       return { type: TSSearchStageType.GTE, args: whereGroup.expression.args };
@@ -54,7 +56,7 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
     case '!=':
       // TODO: fix this ts-ignore
       // @ts-ignore
-      return { type: TSSearchStageType.EQ, args: whereGroup.expression.args };
+      return { type: TSSearchStageType.NEQ, args: whereGroup.expression.args };
     default:
       throw new Error(`Unsupported filter operator "${whereGroup.expression.operator}"`);
   }

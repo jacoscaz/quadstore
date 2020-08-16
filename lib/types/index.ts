@@ -71,10 +71,10 @@ export interface TSIndex {
 }
 
 export interface TSPattern {
-  [TSTermName.SUBJECT]?: string,
-  [TSTermName.PREDICATE]?: string,
+  [TSTermName.SUBJECT]?: string|TSRange,
+  [TSTermName.PREDICATE]?: string|TSRange,
   [TSTermName.OBJECT]?: string|TSRange,
-  [TSTermName.GRAPH]?: string,
+  [TSTermName.GRAPH]?: string|TSRange,
 }
 
 export interface TSSimplePattern {
@@ -184,9 +184,11 @@ export interface TSGetStrategy {
   index: TSIndex,
   query: TSPattern,
   lt: string[],
-  gte: boolean,
-  gt: string[],
   lte: boolean,
+  ltr: boolean,
+  gt: string[],
+  gte: boolean,
+  gtr: boolean,
   valid: boolean,
 }
 
@@ -261,6 +263,7 @@ export type TFilter = {
 
 export interface TSParsedBgpSearchStage extends TSBgpSearchStage {
   pattern: TSSimplePattern,
+  parsedPattern: TSPattern,
   variables: TSVariables,
   varsToTermsMap: TSVarsToTermsMap,
   termsToVarsMap: TSTermsToVarsMap,
@@ -291,10 +294,10 @@ export interface TSRdfRange {
 }
 
 export interface TSRdfPattern {
-  [TSTermName.SUBJECT]?: Quad_Subject,
-  [TSTermName.PREDICATE]?: Quad_Predicate,
+  [TSTermName.SUBJECT]?: Quad_Subject|TSRdfRange,
+  [TSTermName.PREDICATE]?: Quad_Predicate|TSRdfRange,
   [TSTermName.OBJECT]?: Quad_Object|TSRdfRange,
-  [TSTermName.GRAPH]?: Quad_Graph,
+  [TSTermName.GRAPH]?: Quad_Graph|TSRdfRange,
 }
 
 export interface TSRdfSimplePattern {

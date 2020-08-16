@@ -126,8 +126,8 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v7.0.1-alpha.3** available on NPM under the `alpha` tag or
-as `quadstore@7.0.1-alpha.3`
+Current version: **v7.0.1-alpha.5** available on NPM under the `alpha` tag or
+as `quadstore@7.0.1-alpha.5`
 
 - fully written in Typescript;
 - retrieval, update, insertion and removal of quads;
@@ -142,8 +142,6 @@ We're currently working on the following features:
 
 - expanding support for complex searches;
 - expanding support for SPARQL queries;
-- pushing filters down to the database;
-- quad generation, see [generation in LevelGraph][r2]
 - general performance improvements.
 
 We're also evaluating the following features for future developments:
@@ -401,22 +399,6 @@ specification through the specialized `RdfStore` class, which currently
 implements the `Source`, `Sink` and `Store` interfaces. Additionally, the 
 `RdfStore` class also supports `SPARQL` queries.
 
-#### SPARQL support
-
-We're using the [`rdf-test-suite`][rdf-test-suite-npm] package to validate our
-support for SPARQL queries against official test suites published by the W3C.
-
-We're currently testing against the following manifests:
-
-- [SPARQL 1.0][w3c-sparql10-manifest]: 219/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][w3c-sparql11-manifest]: 84/271 tests passing (`npm run test-rdf:sparql11`,
-  limited to the [SPARQL 1.1 Query spec][w3c-sparql11-query-spec])
-
-[w3c-sparql10-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
-[w3c-sparql11-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
-[w3c-sparql11-query-spec]: http://www.w3.org/TR/sparql11-query/
-[rdf-test-suite-npm]: https://www.npmjs.com/package/rdf-test-suite
-
 #### RdfStore class
 
     const RdfStore = require('quadstore').RdfStore;
@@ -461,6 +443,7 @@ string representations:
 ```
 http://www.w3.org/2001/XMLSchema#integer
 http://www.w3.org/2001/XMLSchema#double
+http://www.w3.org/2001/XMLSchema#decimal
 ```
 
 This is also the case for terms with the following date/time datatypes:
@@ -495,6 +478,20 @@ properties:
 - `opts.defaultGraphMode`: this can be set to either `default` or `merge` and
   allows client to specify whether the default graph used in queries should be
   the actual default graph or the union of all graphs present in the database.
+  
+We're using the [`rdf-test-suite`][rdf-test-suite-npm] package to validate our
+support for SPARQL queries against official test suites published by the W3C.
+
+We're currently testing against the following manifests:
+
+- [SPARQL 1.0][w3c-sparql10-manifest]: 219/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][w3c-sparql11-manifest]: 84/271 tests passing (`npm run test-rdf:sparql11`,
+limited to the [SPARQL 1.1 Query spec][w3c-sparql11-query-spec])
+
+[w3c-sparql10-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
+[w3c-sparql11-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
+[w3c-sparql11-query-spec]: http://www.w3.org/TR/sparql11-query/
+[rdf-test-suite-npm]: https://www.npmjs.com/package/rdf-test-suite
   
 #### RdfStore.prototype.sparqlStream()
 

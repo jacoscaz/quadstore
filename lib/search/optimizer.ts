@@ -120,6 +120,10 @@ const optimizeSTARTSWITHFilter = (stages: TSParsedSearchStage[], stage: TSParsed
 const optimizeFilters = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
   let optimizedStages: TSParsedSearchStage[] = stages;
   stages.forEach((stage: TSParsedSearchStage) => {
+    // cannot optimize filters with more than one variable
+    if ('args' in stage && Object.keys(stage.variables).length > 1) {
+      return;
+    }
     switch (stage.type) {
       case TSSearchStageType.EQ:
         optimizedStages = optimizeEQFilter(optimizedStages, stage);

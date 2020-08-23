@@ -138,9 +138,13 @@ const parseBgpSearchStage = (stage: TSBgpSearchStage): TSParsedBgpSearchStage =>
 
 const parseFilterSearchStage = (stage: TSFilterSearchStage): TSParsedFilterSearchStage => {
   const variables: { [key: string]: true } = {};
-  stage.args.forEach((arg) => {
+  stage.args.forEach((arg, index: number) => {
     if (arg.charAt(0) === '?') {
       variables[arg] = true;
+    } else {
+      if (index === 0) {
+        throw new Error(`The first argument of a search filter must always be a variable`);
+      }
     }
   });
   return { ...stage, variables };

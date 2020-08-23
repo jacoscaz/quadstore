@@ -117,7 +117,7 @@ const optimizeSTARTSWITHFilter = (stages: TSParsedSearchStage[], stage: TSParsed
   return applyRangeToBgpStages(stages, stage.args[0], { gte: stage.args[1], lte: stage.args[1] });
 };
 
-export const optimize = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
+const optimizeFilters = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
   let optimizedStages: TSParsedSearchStage[] = stages;
   stages.forEach((stage: TSParsedSearchStage) => {
     switch (stage.type) {
@@ -142,4 +142,10 @@ export const optimize = async (store: QuadStore, stages: TSParsedSearchStage[]):
     }
   });
   return optimizedStages;
+};
+
+export const optimize = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
+  let optimized: TSParsedSearchStage[] = stages;
+  optimized = await optimizeFilters(store, stages);
+  return optimized;
 };

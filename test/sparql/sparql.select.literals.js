@@ -42,6 +42,11 @@ module.exports = () => {
           factory.namedNode('http://ex.com/p2'),
           factory.literal('42', factory.namedNode(xsdInteger)),
         ),
+        factory.quad(
+          factory.namedNode('http://ex.com/slang'),
+          factory.namedNode('http://ex.com/plang'),
+          factory.literal('hello, world', 'en'),
+        ),
       ];
       await this.store.multiPut(quads);
     });
@@ -76,6 +81,22 @@ module.exports = () => {
       `);
       should(results.type).equal(TSResultType.BINDINGS);
       should(results.items).have.length(1);
+    });
+
+    it('should bind to the object of a quad matched by a literal with a language tag', async function () {
+      const results = await this.store.sparql(`
+        SELECT * { ?s ?p "hello, world"@en . }
+      `)
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).have.length(1);
+    });
+
+    it('should not bind to the object of a quad matched by a literal without a language tag', async function () {
+      const results = await this.store.sparql(`
+        SELECT * { ?s ?p "hello, world" . }
+      `)
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).have.length(0);
     });
 
   });

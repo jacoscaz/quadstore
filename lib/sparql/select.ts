@@ -8,55 +8,100 @@ import {
   TSRdfStore, TSSearchOpts,
   TSSearchStageType,
 } from '../types/index.js';
-import {Term} from 'rdf-js';
+import {Term, Variable as RdfjsVariable, Literal as RdfjsLiteral} from 'rdf-js';
 import {
-  BgpPattern,
+  BgpPattern, Expression,
   FilterPattern,
-  GraphPattern,
+  GraphPattern, OperationExpression,
   Pattern,
   SelectQuery,
   Variable,
   VariableExpression,
-  Wildcard
+  Wildcard,
 } from 'sparqljs';
 
-const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage => {
-  if (whereGroup.type !== 'filter') {
-    throw new Error(`Not a filter`);
+const parseSparqlFilterArgs = (args: Expression[]): (RdfjsVariable|RdfjsLiteral)[] => {
+  args.forEach((arg: Expression) => {
+    if (!('termType' in arg)) {
+      throw new Error(`Unsupported argument type in SPARQL expression`);
+    }
+    switch (arg.termType) {
+      case 'Variable':
+      case 'Literal':
+        break;
+      default:
+        throw new Error(`Unsupported term type "${arg.termType}" in SPARQL expression`);
+    }
+  });
+  return <(RdfjsVariable|RdfjsLiteral)[]>args;
+};
+
+const parseSparqlLtFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
+  const args = parseSparqlFilterArgs(op.args);
+  if (args.length !== 2) {
+    throw new Error(`Wrong number of arguments for "<" SPARQL filter (needs 2)`);
   }
+  if (args[0].termType !== 'Variable' && args[1].termType === 'Variable') {
+    return { type: TSSearchStageType.GT, args: args.reverse() };
+  }
+  return { type: TSSearchStageType.LT, args };
+};
+
+const parseSparqlLteFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
+  const args = parseSparqlFilterArgs(op.args);
+  if (args.length !== 2) {
+    throw new Error(`Wrong number of arguments for "<=" SPARQL filter (needs 2)`);
+  }
+  if (args[0].termType !== 'Variable' && args[1].termType === 'Variable') {
+    return { type: TSSearchStageType.GTE, args: args.reverse() };
+  }
+  return { type: TSSearchStageType.LTE, args };
+};
+
+const parseSparqlGtFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
+  const args = parseSparqlFilterArgs(op.args);
+  if (args.length !== 2) {
+    throw new Error(`Wrong number of arguments for ">" SPARQL filter (needs 2)`);
+  }
+  if (args[0].termType !== 'Variable' && args[1].termType === 'Variable') {
+    return { type: TSSearchStageType.LT, args: args.reverse() };
+  }
+  return { type: TSSearchStageType.GT, args };
+};
+
+const parseSparqlGteFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
+  const args = parseSparqlFilterArgs(op.args);
+  if (args.length !== 2) {
+    throw new Error(`Wrong number of arguments for ">=" SPARQL filter (needs 2)`);
+  }
+  if (args[0].termType !== 'Variable' && args[1].termType === 'Variable') {
+    return { type: TSSearchStageType.LTE, args: args.reverse() };
+  }
+  return { type: TSSearchStageType.GTE, args };
+};
+
+const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage => {
   if (!('type' in whereGroup.expression)) {
-    throw new Error(`Unsupported where expression`);
+    throw new Error(`Unsupported WHERE expression`);
   }
   if (whereGroup.expression.type !== 'operation') {
-    throw new Error(`Unsupported filter expression type "${whereGroup.expression.type}"`);
+    throw new Error(`Unsupported WHERE expression type "${whereGroup.expression.type}"`);
   }
   switch (whereGroup.expression.operator) {
     case '<':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.LT, args: whereGroup.expression.args };
+      return parseSparqlLtFilter(whereGroup.expression);
     case '<=':
     case '=<':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.LTE, args: whereGroup.expression.args };
+      return parseSparqlLteFilter(whereGroup.expression);
     case '>':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.GT, args: whereGroup.expression.args };
+      return parseSparqlGtFilter(whereGroup.expression);
     case '>=':
     case '=>':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.GTE, args: whereGroup.expression.args };
+      return parseSparqlGteFilter(whereGroup.expression);
     case '=':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.EQ, args: whereGroup.expression.args };
+      return { type: TSSearchStageType.EQ, args: parseSparqlFilterArgs(whereGroup.expression.args) };
     case '!=':
-      // TODO: fix this ts-ignore
-      // @ts-ignore
-      return { type: TSSearchStageType.NEQ, args: whereGroup.expression.args };
+      return { type: TSSearchStageType.NEQ, args: parseSparqlFilterArgs(whereGroup.expression.args) };
     default:
       throw new Error(`Unsupported filter operator "${whereGroup.expression.operator}"`);
   }

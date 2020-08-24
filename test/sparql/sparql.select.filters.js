@@ -123,6 +123,21 @@ module.exports = () => {
       );
     });
 
+    it('should filter by inverted ">="', async function () {
+      const results = await this.store.sparql(`
+        SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(3.14 >= ?o) . }
+      `);
+      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.items).be.equalToBindingArray(
+        [
+          { '?o': factory.literal('3.14', factory.namedNode(xsdDouble)) },
+          { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) },
+        ],
+        this.store,
+        Object.keys(results.variables),
+      );
+    });
+
 
 
   });

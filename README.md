@@ -126,8 +126,8 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v7.0.1-alpha.5** available on NPM under the `alpha` tag or
-as `quadstore@7.0.1-alpha.5`
+Current version: **v7.0.1-alpha.6** available on NPM under the `alpha` tag or
+as `quadstore@7.0.1-alpha.6`
 
 - fully written in Typescript;
 - retrieval, update, insertion and removal of quads;

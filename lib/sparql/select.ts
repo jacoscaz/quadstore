@@ -8,7 +8,7 @@ import {
   TSRdfStore, TSSearchOpts,
   TSSearchStageType,
 } from '../types/index.js';
-import {Term, Variable as RdfjsVariable, Literal as RdfjsLiteral} from 'rdf-js';
+import {Term, Variable as RdfjsVariable, Literal as RdfjsLiteral, NamedNode as RdfjsNamedNode} from 'rdf-js';
 import {
   BgpPattern, Expression,
   FilterPattern,
@@ -20,7 +20,7 @@ import {
   Wildcard,
 } from 'sparqljs';
 
-const parseSparqlFilterArgs = (args: Expression[]): (RdfjsVariable|RdfjsLiteral)[] => {
+const parseSparqlFilterLiteralArgs = (args: Expression[]): (RdfjsVariable|RdfjsLiteral)[] => {
   args.forEach((arg: Expression) => {
     if (!('termType' in arg)) {
       throw new Error(`Unsupported argument type in SPARQL expression`);
@@ -36,8 +36,25 @@ const parseSparqlFilterArgs = (args: Expression[]): (RdfjsVariable|RdfjsLiteral)
   return <(RdfjsVariable|RdfjsLiteral)[]>args;
 };
 
+const parseSparqlFilterMixedTermTypeArgs = (args: Expression[]): (RdfjsVariable|RdfjsLiteral|RdfjsNamedNode)[] => {
+  args.forEach((arg: Expression) => {
+    if (!('termType' in arg)) {
+      throw new Error(`Unsupported argument type in SPARQL expression`);
+    }
+    switch (arg.termType) {
+      case 'Variable':
+      case 'Literal':
+      case 'NamedNode':
+        break;
+      default:
+        throw new Error(`Unsupported term type "${arg.termType}" in SPARQL expression`);
+    }
+  });
+  return <(RdfjsVariable|RdfjsLiteral|RdfjsNamedNode)[]>args;
+};
+
 const parseSparqlLtFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
-  const args = parseSparqlFilterArgs(op.args);
+  const args = parseSparqlFilterLiteralArgs(op.args);
   if (args.length !== 2) {
     throw new Error(`Wrong number of arguments for "<" SPARQL filter (needs 2)`);
   }
@@ -48,7 +65,7 @@ const parseSparqlLtFilter = (op: OperationExpression): TSRdfFilterSearchStage =>
 };
 
 const parseSparqlLteFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
-  const args = parseSparqlFilterArgs(op.args);
+  const args = parseSparqlFilterLiteralArgs(op.args);
   if (args.length !== 2) {
     throw new Error(`Wrong number of arguments for "<=" SPARQL filter (needs 2)`);
   }
@@ -59,7 +76,7 @@ const parseSparqlLteFilter = (op: OperationExpression): TSRdfFilterSearchStage =
 };
 
 const parseSparqlGtFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
-  const args = parseSparqlFilterArgs(op.args);
+  const args = parseSparqlFilterLiteralArgs(op.args);
   if (args.length !== 2) {
     throw new Error(`Wrong number of arguments for ">" SPARQL filter (needs 2)`);
   }
@@ -70,7 +87,7 @@ const parseSparqlGtFilter = (op: OperationExpression): TSRdfFilterSearchStage =>
 };
 
 const parseSparqlGteFilter = (op: OperationExpression): TSRdfFilterSearchStage => {
-  const args = parseSparqlFilterArgs(op.args);
+  const args = parseSparqlFilterLiteralArgs(op.args);
   if (args.length !== 2) {
     throw new Error(`Wrong number of arguments for ">=" SPARQL filter (needs 2)`);
   }
@@ -99,9 +116,9 @@ const parseSparqlFilter = (whereGroup: FilterPattern): TSRdfFilterSearchStage =>
     case '=>':
       return parseSparqlGteFilter(whereGroup.expression);
     case '=':
-      return { type: TSSearchStageType.EQ, args: parseSparqlFilterArgs(whereGroup.expression.args) };
+      return { type: TSSearchStageType.EQ, args: parseSparqlFilterMixedTermTypeArgs(whereGroup.expression.args) };
     case '!=':
-      return { type: TSSearchStageType.NEQ, args: parseSparqlFilterArgs(whereGroup.expression.args) };
+      return { type: TSSearchStageType.NEQ, args: parseSparqlFilterMixedTermTypeArgs(whereGroup.expression.args) };
     default:
       throw new Error(`Unsupported filter operator "${whereGroup.expression.operator}"`);
   }

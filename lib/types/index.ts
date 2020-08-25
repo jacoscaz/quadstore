@@ -361,7 +361,7 @@ export interface TSRdfFilterSearchStage {
     |TSSearchStageType.NEQ
     |TSSearchStageType.STARTS_WITH
     |TSSearchStageType.STARTS_WITHOUT,
-  args: (Variable|Literal)[],
+  args: (Variable|Literal|NamedNode)[],
 }
 
 export interface TSRdfProjectSearchStage {

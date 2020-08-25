@@ -1,5 +1,13 @@
-
-import {TSParsedFilterSearchStage, TSParsedSearchStage, TSPattern, TSRange, TSSearchStageType} from '../types';
+import {
+  TSParsedBgpSearchStage,
+  TSParsedConstructSearchStage,
+  TSParsedFilterSearchStage,
+  TSParsedProjectSearchStage,
+  TSParsedSearchStage,
+  TSPattern,
+  TSRange,
+  TSSearchStageType
+} from '../types';
 import {QuadStore} from '../quadstore';
 import {termNames} from '../utils/index.js';
 
@@ -75,6 +83,17 @@ const mergePatterns = (a: TSPattern, b: TSPattern): TSPattern => {
   return c;
 };
 
+const objectContains = (container: object, contained: object) => {
+  for (let key in contained) {
+    if (contained.hasOwnProperty(key)) {
+      if (!container.hasOwnProperty(key)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 const applyRangeToBgpStages = (stages: TSParsedSearchStage[], variable: string, range: TSRange): TSParsedSearchStage[] => {
   return stages.map((stage: TSParsedSearchStage) => {
     if (stage.type !== TSSearchStageType.BGP) {
@@ -148,8 +167,73 @@ const optimizeFilters = async (store: QuadStore, stages: TSParsedSearchStage[]):
   return optimizedStages;
 };
 
+type TSParsedBgpSearchStageWithSize = TSParsedBgpSearchStage & {
+  approximateSize: number
+}
+
+// TODO: this method is incredibly inefficient, both in terms wasted cycles
+//       and useless allocations. Don't just stand there saying things - do
+//       something!!!
+const reorderStages = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
+  const bgpStages: TSParsedBgpSearchStageWithSize[] = [];
+  let filterStages: TSParsedFilterSearchStage[] = [];
+  let projectStage: TSParsedProjectSearchStage|undefined;
+  let constructStage: TSParsedConstructSearchStage|undefined;
+  const optimizedStages: TSParsedSearchStage[] = [];
+  await Promise.all(stages.map(async (stage: TSParsedSearchStage) => {
+    switch (stage.type) {
+      case TSSearchStageType.EQ:
+      case TSSearchStageType.NEQ:
+      case TSSearchStageType.GT:
+      case TSSearchStageType.GTE:
+      case TSSearchStageType.LT:
+      case TSSearchStageType.LTE:
+      case TSSearchStageType.STARTS_WITH:
+      case TSSearchStageType.STARTS_WITHOUT:
+        filterStages.push(stage);
+        break;
+      case TSSearchStageType.BGP:
+        bgpStages.push({
+          ...stage,
+          approximateSize: (await store.getApproximateSize(stage.parsedPattern)).approximateSize,
+        });
+        break;
+      case TSSearchStageType.PROJECT:
+        projectStage = stage;
+        break;
+      case TSSearchStageType.CONSTRUCT:
+        constructStage = stage;
+        break;
+    }
+  }));
+  bgpStages.sort((a, b) => {
+    return a.approximateSize < b.approximateSize ? -1 : 1;
+  });
+  bgpStages.forEach((bgpStage) => {
+    optimizedStages.push(bgpStage);
+    // TODO: this part is crazy bad. If we have N bgp stages and M filter stages,
+    //       this could result in N * M iterations. Crappy code - fix this ASAP.
+    filterStages = filterStages.filter((filterStage) => {
+      if (objectContains(bgpStage.variables, filterStage.variables)) {
+        optimizedStages.push(filterStage);
+        return false;
+      }
+      return true;
+    });
+  });
+  optimizedStages.push(...filterStages);
+  if (projectStage) {
+    optimizedStages.push(projectStage);
+  }
+  if (constructStage) {
+    optimizedStages.push(constructStage);
+  }
+  return optimizedStages;
+};
+
 export const optimize = async (store: QuadStore, stages: TSParsedSearchStage[]): Promise<TSParsedSearchStage[]> => {
   let optimized: TSParsedSearchStage[] = stages;
-  optimized = await optimizeFilters(store, stages);
+  optimized = await optimizeFilters(store, optimized);
+  optimized = await reorderStages(store, optimized);
   return optimized;
 };

@@ -238,7 +238,7 @@ export class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async getApproximateSize(pattern: TSPattern, opts: TSEmptyOpts): Promise<TSApproximateSizeResult> {
+  async getApproximateSize(pattern: TSPattern, opts?: TSEmptyOpts): Promise<TSApproximateSizeResult> {
     if (isNil(pattern)) pattern = {};
     if (isNil(opts)) opts = {};
     assert(isObject(pattern), 'The "matchTerms" argument is not a function..');

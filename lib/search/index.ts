@@ -179,21 +179,13 @@ const parseSearchStage = (stage: TSSearchStage): TSParsedSearchStage => {
 
 const applyBgpSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
   return await nestedLoopJoin(store, prevResult, nextStage, opts);
-}
+};
 
 const applyFilterSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedFilterSearchStage): Promise<TSBindingStreamResult> => {
-  // TODO: rework filter optimization by pushing filters down into nearest BGP
-  // const variableNames = Object.keys(nextStage.variables);
-  // if (variableNames.length === 1) {
-  //   const matchTerms = {
-  //     [parsedPattern.variables[variableNames[0]]]: filtering.getFilterTermRange(parsedFilter),
-  //   };
-  //   parsedPattern.filterMatchTerms = store._mergeMatchTerms(parsedPattern.filterMatchTerms, matchTerms, termNames);
-  // }
   const filterFn = compileFilter(nextStage);
   const iterator = prevResult.iterator.filter(filterFn);
   return { ...prevResult, iterator };
-}
+};
 
 const applyConstructSearchStage = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedConstructSearchStage): Promise<TSQuadStreamResult> => {
   const { patterns } = nextStage;
@@ -280,7 +272,7 @@ const applySearchStage = async (store: QuadStore, prevResult: TSQuadStreamResult
       // @ts-ignore
       throw new Error(`Unsupported search stage type "${nextStage.type}"`);
   }
-}
+};
 
 export const searchStream = async (store: QuadStore, stages: TSSearchStage[], opts?: TSSearchOpts): Promise<TSQuadStreamResult|TSBindingStreamResult> => {
   let parsedStages = stages.map(parseSearchStage);

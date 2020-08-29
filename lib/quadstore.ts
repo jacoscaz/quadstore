@@ -73,7 +73,7 @@ export class QuadStore extends events.EventEmitter implements TSStore {
     );
     this.abstractLevelDOWN = opts.backend;
     this.db = levelup(this.abstractLevelDOWN);
-    this.defaultGraph = opts.defaultGraph || '_DEFAULT_CONTEXT_';
+    this.defaultGraph = opts.defaultGraph || 'DEFAULT_GRAPH';
     this.indexes = [];
     this.id = nanoid();
     this.boundary = opts.boundary || '\uDBFF\uDFFF';
@@ -280,15 +280,15 @@ export class QuadStore extends events.EventEmitter implements TSStore {
     return { type: TSResultType.VOID };
   }
 
-  async delStream(source: TSReadable<TSQuad>, opts: TSDelStreamOpts): Promise<TSVoidResult> {
+  async delStream(source: TSReadable<TSQuad>, opts?: TSDelStreamOpts): Promise<TSVoidResult> {
     if (isNil(opts)) opts = {};
     assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
     const batchSize = (opts && opts.batchSize) || 1;
     if (batchSize === 1) {
-      await consumeOneByOne(source, quad => this.del(quad, opts));
+      await consumeOneByOne(source, quad => this.del(<TSQuad>quad, opts));
     } else {
-      await consumeInBatches(source, batchSize, quads => this.multiDel(quads));
+      await consumeInBatches(source, batchSize, quads => this.multiDel(<TSQuad[]>quads));
     }
     return { type: TSResultType.VOID };
   }

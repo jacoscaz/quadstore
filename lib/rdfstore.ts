@@ -249,7 +249,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
   // ******************************* STREAM API *******************************
   // **************************************************************************
 
-  async getStream(pattern: TSRdfPattern, opts: TSEmptyOpts): Promise<TSRdfQuadStreamResult> {
+  async getStream(pattern: TSRdfPattern, opts?: TSEmptyOpts): Promise<TSRdfQuadStreamResult> {
     if (isNil(pattern)) pattern = {};
     if (isNil(opts)) opts = {};
     assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
@@ -263,19 +263,21 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     };
   }
 
-  async putStream(source: TSReadable<TSRdfQuad>, opts: TSPutStreamOpts): Promise<TSRdfVoidResult> {
+  async putStream(source: TSReadable<TSRdfQuad>, opts?: TSPutStreamOpts): Promise<TSRdfVoidResult> {
+    // @ts-ignore
     const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.putStream(importedQuadsIterator, opts);
   }
 
-  async delStream(source: TSReadable<TSRdfQuad>, opts: TSDelStreamOpts): Promise<TSRdfVoidResult> {
+  async delStream(source: TSReadable<TSRdfQuad>, opts?: TSDelStreamOpts): Promise<TSRdfVoidResult> {
+    // @ts-ignore
     const importedQuadsIterator: TSReadable<TSQuad> = new TransformIterator(source)
       .map(this._createQuadSerializerMapper());
     return await this.quadstore.delStream(importedQuadsIterator, opts);
   }
 
-  async searchStream(stages: TSRdfSearchStage[], opts: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
+  async searchStream(stages: TSRdfSearchStage[], opts?: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (isNil(opts)) opts = {};
     const importedStages: TSSearchStage[] = stages.map(stage => importSearchStage(stage, this.quadstore.defaultGraph));
     const results = await this.quadstore.searchStream(importedStages, opts);

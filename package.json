@@ -25,8 +25,10 @@
     "publish:alpha": "npm publish --tag alpha"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/lib/**/*.js",
+    "dist/lib/**/*.d.ts",
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
   "repository": {
     "type": "git",
@@ -35,6 +37,8 @@
   "devDependencies": {
     "@rdfjs/data-model": "^1.1.2",
     "@types/abstract-leveldown": "^5.0.1",
+    "@types/fs-extra": "^9.0.1",
+    "@types/leveldown": "^4.0.2",
     "@types/levelup": "^4.3.0",
     "@types/memdown": "^3.0.0",
     "@types/sparqljs": "^3.0.1",

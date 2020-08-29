@@ -4,6 +4,8 @@ import {nanoid} from './nanoid.js';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
+import {AbstractLevelDOWN} from 'abstract-leveldown';
+import {DataFactory} from 'rdf-js';
 
 export const termNames: TSTermName[] = [
   TSTermName.SUBJECT,
@@ -44,20 +46,20 @@ export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
   });
 }
 
-export const isReadableStream = (obj: any): boolean => {
+export const isReadableStream = (obj: any): obj is TSReadable<any> => {
   return isObject(obj)
     && isFunction(obj.on)
     && isFunction(obj.read);
 }
 
-export const isAbstractLevelDOWNInstance = (obj: any): boolean => {
+export const isAbstractLevelDOWNInstance = (obj: any): obj is AbstractLevelDOWN => {
   return isObject(obj)
     && isFunction(obj.put)
     && isFunction(obj.del)
     && isFunction(obj.batch);
 }
 
-export const isDataFactory = (obj: any): boolean => {
+export const isDataFactory = (obj: any): obj is DataFactory => {
   return (isObject(obj) || isFunction(obj))
     && isFunction(obj.literal)
     && isFunction(obj.defaultGraph)
@@ -68,7 +70,7 @@ export const isDataFactory = (obj: any): boolean => {
     && isFunction(obj.quad);
 }
 
-export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnError: boolean): Promise<any> => {
+export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnError?: boolean): Promise<any> => {
   return new Promise((resolve, reject) => {
     emitter.on(event, resolve);
     if (rejectOnError) {
@@ -103,8 +105,9 @@ export { nanoid };
 
 class BatchingIterator<T> extends TransformIterator<T, T> {
 
-  constructor(source: AsyncIterator<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<void>) {
+  constructor(source: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<void>) {
 
+    // @ts-ignore
     super(source);
 
     let ind = 0;
@@ -132,7 +135,7 @@ class BatchingIterator<T> extends TransformIterator<T, T> {
 
 }
 
-export const consumeInBatches = async <T>(iterator: AsyncIterator<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<any>) => {
+export const consumeInBatches = async <T>(iterator: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<any>) => {
   return new Promise((resolve, reject) => {
     new BatchingIterator(iterator, batchSize, onEachBatch)
       .on('end', resolve)
@@ -140,7 +143,7 @@ export const consumeInBatches = async <T>(iterator: AsyncIterator<T>, batchSize:
   });
 };
 
-export const consumeOneByOne = async <T>(iterator: AsyncIterator<T>, onEachItem: (item: T) => Promise<any>) => {
+export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (item: T) => Promise<any>) => {
   return new Promise((resolve, reject) => {
     let ended = false;
     let waiting = false;

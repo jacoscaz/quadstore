@@ -1,4 +1,5 @@
 
+import { Readable } from 'stream';
 import { EventEmitter } from 'events';
 import { AbstractLevelDOWN } from 'abstract-leveldown'
 import {AsyncIterator} from 'asynciterator';
@@ -18,14 +19,7 @@ export enum TSTermName {
   GRAPH = 'graph',
 }
 
-// export type TSTermName = 'subject' | 'predicate' | 'object' | 'graph';
-
-export interface TSReadable<T> extends AsyncIterator<T> {
-  on(eventName: 'data', fn: (chunk: T) => void): this;
-  on(eventName: 'end', fn: () => void): this;
-  on(eventName: 'error', fn: (err: Error) => void): this;
-  read(): T|null;
-}
+export type TSReadable<T> = Readable | AsyncIterator<T>;
 
 export enum TSResultType {
   VOID = 'void',
@@ -111,7 +105,7 @@ export interface TSQuadArrayResult {
 export interface TSQuadStreamResult {
   type: TSResultType.QUADS,
   sorting: TSTermName[],
-  iterator: TSReadable<TSQuad>,
+  iterator: AsyncIterator<TSQuad>,
 }
 
 export interface TSBindingArrayResult {
@@ -125,7 +119,7 @@ export interface TSBindingStreamResult {
   type: TSResultType.BINDINGS,
   sorting: string[],
   variables: TSVariables,
-  iterator: TSReadable<TSBinding>,
+  iterator: AsyncIterator<TSBinding>,
 }
 
 export interface TSVoidResult {
@@ -139,7 +133,7 @@ export interface TSApproximateSizeResult {
 
 export interface TSBgpSearchStage {
   type: TSSearchStageType.BGP,
-  optional: boolean,
+  optional?: boolean,
   pattern: TSSimplePattern,
 }
 
@@ -168,7 +162,7 @@ export type TSSearchStage = TSBgpSearchStage|TSFilterSearchStage|TSConstructSear
 
 export interface TSStoreOpts {
   backend: AbstractLevelDOWN,
-  defaultGraph: string,
+  defaultGraph?: string,
   boundary?: string,
   separator?: string,
   indexes?: TSTermName[][],
@@ -320,7 +314,7 @@ export interface TSRdfQuadArrayResult {
 export interface TSRdfQuadStreamResult {
   type: TSResultType.QUADS,
   sorting: TSTermName[],
-  iterator: TSReadable<TSRdfQuad>,
+  iterator: AsyncIterator<TSRdfQuad>,
 }
 
 export interface TSRdfBindingArrayResult {
@@ -334,7 +328,7 @@ export interface TSRdfBindingStreamResult {
   type: TSResultType.BINDINGS,
   sorting: string[],
   variables: TSVariables,
-  iterator: TSReadable<TSRdfBinding>,
+  iterator: AsyncIterator<TSRdfBinding>,
 }
 
 export interface TSRdfVoidResult {

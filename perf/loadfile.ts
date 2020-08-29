@@ -1,20 +1,20 @@
 
 'use strict';
 
-const n3 = require('n3');
-const fs = require('fs-extra');
-const os = require('os');
-const path = require('path');
-const util = require('util');
-const utils = require('../dist/lib/utils');
-const RdfStore = require('../dist').RdfStore;
-const leveldown = require('leveldown');
-const dataFactory = require('n3').DataFactory;
-const childProcess = require('child_process');
 
-function du(absPath) {
+import fs from 'fs-extra';
+import os from 'os'
+import path from 'path';
+import util from 'util';
+import * as utils from '../lib/utils';
+import { RdfStore } from '../lib/rdfstore';
+import leveldown from 'leveldown';
+import { DataFactory, StreamParser } from 'n3';
+import childProcess from 'child_process';
+
+const du = (absPath: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    childProcess.exec(`du -sm ${absPath}`, (err, stdout) => {
+    childProcess.exec(`du -sm ${absPath}`, (err: Error|null, stdout: string) => {
       if (err) reject(err);
       else resolve(`${stdout.split(/\s+/)[0]} MB`);
     });
@@ -44,7 +44,7 @@ const remove = util.promisify(fs.remove.bind(fs));
 
   const store = new RdfStore({
     backend: leveldown(absStorePath),
-    dataFactory,
+    dataFactory: DataFactory,
   });
 
   await utils.waitForEvent(store, 'ready');
@@ -52,7 +52,7 @@ const remove = util.promisify(fs.remove.bind(fs));
   const absFilePath = path.resolve(process.cwd(), filePath);
 
   const fileReader = fs.createReadStream(absFilePath);
-  const streamParser = new n3.StreamParser({ format });
+  const streamParser = new StreamParser({ format });
 
   const beforeTime = Date.now();
   await store.putStream(fileReader.pipe(streamParser));

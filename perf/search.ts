@@ -8,7 +8,7 @@ import {TSSearchStageType, TSBinding} from '../lib/types';
 import {disk, time} from './utils';
 import {waitForEvent} from '../lib/utils';
 
-const qty = 1000000;
+const qty = 10000;
 
 const doWrites = async (store: QuadStore) => {
   const vertexes = ["a", "b"];

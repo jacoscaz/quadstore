@@ -42,7 +42,7 @@ const getBindingsIterator = async (store: QuadStore, stage: TSParsedBgpSearchSta
     }
     return acc;
   }, <TSTermName[]>[]);
-  let iterator: AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void) {
+  let iterator: AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void, push) {
     const binding: TSBinding = {};
     for (const term in termsToVarsMap) {
       if (termsToVarsMap.hasOwnProperty(term)) {
@@ -50,28 +50,21 @@ const getBindingsIterator = async (store: QuadStore, stage: TSParsedBgpSearchSta
         binding[termsToVarsMap[term]] = quad[term];
       }
     }
-    // @ts-ignore
-      this._push(binding);
+    push(binding);
     done();
   }});
-  // iterator = filterFns.reduce((it, filterFn) => it.filter(filterFn), iterator);
   return { type: TSResultType.BINDINGS, iterator, sorting, variables };
 };
 
 const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
   const nextCommonVarsToTermsMap: TSVarsToTermsMap = {};
-  const nextAdditionalSortingTerms: string[] = [];
   for (const variableName in nextStage.variables) {
     if (nextStage.varsToTermsMap.hasOwnProperty(variableName)) {
       if (prevResult.variables.hasOwnProperty(variableName)) {
         nextCommonVarsToTermsMap[variableName] = nextStage.varsToTermsMap[variableName];
-      } else {
-        nextAdditionalSortingTerms.push(variableName);
       }
     }
   }
-  const joinedSorting: string[] = [...prevResult.sorting, ...nextAdditionalSortingTerms];
-  const nextSorting = joinedSorting.filter(variableName => nextStage.variables.hasOwnProperty(variableName));
   const getInnerIterator = async (outerBinding: TSBinding): Promise<AsyncIterator<TSBinding>> => {
     const innerPattern: TSSimplePattern = { ...nextStage.pattern };
     const innerParsedPattern: TSPattern = { ...nextStage.parsedPattern };
@@ -88,9 +81,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
       varsToTermsMap: nextStage.varsToTermsMap,
       variables: nextStage.variables,
     }, opts);
-    // return iterator;
-    const comparator = store.getBindingComparator(nextSorting);
-    return new SortIterator(iterator, comparator);
+    return iterator;
   };
   const mergeItems = (firstBinding: TSBinding, secondBinding: TSBinding) => ({
     ...firstBinding,
@@ -99,8 +90,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
   return {
     iterator: new NestedLoopJoinIterator<TSBinding>(prevResult.iterator, getInnerIterator, mergeItems),
     variables: { ...prevResult.variables, ...nextStage.variables },
-    // @ts-ignore
-    sorting: joinedSorting,
+    sorting: prevResult.sorting,
     type: TSResultType.BINDINGS,
   };
 };

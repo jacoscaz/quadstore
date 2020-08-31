@@ -88,6 +88,7 @@ const nestedLoopJoin = async (store: QuadStore, prevResult: TSBindingStreamResul
       varsToTermsMap: nextStage.varsToTermsMap,
       variables: nextStage.variables,
     }, opts);
+    // return iterator;
     const comparator = store.getBindingComparator(nextSorting);
     return new SortIterator(iterator, comparator);
   };

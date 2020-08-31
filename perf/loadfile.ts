@@ -1,27 +1,11 @@
 
-'use strict';
-
-
 import fs from 'fs-extra';
-import os from 'os'
 import path from 'path';
-import util from 'util';
 import * as utils from '../lib/utils';
 import { RdfStore } from '../lib/rdfstore';
-import leveldown from 'leveldown';
 import { DataFactory, StreamParser } from 'n3';
-import childProcess from 'child_process';
-
-const du = (absPath: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(`du -sm ${absPath}`, (err: Error|null, stdout: string) => {
-      if (err) reject(err);
-      else resolve(`${stdout.split(/\s+/)[0]} MB`);
-    });
-  });
-}
-
-const remove = util.promisify(fs.remove.bind(fs));
+import {disk, time} from './utils';
+import {AbstractLevelDOWN} from 'abstract-leveldown';
 
 (async () => {
 
@@ -35,37 +19,32 @@ const remove = util.promisify(fs.remove.bind(fs));
     return;
   }
 
-  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${utils.nanoid()}`);
-  console.log(absStorePath);
+  await disk(async (backend: AbstractLevelDOWN, checkDiskUsage) => {
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  debugger;
+    debugger;
 
-  const store = new RdfStore({
-    backend: leveldown(absStorePath),
-    dataFactory: DataFactory,
+    const store = new RdfStore({
+      backend,
+      dataFactory: DataFactory,
+    });
+
+    await utils.waitForEvent(store, 'ready');
+
+    const absFilePath = path.resolve(process.cwd(), filePath);
+
+    const fileReader = fs.createReadStream(absFilePath);
+    const streamParser = new StreamParser({ format });
+
+    const { time: putTime } = await time(() => store.putStream(fileReader.pipe(streamParser)));
+    // const { time: putTime } = await time(() => store.putStream(fileReader.pipe(streamParser), { batchSize: 1000 }));
+
+    const diskUsage = await checkDiskUsage();
+
+    console.log(`TIME: ${putTime} s`);
+    console.log(`DISK: ${diskUsage}`);
+
   });
-
-  await utils.waitForEvent(store, 'ready');
-
-  const absFilePath = path.resolve(process.cwd(), filePath);
-
-  const fileReader = fs.createReadStream(absFilePath);
-  const streamParser = new StreamParser({ format });
-
-  const beforeTime = Date.now();
-  await store.putStream(fileReader.pipe(streamParser));
-  // await store.putStream(fileReader.pipe(streamParser), { batchSize: 1000 });
-  const afterTime = Date.now();
-
-  await store.close();
-
-  const diskUsage = await du(absStorePath);
-
-  console.log(`TIME: ${(afterTime - beforeTime) / 1000} s`);
-  console.log(`DISK: ${diskUsage}`);
-
-  await remove(absStorePath);
 
 })();

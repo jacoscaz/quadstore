@@ -3,65 +3,50 @@
  * https://github.com/levelgraph/levelgraph/tree/d918ff445e78e22410b4b5388e33af4a4cbcec8c/benchmarks
  */
 
-import memdown from 'memdown';
 import {QuadStore} from '../lib/quadstore';
 import {TSSearchStageType, TSBinding} from '../lib/types';
+import {disk, time} from './utils';
+import {waitForEvent} from '../lib/utils';
 
-const store = new QuadStore({
-  backend: memdown(),
-});
+const qty = 1000000;
 
-const startCounts = 100000;
-let counts = startCounts;
+const doWrites = async (store: QuadStore) => {
+  const vertexes = ["a", "b"];
+  for (let i = 0; i < qty; i += 1) {
+    vertexes.pop();
+    vertexes.unshift("v" + i);
+    await store.put({
+      subject: vertexes[0],
+      predicate: "p",
+      object: vertexes[1],
+      graph: "g",
+    });
+  }
+};
 
-let startTime: number;
-let endTime: number;
-
-const vertexes = ["a", "b"];
-
-const doReads = async () => {
-
+const doReads = async (store: QuadStore) => {
+  let count = 0;
   const results = await store.searchStream([
     { type: TSSearchStageType.BGP, pattern: { subject: '?a', predicate: 'p', object: '?b' } },
     { type: TSSearchStageType.BGP, pattern: { subject: '?b', predicate: 'p', object: '?c' } },
   ]);
-
-  // @ts-ignore
-  results.iterator.on('data', (binding: TSBinding) => {
-    counts++;
+  results.iterator.on('data', () => {
+    count++;
   });
-
-  results.iterator.on("end", () => {
-    endTime = Date.now();
-    const totalTime = endTime - startTime;
-    console.log("total time", totalTime);
-    console.log("total data", counts);
-    console.log("join result/s", counts / totalTime * 1000);
-  });
-
+  await waitForEvent(results.iterator, 'end');
+  return count;
 };
 
-const doWrites = async () => {
 
-  if(--counts === 0) {
-    startTime = Date.now();
-    await doReads();
-    return;
-  }
+disk(async (backend, checkDiskUsage) => {
+  const store = new QuadStore({ backend });
+  await doWrites(store);
+  console.log('written to disk');
+  const { time: readTime, value: readQty } = await time(() => doReads(store));
+  const diskUsage = await checkDiskUsage();
+  console.log('total time', readTime);
+  console.log('total data', readQty);
+  console.log('join result/s', readQty / readTime * 1000);
+  console.log('disk usage', diskUsage);
+});
 
-  const quad = {
-    subject: vertexes[0],
-    predicate: "p",
-    object: vertexes[1],
-    graph: "g",
-  };
-
-  vertexes.pop();
-  vertexes.unshift("v" + counts);
-
-  await store.put(quad);
-  await doWrites();
-
-}
-
-doWrites();

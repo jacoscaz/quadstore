@@ -261,10 +261,9 @@ export const exportQuad = (quad: TSQuad, defaultGraphValue: string, dataFactory:
 
 export const exportBinding = (binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding => {
   const exportedBinding: TSRdfBinding = Object.create(null);
-  for (const variableName in binding) {
-    if (binding.hasOwnProperty(variableName)) {
-      exportedBinding[variableName] = exportTerm(binding[variableName], false, defaultGraphValue, dataFactory);
-    }
+  for (let k = 0, keys = Object.keys(binding), key; k < keys.length; k += 1) {
+    key = keys[k];
+    exportedBinding[key] = exportTerm(binding[key], false, defaultGraphValue, dataFactory);
   }
   return exportedBinding;
 };

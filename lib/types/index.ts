@@ -183,7 +183,6 @@ export interface TSGetStrategy {
   gt: string[],
   gte: boolean,
   gtr: boolean,
-  valid: boolean,
 }
 
 export interface TSPutStreamOpts {

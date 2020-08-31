@@ -1,6 +1,5 @@
 import {pReduce, termNames} from '../utils/index.js';
 import {compileFilter} from './filtering.js';
-import SortIterator from './iterators/sort-iterator.js';
 import {AsyncIterator} from 'asynciterator';
 import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator.js';
 import {
@@ -42,14 +41,20 @@ const getBindingsIterator = async (store: QuadStore, stage: TSParsedBgpSearchSta
     }
     return acc;
   }, <TSTermName[]>[]);
+  const termsToVarsMapEntries = Object.entries(termsToVarsMap);
   let iterator: AsyncIterator<TSBinding> = results.iterator.transform({ transform: function (quad: TSQuad, done: () => void, push) {
-    const binding: TSBinding = {};
-    for (const term in termsToVarsMap) {
-      if (termsToVarsMap.hasOwnProperty(term)) {
-        // @ts-ignore
-        binding[termsToVarsMap[term]] = quad[term];
-      }
+    const binding: TSBinding = Object.create(null);
+    for (let e = 0, entry; e < termsToVarsMapEntries.length; e += 1) {
+      entry = termsToVarsMapEntries[e];
+      // @ts-ignore
+      binding[entry[1]] = quad[entry[0]];
     }
+    // for (const term in termsToVarsMap) {
+    //   if (termsToVarsMap.hasOwnProperty(term)) {
+    //     // @ts-ignore
+    //     binding[termsToVarsMap[term]] = quad[term];
+    //   }
+    // }
     push(binding);
     done();
   }});

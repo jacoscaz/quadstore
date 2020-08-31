@@ -43,7 +43,7 @@ import {
   streamToArray,
   termNames,
 } from './utils/index.js';
-import {getApproximateSize, getStream} from './get/index.js';
+import {getApproximateSize, getStream, getInit} from './get/index.js';
 import {searchStream} from './search/index.js';
 
 export class QuadStore extends events.EventEmitter implements TSStore {
@@ -84,6 +84,7 @@ export class QuadStore extends events.EventEmitter implements TSStore {
   }
 
   _initialize() {
+    getInit(this);
     this.emit('ready');
   }
 

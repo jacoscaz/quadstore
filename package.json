@@ -60,7 +60,8 @@
     "asynciterator": "^3.0.1",
     "js-sorted-set": "^0.6.0",
     "levelup": "^4.4.0",
-    "sparqljs": "^3.1.1"
+    "sparqljs": "^3.1.1",
+    "turbo-json-parse": "^2.3.0"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
   "contributors": [

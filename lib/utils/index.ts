@@ -6,6 +6,8 @@ import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 import {DataFactory} from 'rdf-js';
+// @ts-ignore
+import compile from 'turbo-json-parse';
 
 export const termNames: TSTermName[] = [
   TSTermName.SUBJECT,
@@ -96,12 +98,21 @@ export const serializeQuad = (quad: TSQuad): string => {
   return JSON.stringify(quad);
 };
 
+const parseQuad = compile({
+  type: 'object',
+  properties: {
+    subject: {type: 'string'},
+    predicate: {type: 'string'},
+    object: {type: 'string'},
+    graph: {type: 'string'},
+  }
+})
+
 export const deserializeQuad = (str: string): TSQuad => {
-  return JSON.parse(str);
+  return parseQuad(str.toString());
 };
 
 export { nanoid };
-
 
 class BatchingIterator<T> extends TransformIterator<T, T> {
 

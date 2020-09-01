@@ -37,7 +37,6 @@ const doReads = async (store: QuadStore) => {
   return count;
 };
 
-
 disk(async (backend, checkDiskUsage) => {
   const store = new QuadStore({ backend });
   await doWrites(store);

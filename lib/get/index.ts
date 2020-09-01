@@ -8,9 +8,9 @@ import {
   TSResultType,
   TSTermName,
   TSIndex,
-  TSRange, TSQuad,
+  TSRange,
 } from '../types';
-import {AsyncIterator, TransformIterator, SimpleTransformIterator} from 'asynciterator';
+import {SimpleTransformIterator} from 'asynciterator';
 import {deserializeQuad} from '../utils';
 
 type TSPatternTypes = Record<TSTermName, string>;
@@ -77,10 +77,6 @@ const getIndexMatchFn = (index: TSIndex): TSIndexMatchFn => {
 
 const getIndexMatchFnPairs = (store: QuadStore): TSIndexMatchFnPair[] => {
   return store.indexes.map(index => [index, getIndexMatchFn(index)]);
-};
-
-export const generateInit = (store: QuadStore) => {
-  indexMatchFnPair = getIndexMatchFnPairs(store);
 };
 
 const selectIndex = (pattern: TSPattern): TSIndex|undefined => {
@@ -189,7 +185,7 @@ const rangeToLevelOpts = (rangeOpts: TSRangeOpts): TSLevelOpts => {
 };
 
 export const getInit = (store: QuadStore): void => {
-  generateInit(store);
+  indexMatchFnPair = getIndexMatchFnPairs(store);
 };
 
 export const getStream = async (store: QuadStore, pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadStreamResult> => {

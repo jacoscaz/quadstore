@@ -46,18 +46,15 @@ class NestedLoopJoinIterator<T> extends BufferedIterator<T> {
       }
 
       if (outerItem === null) {
-        // @ts-ignore
         outerItem = outerIterator.read();
         if (outerItem === null) {
           waitingOnOuter = true;
-          // @ts-ignore
           outerIterator.once('readable', loop);
           return;
         }
         return getInnerIterator(outerItem)
           .then((_innerIterator) => {
             innerIterator = _innerIterator;
-            // @ts-ignore
             innerIterator.once('end', () => {
               innerItem = null;
               outerItem = null;
@@ -77,7 +74,9 @@ class NestedLoopJoinIterator<T> extends BufferedIterator<T> {
             loop();
           })
           .catch((err) => {
-            console.log('INNER ITERATOR ERROR', err);
+            const wrappedErr = new Error(`Inner iterator error`);
+            wrappedErr.stack += `\nCaused By: ${err.stack}`;
+            this.emit('error', wrappedErr);
             outerItem = null;
             loop();
           });

@@ -5,45 +5,58 @@ import {
   TSParsedBgpSearchStage, TSPattern, TSResultType,
   TSSearchOpts, TSSearchStageType,
   TSSimplePattern,
-  TSTermName
+  TSVariables,
+  TSVarsToTermsMap,
 } from '../types';
 import {AsyncIterator} from 'asynciterator';
 import NestedLoopJoinIterator from './iterators/nested-loop-join-iterator';
 import {getBindingsIterator} from './bgp';
 
+type TSMergeBindingsFn = (a: TSBinding, b: TSBinding) => TSBinding;
+type TSFillPatternWithBindingFn = <T extends TSSimplePattern|TSPattern>(p: T, b: TSBinding) => T;
+
+const getMergeBindingsFn = (firstVars: TSVariables, secondVars: TSVariables): TSMergeBindingsFn => {
+  let fn = '(firstBinding, secondBinding) => {';
+  fn += '\n  const mergedBinding = Object.create(null);';
+  Object.keys(firstVars).forEach((variableName) => {
+    fn += `\n  mergedBinding['${variableName}'] = firstBinding['${variableName}'];`;
+  });
+  Object.keys(secondVars).forEach((variableName) => {
+    fn += `\n  mergedBinding['${variableName}'] = secondBinding['${variableName}'];`;
+  });
+  fn += '\n  return mergedBinding;';
+  fn += '};';
+  return eval(fn);
+};
+
+const getFillPatternWithBindingFn = (varToTermsMap: TSVarsToTermsMap): TSFillPatternWithBindingFn => {
+  let fn = '(pattern, binding) => {';
+  fn += '\n  const filled = { ...pattern };';
+  Object.entries(varToTermsMap).forEach(([variableName, termName]) => {
+    fn += `\n  filled['${termName}'] = binding['${variableName}'];`;
+  });
+  fn += '\n  return filled;';
+  fn += '\n};';
+  return eval(fn);
+};
+
 export const nestedJoin = async (store: QuadStore, prevResult: TSBindingStreamResult, nextStage: TSParsedBgpSearchStage, opts?: TSSearchOpts): Promise<TSBindingStreamResult> => {
-  const nextCommonVarsToTermsMap: [string, TSTermName][] = [];
-  for (let v = 0, variableNames = Object.keys(nextStage.variables), variableName; v < variableNames.length; v += 1) {
-    variableName = variableNames[v];
-    nextCommonVarsToTermsMap.push([variableName, nextStage.varsToTermsMap[variableName]]);
-  }
+  const fillPatternWithBinding = getFillPatternWithBindingFn(nextStage.varsToTermsMap);
   const getInnerIterator = async (outerBinding: TSBinding): Promise<AsyncIterator<TSBinding>> => {
-    const innerPattern: TSSimplePattern = { ...nextStage.pattern };
-    const innerParsedPattern: TSPattern = { ...nextStage.parsedPattern };
-    for (let e = 0, entry; e < nextCommonVarsToTermsMap.length; e += 1) {
-      entry = nextCommonVarsToTermsMap[e];
-      // @ts-ignore
-      innerPattern[entry[1]] = outerBinding[entry[0]];
-      // @ts-ignore
-      innerParsedPattern[entry[1]] = outerBinding[entry[0]];
-    }
     const { iterator } = await getBindingsIterator(store, {
       type: TSSearchStageType.BGP,
       optional: false,
-      pattern: innerPattern,
-      parsedPattern: innerParsedPattern,
+      pattern: fillPatternWithBinding(nextStage.pattern, outerBinding),
+      parsedPattern: fillPatternWithBinding(nextStage.parsedPattern, outerBinding),
       termsToVarsMap: nextStage.termsToVarsMap,
       varsToTermsMap: nextStage.varsToTermsMap,
       variables: nextStage.variables,
     }, opts);
     return iterator;
   };
-  const mergeItems = (firstBinding: TSBinding, secondBinding: TSBinding) => ({
-    ...firstBinding,
-    ...secondBinding,
-  });
+  const mergeBindings = getMergeBindingsFn(prevResult.variables, nextStage.variables);
   return {
-    iterator: new NestedLoopJoinIterator<TSBinding>(prevResult.iterator, getInnerIterator, mergeItems),
+    iterator: new NestedLoopJoinIterator<TSBinding>(prevResult.iterator, getInnerIterator, mergeBindings),
     variables: { ...prevResult.variables, ...nextStage.variables },
     sorting: prevResult.sorting,
     type: TSResultType.BINDINGS,

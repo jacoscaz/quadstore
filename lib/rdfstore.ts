@@ -12,14 +12,7 @@ import {
 import assert from 'assert';
 import {EventEmitter} from 'events';
 import {QuadStore} from './quadstore.js';
-import {
-  importSimpleTerm,
-  importPattern,
-  exportQuad,
-  importQuad,
-  importSearchStage,
-  exportBinding
-} from './rdf/serialization';
+import { RdfSerialization } from './rdf/serialization';
 import {sparqlStream} from './sparql/index.js';
 import {TransformIterator, AsyncIterator} from 'asynciterator';
 import {
@@ -62,6 +55,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   readonly quadstore: QuadStore;
   readonly dataFactory: DataFactory;
+  readonly serialization: RdfSerialization;
 
   constructor(opts: TSRdfStoreOpts) {
     super();
@@ -69,9 +63,13 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     const {dataFactory} = opts;
     this.dataFactory = dataFactory;
+    this.serialization = new RdfSerialization(opts.prefixes ?? {
+      expandTerm: term => term,
+      compactIri: iri => iri
+    });
     const quadstoreOpts: TSStoreOpts = {
       ...opts,
-      defaultGraph: importSimpleTerm(dataFactory.defaultGraph(), true, 'urn:rdfstore:dg'),
+      defaultGraph: this.serialization.importSimpleTerm(dataFactory.defaultGraph(), true, 'urn:rdfstore:dg'),
     };
     this.quadstore = new QuadStore(quadstoreOpts);
     this.quadstore.on('ready', () => {
@@ -155,7 +153,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
   // **************************************************************************
 
   async getApproximateSize(pattern: TSRdfPattern, opts: TSEmptyOpts) {
-    const importedTerms: TSPattern = importPattern(pattern, this.quadstore.defaultGraph);
+    const importedTerms: TSPattern = this.serialization.importPattern(pattern, this.quadstore.defaultGraph);
     return await this.quadstore.getApproximateSize(importedTerms, opts);
   }
 
@@ -183,34 +181,34 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
   }
 
   async put(quad: TSRdfQuad, opts: TSEmptyOpts | undefined = {}): Promise<TSRdfVoidResult> {
-    return await this.quadstore.put(importQuad(quad, this.quadstore.defaultGraph), opts);
+    return await this.quadstore.put(this.serialization.importQuad(quad, this.quadstore.defaultGraph), opts);
   }
 
   async multiPut(quads: TSRdfQuad[], opts: TSEmptyOpts | undefined = {}): Promise<TSRdfVoidResult> {
-    const importedQuads = quads.map(quad => importQuad(quad, this.quadstore.defaultGraph));
+    const importedQuads = quads.map(quad => this.serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiPut(importedQuads, opts);
   }
 
   async del(oldQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
-    return await this.quadstore.del(importQuad(oldQuad, this.quadstore.defaultGraph), opts);
+    return await this.quadstore.del(this.serialization.importQuad(oldQuad, this.quadstore.defaultGraph), opts);
   }
 
   async multiDel(oldQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
-    let importedOldQuads = oldQuads.map(quad => importQuad(quad, this.quadstore.defaultGraph));
+    let importedOldQuads = oldQuads.map(quad => this.serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiDel(importedOldQuads, opts);
   }
 
   async patch(oldQuad: TSRdfQuad, newQuad: TSRdfQuad, opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
     return await this.quadstore.patch(
-      importQuad(oldQuad, this.quadstore.defaultGraph),
-      importQuad(newQuad, this.quadstore.defaultGraph),
+      this.serialization.importQuad(oldQuad, this.quadstore.defaultGraph),
+      this.serialization.importQuad(newQuad, this.quadstore.defaultGraph),
       opts,
     );
   }
 
   async multiPatch(oldQuads: TSRdfQuad[], newQuads: TSRdfQuad[], opts: TSEmptyOpts): Promise<TSRdfVoidResult> {
-    const importedOldQuads = oldQuads.map(quad => importQuad(quad, this.quadstore.defaultGraph));
-    const importedNewQuads = newQuads.map(quad => importQuad(quad, this.quadstore.defaultGraph));
+    const importedOldQuads = oldQuads.map(quad => this.serialization.importQuad(quad, this.quadstore.defaultGraph));
+    const importedNewQuads = newQuads.map(quad => this.serialization.importQuad(quad, this.quadstore.defaultGraph));
     return await this.quadstore.multiPatch(importedOldQuads, importedNewQuads, opts);
   }
 
@@ -221,21 +219,21 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
   }
 
   async search(stages: TSRdfSearchStage[], opts: TSSearchOpts): Promise<TSRdfQuadArrayResult|TSRdfBindingArrayResult> {
-    const importedStages: TSSearchStage[] = stages.map(stage => importSearchStage(stage, this.quadstore.defaultGraph));
+    const importedStages: TSSearchStage[] = stages.map(stage => this.serialization.importSearchStage(stage, this.quadstore.defaultGraph));
     const result = await this.quadstore.search(importedStages, opts);
     switch (result.type) {
       case TSResultType.QUADS:
         return {
           ...result,
           items: result.items.map(
-            quad => exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory)
+            quad => this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory)
           ),
         };
       case TSResultType.BINDINGS:
         return {
           ...result,
           items: result.items.map(
-            binding => exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory)
+            binding => this.serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory)
           ),
         };
       default:
@@ -254,7 +252,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     if (isNil(opts)) opts = {};
     assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
     assert(isObject(opts), 'The "opts" argument is not an object.');
-    const importedMatchTerms: TSPattern = importPattern(pattern, this.quadstore.defaultGraph);
+    const importedMatchTerms: TSPattern = this.serialization.importPattern(pattern, this.quadstore.defaultGraph);
     const results = await this.quadstore.getStream(importedMatchTerms, opts);
     return {
       type: TSResultType.QUADS,
@@ -279,18 +277,18 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   async searchStream(stages: TSRdfSearchStage[], opts?: TSSearchOpts): Promise<TSRdfQuadStreamResult|TSRdfBindingStreamResult> {
     if (isNil(opts)) opts = {};
-    const importedStages: TSSearchStage[] = stages.map(stage => importSearchStage(stage, this.quadstore.defaultGraph));
+    const importedStages: TSSearchStage[] = stages.map(stage => this.serialization.importSearchStage(stage, this.quadstore.defaultGraph));
     const results = await this.quadstore.searchStream(importedStages, opts);
     let iterator;
     switch (results.type) {
       case TSResultType.BINDINGS:
         iterator = results.iterator.map((binding: TSBinding) => {
-          return exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory);
+          return this.serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory);
         });
         return { ...results, iterator };
       case TSResultType.QUADS:
         iterator = results.iterator.map((quad: TSQuad) => {
-          return exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
+          return this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
         });
         return { ...results, iterator };
       default:
@@ -307,13 +305,13 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   _createQuadSerializerMapper(): (quad: TSRdfQuad) => TSQuad {
     return (quad: TSRdfQuad): TSQuad => {
-      return importQuad(quad, this.quadstore.defaultGraph);
+      return this.serialization.importQuad(quad, this.quadstore.defaultGraph);
     }
   }
 
   _createQuadDeserializerMapper(): (quad: TSQuad) => TSRdfQuad {
     return (quad: TSQuad): TSRdfQuad => {
-      return exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
+      return this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
     };
   }
 

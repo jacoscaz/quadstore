@@ -364,12 +364,18 @@ export interface TSRdfProjectSearchStage {
 
 export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage|TSRdfConstructSearchStage|TSRdfProjectSearchStage;
 
+export interface TSRdfPrefixes {
+  expandTerm(term: string): string | null;
+  compactIri(iri: string): string;
+}
+
 export interface TSRdfStoreOpts {
   backend: AbstractLevelDOWN,
   boundary?: string,
   separator?: string,
   indexes?: TSTermName[][],
   dataFactory: DataFactory,
+  prefixes?: TSRdfPrefixes
 }
 
 export interface TSSparqlOpts {

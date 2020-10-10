@@ -6,6 +6,7 @@ const utils = require('../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
 const AsyncIterator = require('asynciterator');
+const xsd = require('rdflib/lib/xsd');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -99,6 +100,32 @@ module.exports = () => {
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
         should(matchedQuads[0]).deepEqual(quads[1]);
+      });
+
+      it('should match quads by numeric object', async function () {
+        const store = this.store;
+        const rs = store;
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s'),
+            factory.namedNode('http://ex.com/p'),
+            factory.literal('1', xsd.integer),
+            factory.namedNode('http://ex.com/g2')
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s'),
+            factory.namedNode('http://ex.com/p'),
+            factory.literal('2', xsd.integer),
+            factory.namedNode('http://ex.com/g2')
+          )
+        ];
+        const source = new AsyncIterator.ArrayIterator(quads);
+        await utils.waitForEvent(store.import(source), 'end', true);
+        const object = factory.literal('2', xsd.integer);
+        const matchedQuads = await utils.streamToArray(rs.match(null, null, object));
+        stripTermSerializedValue(matchedQuads);
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0].equals(quads[1])).equal(true);
       });
 
       it('should match quads by graph',  async function () {

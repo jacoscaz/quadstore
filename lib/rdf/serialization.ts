@@ -162,7 +162,7 @@ export const importTerm = (term: Term|TSRdfRange, isGraph: boolean, defaultGraph
       case 'DefaultGraph':
         return defaultGraphValue;
       case 'Literal':
-        return importLiteralTerm(term, rangeBoundary);
+        return importLiteralTerm(term);
       default:
         // @ts-ignore
         throw new Error(`Unexpected termType: "${term.termType}".`);

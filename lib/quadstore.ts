@@ -24,7 +24,7 @@ import {
   TSVoidResult,
 } from './types/index.js';
 import assert from 'assert';
-import events from 'events';
+import {EventEmitter} from 'events';
 import levelup from 'levelup';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 
@@ -46,7 +46,7 @@ import {
 import {getApproximateSize, getStream, getInit} from './get/index.js';
 import {searchStream} from './search/index.js';
 
-export class QuadStore extends events.EventEmitter implements TSStore {
+export class QuadStore extends EventEmitter implements TSStore {
 
   readonly db: AbstractLevelDOWN;
   readonly abstractLevelDOWN: AbstractLevelDOWN;

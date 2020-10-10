@@ -295,16 +295,16 @@ export class RdfSerialization {
   importSimplePattern = (terms: TSRdfSimplePattern, defaultGraph: string): TSSimplePattern => {
     const importedPattern: TSSimplePattern = {};
     if (terms.subject) {
-      importedPattern.subject = this.importSimpleTerm(terms.subject, false, defaultGraph, false);
+      importedPattern.subject = this.importSimpleTerm(terms.subject, false, defaultGraph);
     }
     if (terms.predicate) {
-      importedPattern.predicate = this.importSimpleTerm(terms.predicate, false, defaultGraph, true);
+      importedPattern.predicate = this.importSimpleTerm(terms.predicate, false, defaultGraph);
     }
     if (terms.object) {
-      importedPattern.object = this.importSimpleTerm(terms.object, false, defaultGraph, false);
+      importedPattern.object = this.importSimpleTerm(terms.object, false, defaultGraph);
     }
     if (terms.graph) {
-      importedPattern.graph = this.importSimpleTerm(terms.graph, true, defaultGraph, false);
+      importedPattern.graph = this.importSimpleTerm(terms.graph, true, defaultGraph);
     }
     return importedPattern;
   };

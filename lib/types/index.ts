@@ -365,7 +365,7 @@ export interface TSRdfProjectSearchStage {
 export type TSRdfSearchStage = TSRdfBgpSearchStage|TSRdfFilterSearchStage|TSRdfConstructSearchStage|TSRdfProjectSearchStage;
 
 export interface TSRdfPrefixes {
-  expandTerm(term: string): string | null;
+  expandTerm(term: string): string;
   compactIri(iri: string): string;
 }
 

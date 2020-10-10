@@ -47,7 +47,7 @@ export class RdfSerialization {
 
   exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
     const [, , datatype, language, value] = term.split('\u0001');
-    const datatypeIri = this.expandRequiredTerm(datatype);
+    const datatypeIri = this.prefixes.expandTerm(datatype);
     switch (datatypeIri) {
       case rdfLangString:
         if (language !== '') {
@@ -120,7 +120,7 @@ export class RdfSerialization {
         }
         return this.exportLiteralTerm(term, dataFactory);
       default:
-        return dataFactory.namedNode(this.expandRequiredTerm(term));
+        return dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -202,7 +202,7 @@ export class RdfSerialization {
       case '\u0001':
         throw new Error('No literals as subject');
       default:
-        return dataFactory.namedNode(this.expandRequiredTerm(term));
+        return dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -218,7 +218,7 @@ export class RdfSerialization {
       case '\u0001':
         throw new Error('No literals as predicates');
       default:
-        return dataFactory.namedNode(this.expandRequiredTerm(term));
+        return dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -234,7 +234,7 @@ export class RdfSerialization {
       case '\u0001':
         return this.exportLiteralTerm(term, dataFactory);
       default:
-        return dataFactory.namedNode(this.expandRequiredTerm(term));
+        return dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -253,7 +253,7 @@ export class RdfSerialization {
       case '\u0001':
         throw new Error('No literals as graphs');
       default:
-        return dataFactory.namedNode(this.expandRequiredTerm(term));
+        return dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -341,13 +341,5 @@ export class RdfSerialization {
       case TSSearchStageType.PROJECT:
         return <TSProjectSearchStage>stage;
     }
-  }
-
-  private expandRequiredTerm(term: string): string {
-    const requiredTerm = this.prefixes.expandTerm(term);
-    if (!requiredTerm) {
-      throw new Error(`Term "${term}" is disabled. Cannot export.`);
-    }
-    return requiredTerm;
   }
 }

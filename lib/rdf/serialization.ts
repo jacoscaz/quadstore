@@ -42,10 +42,13 @@ const xsdUnsignedByte = xsd + 'unsignedByte';
 const xsdPositiveInteger = xsd + 'positiveInteger';
 
 export class RdfSerialization {
-  constructor(readonly prefixes: TSRdfPrefixes) {
+  readonly prefixes: TSRdfPrefixes
+
+  constructor(prefixes: TSRdfPrefixes) {
+    this.prefixes = prefixes;
   }
 
-  exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
+  exportLiteralTerm(term: string, dataFactory: DataFactory): Literal {
     const [, , datatype, language, value] = term.split('\u0001');
     const datatypeIri = this.prefixes.expandTerm(datatype);
     switch (datatypeIri) {
@@ -59,7 +62,7 @@ export class RdfSerialization {
     }
   }
 
-  importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
+  importLiteralTerm(term: Literal, rangeBoundary = false): string {
     const { language, datatype, value } = term;
     if (language !== '') {
       return `\u0001\u0001${rdfLangString}\u0001${language}\u0001${value}`;
@@ -99,7 +102,7 @@ export class RdfSerialization {
     }
   }
 
-  exportTerm = (term: string, isGraph: boolean, defaultGraphValue: string, dataFactory: DataFactory): Term => {
+  exportTerm(term: string, isGraph: boolean, defaultGraphValue: string, dataFactory: DataFactory): Term {
     if (!term) {
       throw new Error(`Nil term "${term}". Cannot export.`);
     }
@@ -124,7 +127,7 @@ export class RdfSerialization {
     }
   }
 
-  importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string => {
+  importSimpleTerm(term: Term, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string {
     if (!term) {
       if (isGraph) {
         return defaultGraphValue;
@@ -148,7 +151,7 @@ export class RdfSerialization {
     }
   }
 
-  importRange = (range: TSRdfRange, rangeBoundary: boolean = false): TSRange => {
+  importRange(range: TSRdfRange, rangeBoundary: boolean = false): TSRange {
     const importedRange: TSRange = {};
     if (range.lt) importedRange.lt = this.importLiteralTerm(range.lt, rangeBoundary);
     if (range.lte) importedRange.lte = this.importLiteralTerm(range.lte, rangeBoundary);
@@ -157,7 +160,7 @@ export class RdfSerialization {
     return importedRange;
   }
 
-  importTerm = (term: Term | TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string | TSRange => {
+  importTerm(term: Term | TSRdfRange, isGraph: boolean, defaultGraphValue: string, rangeBoundary: boolean = false): string | TSRange {
     if ('termType' in term) {
       switch (term.termType) {
         case 'NamedNode':
@@ -181,7 +184,7 @@ export class RdfSerialization {
     }
   }
 
-  importQuad = (quad: TSRdfQuad, defaultGraphValue: string): TSQuad => {
+  importQuad(quad: TSRdfQuad, defaultGraphValue: string): TSQuad {
     return {
       subject: this.importSimpleTerm(quad.subject, false, defaultGraphValue),
       predicate: this.importSimpleTerm(quad.predicate, false, defaultGraphValue),
@@ -190,7 +193,7 @@ export class RdfSerialization {
     };
   }
 
-  private exportQuadSubject = (term: string, dataFactory: DataFactory): Quad_Subject => {
+  private exportQuadSubject(term: string, dataFactory: DataFactory): Quad_Subject {
     switch (term[0]) {
       case '_':
         return dataFactory.blankNode(term.substr(2));
@@ -206,7 +209,7 @@ export class RdfSerialization {
     }
   }
 
-  private exportQuadPredicate = (term: string, dataFactory: DataFactory): Quad_Predicate => {
+  private exportQuadPredicate(term: string, dataFactory: DataFactory): Quad_Predicate {
     switch (term[0]) {
       case '_':
         throw new Error('No blank nodes as predicates');
@@ -222,7 +225,7 @@ export class RdfSerialization {
     }
   }
 
-  private exportQuadObject = (term: string, dataFactory: DataFactory): Quad_Object => {
+  private exportQuadObject(term: string, dataFactory: DataFactory): Quad_Object {
     switch (term[0]) {
       case '_':
         return dataFactory.blankNode(term.substr(2));
@@ -238,7 +241,7 @@ export class RdfSerialization {
     }
   }
 
-  private exportQuadGraph = (term: string, defaultGraphValue: string, dataFactory: DataFactory): Quad_Graph => {
+  private exportQuadGraph(term: string, defaultGraphValue: string, dataFactory: DataFactory): Quad_Graph {
     if (term === defaultGraphValue) {
       return dataFactory.defaultGraph();
     }
@@ -257,7 +260,7 @@ export class RdfSerialization {
     }
   }
 
-  exportQuad = (quad: TSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad => {
+  exportQuad(quad: TSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad {
     return dataFactory.quad(
       this.exportQuadSubject(quad.subject, dataFactory),
       this.exportQuadPredicate(quad.predicate, dataFactory),
@@ -266,7 +269,7 @@ export class RdfSerialization {
     );
   };
 
-  exportBinding = (binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding => {
+  exportBinding(binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding {
     const exportedBinding: TSRdfBinding = Object.create(null);
     for (let k = 0, keys = Object.keys(binding), key; k < keys.length; k += 1) {
       key = keys[k];
@@ -275,7 +278,7 @@ export class RdfSerialization {
     return exportedBinding;
   };
 
-  importPattern = (terms: TSRdfPattern, defaultGraph: string): TSPattern => {
+  importPattern(terms: TSRdfPattern, defaultGraph: string): TSPattern {
     const importedTerms: TSPattern = {};
     if (terms.subject) {
       importedTerms.subject = this.importTerm(terms.subject, false, defaultGraph, true);
@@ -292,7 +295,7 @@ export class RdfSerialization {
     return importedTerms;
   };
 
-  importSimplePattern = (terms: TSRdfSimplePattern, defaultGraph: string): TSSimplePattern => {
+  importSimplePattern(terms: TSRdfSimplePattern, defaultGraph: string): TSSimplePattern {
     const importedPattern: TSSimplePattern = {};
     if (terms.subject) {
       importedPattern.subject = this.importSimpleTerm(terms.subject, false, defaultGraph);
@@ -309,7 +312,7 @@ export class RdfSerialization {
     return importedPattern;
   };
 
-  importSearchStage = (stage: TSRdfSearchStage, defaultGraph: string): TSSearchStage => {
+  importSearchStage(stage: TSRdfSearchStage, defaultGraph: string): TSSearchStage {
     switch (stage.type) {
       case TSSearchStageType.BGP:
         return { ...stage, pattern: this.importSimplePattern(stage.pattern, defaultGraph) };

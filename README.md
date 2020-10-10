@@ -406,8 +406,7 @@ implements the `Source`, `Sink` and `Store` interfaces. Additionally, the
 
 Instantiates a new store. The `RdfStore` class extends `QuadStore` and requires
 an instance of a leveldb backend as the `opts.backend` argument. In 
-addition to all options supported by `QuadStore`, `RdfStore` supports the 
-following:
+addition to all options supported by `QuadStore`, `RdfStore` requires a data factory, e.g. 
 
     opts.dataFactory = require('@rdf-data-model');  // REQUIRED: instance of RDF/JS' dataFactory 
 
@@ -416,6 +415,21 @@ The `dataFactory` option *must* be an implementation of the
 
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
 - [N3.js' N3.DataFactory](https://www.npmjs.com/package/n3)
+
+Also, `RdfStore` can be configured with a `prefixes` object that defines a
+reversible mapping of IRIs to abbreviated forms, with the intention of reducing
+the storage cost where common HTTP prefixes are known in advance.
+
+The `prefixes` object defines a bijection using two functions `expandTerm` and
+`compactIri`, both of which take a string parameter and return a string, as in
+the following example:
+
+    opts.prefixes = {
+      expandTerm: term => term.replace(/^ex:/, 'http://example.com/'),
+      compactIri: iri => iri.replace(/^http:\/\/example\.com\//, 'ex:')
+    }
+
+This will replace the IRI `http://example.com/a` with `ex:a` in storage.
 
 #### Graph API, Quad and Term instances
 

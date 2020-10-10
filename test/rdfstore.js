@@ -15,6 +15,7 @@ module.exports = () => {
         dataFactory,
         backend: this.db,
         indexes: this.indexes,
+        prefixes: this.prefixes
       });
       await utils.waitForEvent(this.store, 'ready');
     });

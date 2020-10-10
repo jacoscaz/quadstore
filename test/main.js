@@ -12,11 +12,13 @@ const rdfSuite = require('./rdf');
 const searchSuite = require('./search');
 const rdfStoreSuite = require('./rdfstore');
 const quadStoreSuite = require('./quadstore');
+const serialization = require('./serialization');
 
 const remove = util.promisify(fs.remove);
 
 rdfSuite();
 searchSuite();
+serialization();
 
 describe('MemDOWN backend, standard indexes', () => {
 
@@ -26,6 +28,21 @@ describe('MemDOWN backend, standard indexes', () => {
   });
 
   quadStoreSuite();
+  rdfStoreSuite();
+
+});
+
+describe('MemDOWN backend, standard indexes, prefixes', () => {
+
+  beforeEach(async function () {
+    this.db = memdown();
+    this.indexes = null;
+    this.prefixes = {
+      expandTerm: term => term.replace(/^ex:/, 'http://ex.com/'),
+      compactIri: iri => iri.replace(/^http:\/\/ex\.com\//, 'ex:')
+    };
+  });
+
   rdfStoreSuite();
 
 });

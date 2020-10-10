@@ -43,22 +43,24 @@ const xsdPositiveInteger = xsd + 'positiveInteger';
 
 export class RdfSerialization {
   readonly prefixes: TSRdfPrefixes
+  readonly dataFactory: DataFactory;
 
-  constructor(prefixes: TSRdfPrefixes) {
+  constructor(dataFactory: DataFactory, prefixes: TSRdfPrefixes) {
+    this.dataFactory = dataFactory;
     this.prefixes = prefixes;
   }
 
-  exportLiteralTerm(term: string, dataFactory: DataFactory): Literal {
+  exportLiteralTerm(term: string): Literal {
     const [, , datatype, language, value] = term.split('\u0001');
     const datatypeIri = this.prefixes.expandTerm(datatype);
     switch (datatypeIri) {
       case rdfLangString:
         if (language !== '') {
-          return dataFactory.literal(value, language);
+          return this.dataFactory.literal(value, language);
         }
-        return dataFactory.literal(value);
+        return this.dataFactory.literal(value);
       default:
-        return dataFactory.literal(value, dataFactory.namedNode(datatypeIri));
+        return this.dataFactory.literal(value, this.dataFactory.namedNode(datatypeIri));
     }
   }
 
@@ -102,28 +104,28 @@ export class RdfSerialization {
     }
   }
 
-  exportTerm(term: string, isGraph: boolean, defaultGraphValue: string, dataFactory: DataFactory): Term {
+  exportTerm(term: string, isGraph: boolean, defaultGraphValue: string): Term {
     if (!term) {
       throw new Error(`Nil term "${term}". Cannot export.`);
     }
     if (term === defaultGraphValue) {
-      return dataFactory.defaultGraph();
+      return this.dataFactory.defaultGraph();
     }
     switch (term[0]) {
       case '_':
-        return dataFactory.blankNode(term.substr(2));
+        return this.dataFactory.blankNode(term.substr(2));
       case '?':
-        if (dataFactory.variable) {
-          return dataFactory.variable(term.substr(1));
+        if (this.dataFactory.variable) {
+          return this.dataFactory.variable(term.substr(1));
         }
         throw new Error('DataFactory does not support variables');
       case '\u0001':
         if (isGraph) {
           throw new Error(`Invalid graph term "${term}" (graph cannot be a literal).`);
         }
-        return this.exportLiteralTerm(term, dataFactory);
+        return this.exportLiteralTerm(term);
       default:
-        return dataFactory.namedNode(this.prefixes.expandTerm(term));
+        return this.dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
@@ -193,87 +195,87 @@ export class RdfSerialization {
     };
   }
 
-  private exportQuadSubject(term: string, dataFactory: DataFactory): Quad_Subject {
+  private exportQuadSubject(term: string): Quad_Subject {
     switch (term[0]) {
       case '_':
-        return dataFactory.blankNode(term.substr(2));
+        return this.dataFactory.blankNode(term.substr(2));
       case '?':
-        if (dataFactory.variable) {
-          return dataFactory.variable(term.substr(1));
+        if (this.dataFactory.variable) {
+          return this.dataFactory.variable(term.substr(1));
         }
         throw new Error('DataFactory does not support variables');
       case '\u0001':
         throw new Error('No literals as subject');
       default:
-        return dataFactory.namedNode(this.prefixes.expandTerm(term));
+        return this.dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
-  private exportQuadPredicate(term: string, dataFactory: DataFactory): Quad_Predicate {
+  private exportQuadPredicate(term: string): Quad_Predicate {
     switch (term[0]) {
       case '_':
         throw new Error('No blank nodes as predicates');
       case '?':
-        if (dataFactory.variable) {
-          return dataFactory.variable(term.substr(1));
+        if (this.dataFactory.variable) {
+          return this.dataFactory.variable(term.substr(1));
         }
         throw new Error('DataFactory does not support variables');
       case '\u0001':
         throw new Error('No literals as predicates');
       default:
-        return dataFactory.namedNode(this.prefixes.expandTerm(term));
+        return this.dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
-  private exportQuadObject(term: string, dataFactory: DataFactory): Quad_Object {
+  private exportQuadObject(term: string): Quad_Object {
     switch (term[0]) {
       case '_':
-        return dataFactory.blankNode(term.substr(2));
+        return this.dataFactory.blankNode(term.substr(2));
       case '?':
-        if (dataFactory.variable) {
-          return dataFactory.variable(term.substr(1));
+        if (this.dataFactory.variable) {
+          return this.dataFactory.variable(term.substr(1));
         }
         throw new Error('DataFactory does not support variables');
       case '\u0001':
-        return this.exportLiteralTerm(term, dataFactory);
+        return this.exportLiteralTerm(term);
       default:
-        return dataFactory.namedNode(this.prefixes.expandTerm(term));
+        return this.dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
-  private exportQuadGraph(term: string, defaultGraphValue: string, dataFactory: DataFactory): Quad_Graph {
+  private exportQuadGraph(term: string, defaultGraphValue: string): Quad_Graph {
     if (term === defaultGraphValue) {
-      return dataFactory.defaultGraph();
+      return this.dataFactory.defaultGraph();
     }
     switch (term[0]) {
       case '_':
-        return dataFactory.blankNode(term.substr(2));
+        return this.dataFactory.blankNode(term.substr(2));
       case '?':
-        if (dataFactory.variable) {
-          return dataFactory.variable(term.substr(1));
+        if (this.dataFactory.variable) {
+          return this.dataFactory.variable(term.substr(1));
         }
         throw new Error('DataFactory does not support variables');
       case '\u0001':
         throw new Error('No literals as graphs');
       default:
-        return dataFactory.namedNode(this.prefixes.expandTerm(term));
+        return this.dataFactory.namedNode(this.prefixes.expandTerm(term));
     }
   }
 
-  exportQuad(quad: TSQuad, defaultGraphValue: string, dataFactory: DataFactory): TSRdfQuad {
-    return dataFactory.quad(
-      this.exportQuadSubject(quad.subject, dataFactory),
-      this.exportQuadPredicate(quad.predicate, dataFactory),
-      this.exportQuadObject(quad.object, dataFactory),
-      this.exportQuadGraph(quad.graph, defaultGraphValue, dataFactory)
+  exportQuad(quad: TSQuad, defaultGraphValue: string): TSRdfQuad {
+    return this.dataFactory.quad(
+      this.exportQuadSubject(quad.subject),
+      this.exportQuadPredicate(quad.predicate),
+      this.exportQuadObject(quad.object),
+      this.exportQuadGraph(quad.graph, defaultGraphValue)
     );
   };
 
-  exportBinding(binding: TSBinding, defaultGraphValue: string, dataFactory: DataFactory): TSRdfBinding {
+  exportBinding(binding: TSBinding, defaultGraphValue: string): TSRdfBinding {
     const exportedBinding: TSRdfBinding = Object.create(null);
     for (let k = 0, keys = Object.keys(binding), key; k < keys.length; k += 1) {
       key = keys[k];
-      exportedBinding[key] = this.exportTerm(binding[key], false, defaultGraphValue, dataFactory);
+      exportedBinding[key] = this.exportTerm(binding[key], false, defaultGraphValue);
     }
     return exportedBinding;
   };

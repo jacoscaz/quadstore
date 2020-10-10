@@ -54,7 +54,6 @@ import {
 export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   readonly quadstore: QuadStore;
-  readonly dataFactory: DataFactory;
   readonly serialization: RdfSerialization;
 
   constructor(opts: TSRdfStoreOpts) {
@@ -62,8 +61,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
     assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     const {dataFactory} = opts;
-    this.dataFactory = dataFactory;
-    this.serialization = new RdfSerialization(opts.prefixes || {
+    this.serialization = new RdfSerialization(dataFactory, opts.prefixes || {
       expandTerm: term => term,
       compactIri: iri => iri
     });
@@ -80,6 +78,10 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   async close() {
     await this.quadstore.close();
+  }
+
+  get dataFactory() {
+    return this.serialization.dataFactory;
   }
 
   // **************************************************************************
@@ -226,14 +228,14 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
         return {
           ...result,
           items: result.items.map(
-            quad => this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory)
+            quad => this.serialization.exportQuad(quad, this.quadstore.defaultGraph)
           ),
         };
       case TSResultType.BINDINGS:
         return {
           ...result,
           items: result.items.map(
-            binding => this.serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory)
+            binding => this.serialization.exportBinding(binding, this.quadstore.defaultGraph)
           ),
         };
       default:
@@ -283,12 +285,12 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
     switch (results.type) {
       case TSResultType.BINDINGS:
         iterator = results.iterator.map((binding: TSBinding) => {
-          return this.serialization.exportBinding(binding, this.quadstore.defaultGraph, this.dataFactory);
+          return this.serialization.exportBinding(binding, this.quadstore.defaultGraph);
         });
         return { ...results, iterator };
       case TSResultType.QUADS:
         iterator = results.iterator.map((quad: TSQuad) => {
-          return this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
+          return this.serialization.exportQuad(quad, this.quadstore.defaultGraph);
         });
         return { ...results, iterator };
       default:
@@ -311,7 +313,7 @@ export class RdfStore extends EventEmitter implements TSRdfStore, Store {
 
   _createQuadDeserializerMapper(): (quad: TSQuad) => TSRdfQuad {
     return (quad: TSQuad): TSRdfQuad => {
-      return this.serialization.exportQuad(quad, this.quadstore.defaultGraph, this.dataFactory);
+      return this.serialization.exportQuad(quad, this.quadstore.defaultGraph,);
     };
   }
 

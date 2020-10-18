@@ -164,6 +164,7 @@ export class Quadstore extends EventEmitter implements Store {
       .catch((err) => {
         // TODO: is the destroy() method really supported by AsyncIterator?
         // @ts-ignore
+        iterator.emit('error', err);
         iterator.destroy();
       });
     return <Stream<Quad>>iterator;

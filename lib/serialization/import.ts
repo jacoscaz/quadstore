@@ -85,31 +85,31 @@ export const importRange = (range: Range, prefixes: Prefixes, rangeBoundary: boo
 };
 
 export const importTerm = (term: Term|Range, isGraph: boolean, defaultGraphValue: string, prefixes: Prefixes, rangeBoundary: boolean = false): string|ImportedRange => {
-  if ('termType' in term) {
-    switch (term.termType) {
-      case 'NamedNode':
-        return prefixes.compactIri(term.value);
-      case 'BlankNode':
-        return '_:' + term.value;
-      case 'Variable':
-        return '?' + term.value;
-      case 'DefaultGraph':
-        return defaultGraphValue;
-      case 'Literal':
-        // TODO: document why this is useful
-        if (rangeBoundary) {
-          const value = importLiteralTerm(term, prefixes, rangeBoundary);
-          return { gte: value, lte: value };
-        }
-        return importLiteralTerm(term, prefixes, rangeBoundary);
-      default:
-        // @ts-ignore
-        throw new Error(`Unexpected termType: "${term.termType}".`);
-    }
-  } else if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
-    return importRange(term, prefixes, rangeBoundary);
-  } else {
-    throw new Error(`Unexpected type of "term" argument.`);
+  switch (term.termType) {
+    case 'NamedNode':
+      return prefixes.compactIri(term.value);
+    case 'BlankNode':
+      return '_:' + term.value;
+    case 'Variable':
+      return '?' + term.value;
+    case 'DefaultGraph':
+      return defaultGraphValue;
+    case 'Literal':
+      // When importing a Literal term, if rangeBoundary is true and thus
+      // the terms comes from a pattern being used to query the database,
+      // we want to match against all literals of the same kind
+      // (numeric, datetimes, ...) rather than against literals of the same
+      // exact datatype.
+      if (rangeBoundary) {
+        const value = importLiteralTerm(term, prefixes, rangeBoundary);
+        return {gte: value, lte: value};
+      }
+      return importLiteralTerm(term, prefixes, rangeBoundary);
+    case 'Range':
+      return importRange(term, prefixes, rangeBoundary);
+    default:
+      // @ts-ignore
+      throw new Error(`Unexpected termType: "${term.termType}".`);
   }
 };
 

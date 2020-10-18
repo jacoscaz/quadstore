@@ -107,6 +107,7 @@ export enum DefaultGraphMode {
 export { Quad };
 
 export interface Range {
+  termType: 'Range',
   lt?: Literal,
   lte?: Literal,
   gt?: Literal,

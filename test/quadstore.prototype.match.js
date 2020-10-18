@@ -22,7 +22,7 @@ function stripTermSerializedValue(quads) {
 
 module.exports = () => {
 
-  describe('RdfStore.prototype.match()', () => {
+  describe('Quadstore.prototype.match()', () => {
 
     describe('Match by value', () => {
 
@@ -179,7 +179,8 @@ module.exports = () => {
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         // console.log(await store._debugQuads());
-        const match = { gt: factory.literal('6', 'http://www.w3.org/2001/XMLSchema#integer') };
+        const match = { termType: 'Range',
+          gt: factory.literal('6', 'http://www.w3.org/2001/XMLSchema#integer') };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
@@ -204,7 +205,8 @@ module.exports = () => {
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
-        const match = { gte: factory.literal('7.0', 'http://www.w3.org/2001/XMLSchema#double') };
+        const match = { termType: 'Range',
+          gte: factory.literal('7.0', 'http://www.w3.org/2001/XMLSchema#double') };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
@@ -231,6 +233,7 @@ module.exports = () => {
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const match = {
+          termType: 'Range',
           gt: factory.literal('7.0', 'http://www.w3.org/2001/XMLSchema#double'),
         };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));

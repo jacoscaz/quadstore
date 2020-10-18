@@ -279,7 +279,8 @@ Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties:
 
 ```js
 const pattern = {
-  object: { 
+  object: {
+    termType: 'Range',
     gt: dataFactory.literal('7', 'http://www.w3.org/2001/XMLSchema#integer')
   }
 };

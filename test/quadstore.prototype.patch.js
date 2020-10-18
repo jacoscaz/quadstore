@@ -4,29 +4,75 @@
 const _ = require('../dist/lib/utils');
 const should = require('./should');
 const { quadArrayEqual } = require('./utils');
+const dataFactory = require('@rdfjs/data-model');
 
 module.exports = () => {
 
   describe('QuadStore.prototype.patch()', () => {
 
     const quadsSamples = [
-      { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
-      { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
-      { subject: 's2', predicate: 'p', object: 'o', graph: 'c' },
-      { subject: 's2', predicate: 'p', object: 'o2', graph: 'c' },
-      { subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2' },
+      dataFactory.quad(
+        dataFactory.namedNode('ex://s'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.namedNode('ex://o'),
+        dataFactory.namedNode('ex://g'),
+      ),
+      dataFactory.quad(
+        dataFactory.namedNode('ex://s'),
+        dataFactory.namedNode('ex://p2'),
+        dataFactory.namedNode('ex://o2'),
+        dataFactory.namedNode('ex://g2'),
+      ),
+      dataFactory.quad(
+        dataFactory.namedNode('ex://s2'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.namedNode('ex://o'),
+        dataFactory.namedNode('ex://g'),
+      ),
+      dataFactory.quad(
+        dataFactory.namedNode('ex://s2'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.namedNode('ex://o2'),
+        dataFactory.namedNode('ex://g'),
+      ),
+      dataFactory.quad(
+        dataFactory.namedNode('ex://s2'),
+        dataFactory.namedNode('ex://p2'),
+        dataFactory.namedNode('ex://o2'),
+        dataFactory.namedNode('ex://g2'),
+      ),
     ];
 
     it('should delete old quads and add new ones', async function () {
       const store = this.store;
       const quadsArray = quadsSamples;
       const oldQuads = [
-        { subject: 's', predicate: 'p', object: 'o', graph: 'c' },
-        { subject: 's', predicate: 'p2', object: 'o2', graph: 'c2' },
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p2'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g2'),
+        ),
       ];
       const newQuads = [
-        { subject: 's3', predicate: 'p3', object: 'o2', graph: 'c' },
-        { subject: 's4', predicate: 'p3', object: 'o2', graph: 'c1' },
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s3'),
+          dataFactory.namedNode('ex://p3'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s4'),
+          dataFactory.namedNode('ex://p3'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g'),
+        ),
       ];
       const expected = quadsSamples.slice(2).concat(newQuads);
       await store.multiPut(quadsArray);

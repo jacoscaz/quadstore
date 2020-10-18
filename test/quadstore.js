@@ -1,18 +1,21 @@
+/* eslint global-require: "off" */
 
 'use strict';
 
-const _ = require('../dist/lib/utils');
 const utils = require('../dist/lib/utils');
-const QuadStore = require('..').QuadStore;
+const dataFactory = require('@rdfjs/data-model');
+const {Quadstore} = require('..');
 
 module.exports = () => {
 
-  describe('QuadStore', () => {
+  describe('Quadstore', () => {
 
     beforeEach(async function () {
-      this.store = new QuadStore({
+      this.store = new Quadstore({
+        dataFactory,
         backend: this.db,
         indexes: this.indexes,
+        prefixes: this.prefixes,
       });
       await utils.waitForEvent(this.store, 'ready');
     });
@@ -21,14 +24,16 @@ module.exports = () => {
       await this.store.close();
     });
 
-    require('./quadstore.counting')();
-    require('./quadstore.prototype.get')();
-    require('./quadstore.prototype.search')();
-    require('./quadstore.prototype.put')();
-    require('./quadstore.prototype.multiput')();
     require('./quadstore.prototype.del')();
+    require('./quadstore.prototype.get')();
+    require('./quadstore.prototype.get.literals')();
     require('./quadstore.prototype.patch')();
+    require('./quadstore.prototype.put')();
+    require('./quadstore.prototype.match')();
+    require('./quadstore.prototype.sparql')();
+    require('./quadstore.prototype.remove')();
+    require('./quadstore.prototype.import')();
+    require('./quadstore.prototype.removematches')();
 
   });
-
 };

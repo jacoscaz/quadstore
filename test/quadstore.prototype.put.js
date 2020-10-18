@@ -1,4 +1,5 @@
 
+const dataFactory = require('@rdfjs/data-model');
 const should = require('./should');
 
 module.exports = () => {
@@ -7,7 +8,12 @@ module.exports = () => {
 
     it('should store a single quad', async function () {
       const store = this.store;
-      const newQuad = {subject: 's', predicate: 'p', object: 'o', graph: 'c'};
+      const newQuad = dataFactory.quad(
+        dataFactory.namedNode('ex://s'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.namedNode('ex://o'),
+        dataFactory.namedNode('ex://g'),
+      );
       await store.put(newQuad);
       const {items: foundQuads} = await store.get({});
       should(foundQuads).be.equalToQuadArray([newQuad], store);
@@ -16,8 +22,18 @@ module.exports = () => {
     it('should store multiple quads', async function () {
       const store = this.store;
       const newQuads = [
-        {subject: 's', predicate: 'p', object: 'o', graph: 'c'},
-        {subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2'},
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s2'),
+          dataFactory.namedNode('ex://p2'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g2'),
+        ),
       ];
       await store.put(newQuads[0]);
       await store.put(newQuads[1]);
@@ -28,8 +44,18 @@ module.exports = () => {
     it('should not duplicate quads', async function () {
       const store = this.store;
       const newQuads = [
-        {subject: 's', predicate: 'p', object: 'o', graph: 'c'},
-        {subject: 's2', predicate: 'p2', object: 'o2', graph: 'c2'},
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s2'),
+          dataFactory.namedNode('ex://p2'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g2'),
+        ),
       ];
       await store.put(newQuads[0]);
       await store.put(newQuads[1]);

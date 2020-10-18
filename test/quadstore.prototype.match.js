@@ -1,20 +1,23 @@
 
 'use strict';
 
+
+
 const _ = require('../dist/lib/utils');
 const utils = require('../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
 const AsyncIterator = require('asynciterator');
+const {DefaultGraphMode} = require('../dist/lib/types');
 
 function stripTermSerializedValue(quads) {
-  const _quads = _.isArray(quads) ? quads : [quads];
+  const _quads = Array.isArray(quads) ? quads : [quads];
   quads.forEach((quad) => {
     ['subject', 'predicate', 'object', 'graph'].forEach((termKey) => {
       delete quad[termKey]._serializedValue;
     });
   });
-  return _.isArray(quads) ? _quads : _quads[0];
+  return Array.isArray(quads) ? _quads : _quads[0];
 }
 
 module.exports = () => {
@@ -127,7 +130,7 @@ module.exports = () => {
         should(matchedQuads[0]).deepEqual(quads[1]);
       });
 
-      it('should match the default graph (explicit)',  async function () {
+      it('should match the default graph when explicitly required',  async function () {
         const store = this.store;
         const rs = store;
         const quads = [
@@ -146,35 +149,10 @@ module.exports = () => {
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
-        const matchedQuads = await utils.streamToArray(rs.match(null, null, null, factory.defaultGraph()));
+        const matchedQuads = await utils.streamToArray(rs.fork({defaultGraphMode: DefaultGraphMode.DEFAULT}).match(null, null, null, factory.defaultGraph()));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
         should(matchedQuads[0]).deepEqual(quads[0]);
-      });
-
-      it('should match quads by the default graph (implicit)',  async function () {
-        const store = this.store;
-        const rs = store;
-        const quads = [
-          factory.quad(
-            factory.namedNode('http://ex.com/s0'),
-            factory.namedNode('http://ex.com/p0'),
-            factory.literal('o0', 'en-gb')
-          ),
-          factory.quad(
-            factory.namedNode('http://ex.com/s1'),
-            factory.namedNode('http://ex.com/p1'),
-            factory.literal('o1', 'en-gb'),
-            factory.namedNode('http://ex.com/g1')
-          )
-        ];
-        const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
-        const readStream = rs.match(null, null, null, factory.defaultGraph());
-        const matchedQuads = await utils.streamToArray(readStream);
-        stripTermSerializedValue(matchedQuads);
-        should(matchedQuads).have.length(1);
-        should(matchedQuads[0].graph).deepEqual(quads[0].graph);
       });
 
     });

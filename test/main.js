@@ -8,15 +8,10 @@ const path = require('path');
 const utils = require('../dist/lib/utils');
 const memdown = require('memdown');
 const leveldown = require('leveldown');
-const rdfSuite = require('./rdf');
-const searchSuite = require('./search');
-const rdfStoreSuite = require('./rdfstore');
-const quadStoreSuite = require('./quadstore');
 
 const remove = util.promisify(fs.remove);
 
-rdfSuite();
-searchSuite();
+require('./fpstring')();
 
 describe('MemDOWN backend, standard indexes', () => {
 
@@ -25,8 +20,7 @@ describe('MemDOWN backend, standard indexes', () => {
     this.indexes = null;
   });
 
-  quadStoreSuite();
-  rdfStoreSuite();
+  require('./quadstore')();
 
 });
 
@@ -42,7 +36,21 @@ describe('LevelDOWN backend, standard indexes', () => {
     await remove(this.location);
   });
 
-  quadStoreSuite();
-  rdfStoreSuite();
+  require('./quadstore')();
+
+});
+
+describe('MemDOWN backend, standard indexes, with prefixes', () => {
+
+  beforeEach(async function () {
+    this.db = memdown();
+    this.indexes = null;
+    this.prefixes = {
+      expandTerm: term => term.replace(/^exprefix:/, 'ex://'),
+      compactIri: iri => iri.replace(/^ex:\/\//, 'exprefix:'),
+    };
+  });
+
+  require('./quadstore')();
 
 });

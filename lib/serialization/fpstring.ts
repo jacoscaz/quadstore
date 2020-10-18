@@ -53,7 +53,7 @@ const flipMantissa = (mantissaChars: string): string => {
   return (10 - parseFloat(mantissaChars)).toPrecision(17).slice(0, 18);
 };
 
-export const fpstringEncode = (stringOrNumber: string|number): string => {
+export const encode = (stringOrNumber: string|number): string => {
 
   const n = typeof stringOrNumber !== 'number'
     ? parseFloat(stringOrNumber)

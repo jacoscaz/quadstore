@@ -1,19 +1,17 @@
-import {TSQuad, TSReadable, TSSimplePattern, TSTermName} from '../types/index.js';
+import {TSReadable, TermName} from '../types';
 import {EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
-import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 import {DataFactory} from 'rdf-js';
-// @ts-ignore
-import compile from 'turbo-json-parse';
 
-export const termNames: TSTermName[] = [
-  TSTermName.SUBJECT,
-  TSTermName.PREDICATE,
-  TSTermName.OBJECT,
-  TSTermName.GRAPH,
+export const termNames: TermName[] = [
+  TermName.SUBJECT,
+  TermName.PREDICATE,
+  TermName.OBJECT,
+  TermName.GRAPH,
 ];
 
 export const isFunction = (f: any): boolean => {
@@ -24,19 +22,9 @@ export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;
 };
 
-export const isSimpleObject = (o: any): boolean => {
-  return isObject(o) && o.constructor === Object;
-};
-
-export const isString = (s: any): boolean => {
-  return typeof(s) === 'string';
-};
-
 export const isNil = (n: any): boolean => {
   return n === null || n === undefined;
 };
-
-export const isArray = Array.isArray;
 
 export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
   return new Promise((resolve, reject) => {
@@ -83,34 +71,14 @@ export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnErr
 
 export const waitForEvent = resolveOnEvent;
 
-export const genDefaultIndexes = (): TSTermName[][] => {
-  return [
-    [TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.GRAPH],
-    [TSTermName.OBJECT, TSTermName.GRAPH, TSTermName.SUBJECT, TSTermName.PREDICATE],
-    [TSTermName.GRAPH, TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.OBJECT],
-    [TSTermName.OBJECT, TSTermName.SUBJECT, TSTermName.PREDICATE, TSTermName.GRAPH],
-    [TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.GRAPH, TSTermName.SUBJECT],
-    [TSTermName.GRAPH, TSTermName.PREDICATE, TSTermName.OBJECT, TSTermName.SUBJECT],
-  ];
-}
-
-export const serializeQuad = (quad: TSQuad): string => {
-  return JSON.stringify(quad);
-};
-
-const parseQuad = compile({
-  type: 'object',
-  properties: {
-    subject: {type: 'string'},
-    predicate: {type: 'string'},
-    object: {type: 'string'},
-    graph: {type: 'string'},
-  }
-})
-
-export const deserializeQuad = (str: string): TSQuad => {
-  return parseQuad(str.toString());
-};
+export const defaultIndexes: TermName[][] = [
+  [TermName.SUBJECT, TermName.PREDICATE, TermName.OBJECT, TermName.GRAPH],
+  [TermName.OBJECT, TermName.GRAPH, TermName.SUBJECT, TermName.PREDICATE],
+  [TermName.GRAPH, TermName.SUBJECT, TermName.PREDICATE, TermName.OBJECT],
+  [TermName.OBJECT, TermName.SUBJECT, TermName.PREDICATE, TermName.GRAPH],
+  [TermName.PREDICATE, TermName.OBJECT, TermName.GRAPH, TermName.SUBJECT],
+  [TermName.GRAPH, TermName.PREDICATE, TermName.OBJECT, TermName.SUBJECT],
+];
 
 export { nanoid };
 
@@ -191,3 +159,7 @@ export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (i
 
 export { flatMap };
 export { pReduce };
+
+export const emptyArray: any[] = [];
+export const emptyObject: { [key: string]: any } = {};
+

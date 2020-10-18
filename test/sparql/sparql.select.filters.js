@@ -2,7 +2,7 @@
 const _ = require('../../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist/lib/types');
+const {ResultType} = require('../../dist/lib/types');
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
@@ -50,14 +50,14 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o = 7) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('7', factory.namedNode(xsdInteger)) },
           { '?o': factory.literal('7.0', factory.namedNode(xsdDouble)) },
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables,
       );
     });
 
@@ -65,13 +65,13 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o < 1) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) }
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables
       );
     });
 
@@ -79,14 +79,14 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o <= 3.14) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('3.14', factory.namedNode(xsdDouble)) },
           { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) },
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables
       );
     });
 
@@ -94,7 +94,7 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o > 3.14) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('7', factory.namedNode(xsdInteger)) },
@@ -102,7 +102,7 @@ module.exports = () => {
           { '?o': factory.literal('42', factory.namedNode(xsdInteger)) },
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables
       );
     });
 
@@ -110,7 +110,7 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(?o >= 3.14) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('42', factory.namedNode(xsdInteger)) },
@@ -119,7 +119,7 @@ module.exports = () => {
           { '?o': factory.literal('7.0', factory.namedNode(xsdDouble)) },
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables
       );
     });
 
@@ -127,14 +127,14 @@ module.exports = () => {
       const results = await this.store.sparql(`
         SELECT ?o { ?s <http://ex.com/p> ?o . FILTER(3.14 >= ?o) . }
       `);
-      should(results.type).equal(TSResultType.BINDINGS);
+      should(results.type).equal(ResultType.BINDINGS);
       should(results.items).be.equalToBindingArray(
         [
           { '?o': factory.literal('3.14', factory.namedNode(xsdDouble)) },
           { '?o': factory.literal('-1', factory.namedNode(xsdInteger)) },
         ],
         this.store,
-        Object.keys(results.variables),
+        results.variables
       );
     });
 

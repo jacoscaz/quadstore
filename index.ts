@@ -1,50 +1,30 @@
 
-export {QuadStore} from './lib/quadstore.js';
-export {RdfStore} from './lib/rdfstore.js';
+export {Quadstore} from './lib/quadstore';
 
 export {
 
-  TSQuad,
-  TSQuadArrayResult,
-  TSQuadStreamResult,
+  ImportedQuad,
 
-  TSBinding,
-  TSBindingArrayResult,
-  TSBindingStreamResult,
+  ImportedRange,
+  ImportedPattern,
+  ImportedSimplePattern,
 
-  TSRange,
-  TSPattern,
-  TSSimplePattern,
+  GetOpts,
+  PutStreamOpts,
+  DelStreamOpts,
 
-  TSSearchStage,
-  TSBgpSearchStage,
-  TSFilterSearchStage,
-  TSConstructSearchStage,
+  StoreOpts,
 
-  TSGetOpts,
-  TSSearchOpts,
-  TSPutStreamOpts,
-  TSDelStreamOpts,
+  Quad,
+  QuadArrayResult,
+  QuadStreamResult,
 
-  TSStoreOpts,
+  Binding,
+  BindingArrayResult,
+  BindingStreamResult,
 
-  TSRdfQuad,
-  TSRdfQuadArrayResult,
-  TSRdfQuadStreamResult,
-
-  TSRdfBinding,
-  TSRdfBindingArrayResult,
-  TSRdfBindingStreamResult,
-
-  TSRdfRange,
-  TSRdfPattern,
-  TSRdfSimplePattern,
-
-  TSRdfSearchStage,
-  TSRdfBgpSearchStage,
-  TSRdfFilterSearchStage,
-  TSRdfConstructSearchStage,
-
-  TSRdfStoreOpts,
+  Range,
+  Pattern,
+  SimplePattern,
 
 } from './lib/types'

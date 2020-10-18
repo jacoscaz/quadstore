@@ -1,23 +1,19 @@
-import {QuadStore} from '../quadstore.js';
 import {
-  TSApproximateSizeResult,
-  TSDefaultGraphMode,
-  TSGetOpts,
-  TSPattern,
-  TSQuadStreamResult,
-  TSResultType,
-  TSTermName,
-  TSIndex,
-  TSRange,
+  ApproximateSizeResult,
+  DefaultGraphMode,
+  GetOpts,
+  InternalIndex,
+  ImportedPattern,
+  ImportedRange, QuadStreamResult,
+  ResultType,
+  TermName, ImportedPatternTypes,
 } from '../types';
 import {SimpleTransformIterator} from 'asynciterator';
-import {deserializeQuad} from '../utils';
+import {Quadstore} from '../quadstore';
+import {deserializeImportedQuad, exportQuad} from '../serialization';
+import {emptyObject} from '../utils';
 
-type TSPatternTypes = Record<TSTermName, string>;
-type TSIndexMatchFn = (patternTypes: TSPatternTypes) => boolean;
-type TSIndexMatchFnPair = [TSIndex, TSIndexMatchFn];
-
-type TSRangeOpts = {
+type RangeOpts = {
   lt: string,
   gt: string,
   limit?: number,
@@ -26,10 +22,10 @@ type TSRangeOpts = {
   ltr: boolean,
   gte: boolean,
   gtr: boolean,
-  index: TSIndex
+  index: InternalIndex
 };
 
-type TSLevelOpts = {
+type LevelOpts = {
   lt?: string,
   lte?: string,
   gt?: string,
@@ -39,9 +35,7 @@ type TSLevelOpts = {
   reverse?: boolean,
 };
 
-let indexMatchFnPair: TSIndexMatchFnPair[] = [];
-
-const getPatternTypes = (pattern: TSPattern): TSPatternTypes => {
+const getPatternTypes = (pattern: ImportedPattern): ImportedPatternTypes => {
   return {
     subject: typeof pattern.subject,
     predicate: typeof pattern.predicate,
@@ -50,8 +44,16 @@ const getPatternTypes = (pattern: TSPattern): TSPatternTypes => {
   };
 };
 
-const getIndexMatchFn = (index: TSIndex): TSIndexMatchFn => {
-  const { terms } = index;
+export const compileGetKeyFn = (indexName: string, separator: string, terms: TermName[]) => {
+  return eval(
+    '(quad) => `'
+    + indexName + separator
+    + terms.map(term => `\${quad['${term}']}${separator}`).join('')
+    + '`'
+  );
+}
+
+export const compileCanBeUsedWithPatternFn = (terms: TermName[]): (pattern: ImportedPattern) => boolean => {
   let fn = `
     (patternTypes) => {
       let gotRange = false;
@@ -60,11 +62,19 @@ const getIndexMatchFn = (index: TSIndex): TSIndexMatchFn => {
   for (let i = 0; i < terms.length; i += 1) {
     fn += `
       if (patternTypes.${terms[i]} === 'undefined') {
-        if (!gotUndefined) { gotUndefined = true; }
+        if (!gotUndefined) { 
+          gotUndefined = true; 
+        }
       } else {
-        if (gotUndefined) { return false; }
-        if (gotRange) { return false; }
-        if (patternTypes.${terms[i]} === 'object') { gotRange = true; }
+        if (gotUndefined) { 
+          return false; 
+        }
+        if (gotRange) {
+          return false;
+        }
+        if (patternTypes.${terms[i]} === 'object') {
+          gotRange = true; 
+        }
       }
     `;
   }
@@ -75,17 +85,7 @@ const getIndexMatchFn = (index: TSIndex): TSIndexMatchFn => {
   return eval(fn);
 };
 
-const getIndexMatchFnPairs = (store: QuadStore): TSIndexMatchFnPair[] => {
-  return store.indexes.map(index => [index, getIndexMatchFn(index)]);
-};
-
-const selectIndex = (pattern: TSPattern): TSIndex|undefined => {
-  const patternTypes = getPatternTypes(pattern);
-  const pair = indexMatchFnPair.find(pair => pair[1](patternTypes));
-  return pair === undefined ? pair : pair[0];
-};
-
-const capRangeOpts = (rangeOpts: TSRangeOpts, store: QuadStore, index: TSIndex) => {
+const capRangeOpts = (rangeOpts: RangeOpts, store: Quadstore, index: InternalIndex) => {
   if (rangeOpts.lte) {
     if (rangeOpts.ltr) {
       rangeOpts.lt += store.boundary;
@@ -112,7 +112,7 @@ const capRangeOpts = (rangeOpts: TSRangeOpts, store: QuadStore, index: TSIndex) 
   }
 }
 
-const fillRangeOpts = (levelOpts: TSRangeOpts, store: QuadStore, index: TSIndex, term: TSTermName, valueOrRange: string|TSRange|undefined) => {
+const fillRangeOpts = (levelOpts: RangeOpts, store: Quadstore, index: InternalIndex, term: TermName, valueOrRange: string|ImportedRange|undefined) => {
   switch (typeof(valueOrRange)) {
     case 'string':
       levelOpts.lt += store.separator + valueOrRange;
@@ -149,12 +149,13 @@ const fillRangeOpts = (levelOpts: TSRangeOpts, store: QuadStore, index: TSIndex,
   }
 };
 
-export const getRangeOpts = (store: QuadStore, pattern: TSPattern, opts?: TSGetOpts): TSRangeOpts => {
-  let index = selectIndex(pattern);
-  if (index === undefined) {
+export const getRangeOpts = (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): RangeOpts => {
+  const patternTypes = getPatternTypes(pattern);
+  let index = store.indexes.find(index => index.canBeUsedWithPattern(patternTypes));
+  if (!index) {
     throw new Error(`No index found for pattern ${JSON.stringify(pattern)}`);
   }
-  const rangeOpts: TSRangeOpts = {
+  const rangeOpts: RangeOpts = {
     index: index,
     lt: index.name,
     gt: index.name,
@@ -173,48 +174,66 @@ export const getRangeOpts = (store: QuadStore, pattern: TSPattern, opts?: TSGetO
   return rangeOpts;
 };
 
-const rangeToLevelOpts = (rangeOpts: TSRangeOpts): TSLevelOpts => {
-  const levelOpts: TSLevelOpts = {};
-  if (rangeOpts.lte) levelOpts.lte = rangeOpts.lt;
-  else if (rangeOpts.lt) levelOpts.lt = rangeOpts.lt;
-  if (rangeOpts.gte) levelOpts.gte = rangeOpts.gt;
-  else if (rangeOpts.gt) levelOpts.gt = rangeOpts.gt;
-  if (rangeOpts.limit) levelOpts.limit = rangeOpts.limit;
-  if (rangeOpts.offset) levelOpts.offset = rangeOpts.offset;
+const rangeToLevelOpts = (rangeOpts: RangeOpts): LevelOpts => {
+  const levelOpts: LevelOpts = {};
+  if (rangeOpts.lte) {
+    levelOpts.lte = rangeOpts.lt;
+  } else if (rangeOpts.lt) {
+    levelOpts.lt = rangeOpts.lt;
+  }
+  if (rangeOpts.gte) {
+    levelOpts.gte = rangeOpts.gt;
+  } else if (rangeOpts.gt) {
+    levelOpts.gt = rangeOpts.gt;
+  }
+  if (rangeOpts.limit) {
+    levelOpts.limit = rangeOpts.limit;
+  }
+  if (rangeOpts.offset) {
+    levelOpts.offset = rangeOpts.offset;
+  }
   return levelOpts;
 };
 
-export const getInit = (store: QuadStore): void => {
-  indexMatchFnPair = getIndexMatchFnPairs(store);
-};
-
-export const getStream = async (store: QuadStore, pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadStreamResult> => {
-  if (opts) {
-    if (opts.defaultGraphMode
-      && opts.defaultGraphMode === TSDefaultGraphMode.DEFAULT
-      && !pattern[TSTermName.GRAPH]) {
-      pattern = { ...pattern, graph: store.defaultGraph };
+const reconcilePatternWithDefaultGraphMode = (pattern: ImportedPattern, store: Quadstore, opts: GetOpts = emptyObject): ImportedPattern => {
+  const defaultGraphMode = opts.defaultGraphMode || store.defaultGraphMode;
+  if (defaultGraphMode === DefaultGraphMode.UNION) {
+    if (pattern[TermName.GRAPH] === store.defaultGraph) {
+      pattern = {
+        subject: pattern[TermName.SUBJECT],
+        predicate: pattern[TermName.PREDICATE],
+        object: pattern[TermName.OBJECT]
+      };
+    }
+  } else {
+    if (!pattern[TermName.GRAPH]) {
+      pattern = { ...pattern, [TermName.GRAPH]: store.defaultGraph };
     }
   }
+  return pattern;
+};
+
+export const getStream = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): Promise<QuadStreamResult> => {
+  pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   const rangeOpts = getRangeOpts(store, pattern, opts);
   const levelOpts = rangeToLevelOpts(rangeOpts);
-  const iterator = new SimpleTransformIterator(
-    store.db.createValueStream(levelOpts),
-    { map: deserializeQuad },
-  );
-  return { type: TSResultType.QUADS, iterator, sorting: rangeOpts.index.terms };
+  const iterator = new SimpleTransformIterator(store.db.createValueStream(levelOpts),{
+    map(buf: Buffer) {
+      return exportQuad(
+        deserializeImportedQuad(buf.toString('utf8')),
+        store.defaultGraph,
+        store.dataFactory,
+        store.prefixes,
+      );
+    },
+  });
+  return { type: ResultType.QUADS, iterator };
 };
 
-export const getApproximateSize = async (store: QuadStore, pattern: TSPattern, opts?: TSGetOpts): Promise<TSApproximateSizeResult> => {
-  if (opts) {
-    if (opts.defaultGraphMode
-      && opts.defaultGraphMode === TSDefaultGraphMode.DEFAULT
-      && !pattern[TSTermName.GRAPH]) {
-      pattern = { ...pattern, graph: store.defaultGraph };
-    }
-  }
+export const getApproximateSize = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): Promise<ApproximateSizeResult> => {
+  pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   if (!store.db.approximateSize) {
-    return { type: TSResultType.APPROXIMATE_SIZE, approximateSize: Infinity };
+    return { type: ResultType.APPROXIMATE_SIZE, approximateSize: Infinity };
   }
   const rangeOpts = getRangeOpts(store, pattern, opts);
   const levelOpts = rangeToLevelOpts(rangeOpts);
@@ -222,7 +241,7 @@ export const getApproximateSize = async (store: QuadStore, pattern: TSPattern, o
   const end = levelOpts.lte || levelOpts.lt;
   return new Promise((resolve, reject) => {
     store.db.approximateSize(start, end, (err: Error|null, approximateSize: number) => {
-      err ? reject(err) : resolve({ type: TSResultType.APPROXIMATE_SIZE, approximateSize });
+      err ? reject(err) : resolve({ type: ResultType.APPROXIMATE_SIZE, approximateSize });
     });
   });
 };

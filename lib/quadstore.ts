@@ -2,89 +2,112 @@
 'use strict';
 
 import {
-  TSApproximateSizeResult,
-  TSBinding,
-  TSBindingArrayResult,
-  TSDelStreamOpts,
-  TSEmptyOpts,
-  TSGetOpts,
-  TSIndex,
-  TSPattern,
-  TSPutStreamOpts,
-  TSQuad,
-  TSQuadArrayResult,
-  TSQuadStreamResult,
-  TSReadable,
-  TSResultType,
-  TSSearchOpts,
-  TSSearchStage,
-  TSStore,
-  TSStoreOpts,
-  TSTermName,
-  TSVoidResult,
-} from './types/index.js';
-import assert from 'assert';
-import events from 'events';
-import levelup from 'levelup';
-import {AbstractLevelDOWN} from 'abstract-leveldown';
-
-import {
   consumeInBatches,
-  consumeOneByOne,
-  genDefaultIndexes,
+  consumeOneByOne, emptyObject,
   isAbstractLevelDOWNInstance,
-  isArray,
-  isNil,
+  isDataFactory,
   isObject,
-  isReadableStream,
-  isString,
   nanoid,
-  serializeQuad,
   streamToArray,
   termNames,
-} from './utils/index.js';
-import {getApproximateSize, getStream, getInit} from './get/index.js';
-import {searchStream} from './search/index.js';
+  defaultIndexes,
+} from './utils';
+import assert from 'assert';
+import {EventEmitter} from 'events';
 
-export class QuadStore extends events.EventEmitter implements TSStore {
+import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
+import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term,} from 'rdf-js';
+import {
+  DefaultGraphMode,
+  DelStreamOpts,
+  EmptyOpts,
+  GetOpts,
+  InternalIndex,
+  ImportedPattern,
+  PutStreamOpts,
+  Binding,
+  BindingArrayResult,
+  BindingStreamResult, BooleanResult,
+  Pattern,
+  QuadArrayResult,
+  QuadStreamResult,
+  StoreOpts,
+  VoidResult,
+  TSReadable,
+  ResultType,
+  SparqlOpts,
+  TermName, Prefixes,
+} from './types';
+import {AbstractLevelDOWN} from 'abstract-leveldown';
+import levelup from 'levelup';
+import {getApproximateSize, getStream, compileCanBeUsedWithPatternFn, compileGetKeyFn} from './get';
+import {Algebra} from 'sparqlalgebrajs';
+import {newEngine, ActorInitSparql} from 'quadstore-comunica';
+import {sparql, sparqlStream} from './sparql';
+
+
+export class Quadstore extends EventEmitter implements Store {
 
   readonly db: AbstractLevelDOWN;
   readonly abstractLevelDOWN: AbstractLevelDOWN;
 
   readonly defaultGraph: string;
-  readonly indexes: TSIndex[];
+  readonly indexes: InternalIndex[];
   readonly id: string;
 
   readonly separator: string;
   readonly boundary: string;
 
-  /*
-   * ==========================================================================
-   *                           STORE LIFECYCLE
-   * ==========================================================================
-   */
+  readonly engine: ActorInitSparql;
+  readonly prefixes: Prefixes;
 
-  constructor(opts: TSStoreOpts) {
+  readonly dataFactory: DataFactory;
+
+  defaultGraphMode: DefaultGraphMode;
+
+  constructor(opts: StoreOpts) {
+
     super();
+
     assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
-    assert(
-      isAbstractLevelDOWNInstance(opts.backend),
-      'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN',
-    );
+
+    assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
+    assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
+
+    this.dataFactory = opts.dataFactory;
+
     this.abstractLevelDOWN = opts.backend;
     this.db = levelup(this.abstractLevelDOWN);
-    this.defaultGraph = opts.defaultGraph || 'DEFAULT_GRAPH';
     this.indexes = [];
     this.id = nanoid();
     this.boundary = opts.boundary || '\uDBFF\uDFFF';
     this.separator = opts.separator || '\u0000\u0000';
-    (opts.indexes || genDefaultIndexes())
-      .forEach((index: TSTermName[]) => this._addIndex(index));
+
+    (opts.indexes || defaultIndexes)
+      .forEach((index: TermName[]) => this._addIndex(index));
     setImmediate(() => { this._initialize(); });
+
+    this.engine = newEngine();
+
+    this.prefixes = opts.prefixes || {
+      expandTerm: term => term,
+      compactIri: iri => iri,
+    };
+
+    this.defaultGraphMode = opts.defaultGraphMode || DefaultGraphMode.UNION;
+
+    this.defaultGraph = importSimpleTerm(this.dataFactory.defaultGraph(), true, 'urn:rdfstore:dg', this.prefixes);
+
+  }
+
+  fork(opts: { defaultGraphMode?: DefaultGraphMode} = {}): Quadstore {
+    const fork = <Quadstore>Object.create(this);
+    if (opts.defaultGraphMode) fork.defaultGraphMode = opts.defaultGraphMode;
+    return fork;
   }
 
   _initialize() {
-    getInit(this);
     this.emit('ready');
   }
 
@@ -116,19 +139,91 @@ export class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  _addIndex(terms: TSTermName[]): void {
-    // assert(hasAllTerms(terms), 'Invalid index (bad terms).');
+  _addIndex(terms: TermName[]): void {
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this.indexes.push({
       terms,
       name,
-      getKey: eval(
-        '(quad) => `'
-          + name + this.separator
-          + terms.map(term => `\${quad['${term}']}${this.separator}`).join('')
-          + '`'
-      ),
+      getKey: compileGetKeyFn(name, this.separator, terms),
+      canBeUsedWithPattern: compileCanBeUsedWithPatternFn(terms),
     });
+  }
+
+  // **************************************************************************
+  // ******************************** RDF/JS **********************************
+  // **************************************************************************
+
+
+  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): Stream<Quad> {
+    const iterator = new TransformIterator<Quad, Quad>();
+    const pattern: Pattern = { subject, predicate, object, graph };
+    this.getStream(pattern, {})
+      .then((results) => {
+        iterator.source = <AsyncIterator<Quad>>results.iterator;
+      })
+      .catch((err) => {
+        // TODO: is the destroy() method really supported by AsyncIterator?
+        // @ts-ignore
+        iterator.destroy();
+      });
+    return <Stream<Quad>>iterator;
+  }
+
+  /**
+   * RDF/JS.Sink.import()
+   * @param source
+   * @param opts
+   * @returns {*|EventEmitter}
+   */
+  import(source: Stream<Quad>): EventEmitter {
+    const emitter = new EventEmitter();
+    this.putStream(<TSReadable<Quad>>source, {})
+      .then(() => { emitter.emit('end'); })
+      .catch((err) => { emitter.emit('error', err); });
+    return emitter;
+  }
+
+  remove(source: Stream<Quad>): EventEmitter {
+    const emitter = new EventEmitter();
+    this.delStream(<TSReadable<Quad>>source, {})
+      .then(() => emitter.emit('end'))
+      .catch((err) => emitter.emit('error', err));
+    return emitter;
+  }
+
+  /**
+   * RDF/JS.Store.removeMatches()
+   * @param subject
+   * @param predicate
+   * @param object
+   * @param graph
+   * @returns {*}
+   */
+  removeMatches(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph) {
+    const source = this.match(subject, predicate, object, graph);
+    return this.remove(source);
+  }
+
+  /**
+   * RDF/JS.Store.deleteGraph()
+   * @param graph
+   * @returns {*}
+   */
+  deleteGraph(graph: Quad_Graph) {
+    return this.removeMatches(undefined, undefined, undefined, graph);
+  }
+
+  // **************************************************************************
+  // ******************************* ARRAY API ********************************
+  // **************************************************************************
+
+  async getApproximateSize(pattern: Pattern, opts: EmptyOpts = emptyObject) {
+    const importedTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
+    return await getApproximateSize(this, importedTerms, opts);
+  }
+
+  async sparql(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadArrayResult|BindingArrayResult|VoidResult|BooleanResult> {
+    return sparql(this, query, opts);
   }
 
   /*
@@ -137,187 +232,145 @@ export class QuadStore extends events.EventEmitter implements TSStore {
    * ==========================================================================
    */
 
-  async put(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const value = serializeQuad(quad);
+  async put(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
+    const value = serializeImportedQuad(importedQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
-      return indexBatch.put(i.getKey(quad), value);
+      return indexBatch.put(i.getKey(importedQuad), value);
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async multiPut(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const batch = quads.reduce((quadBatch, quad) => {
-      const value = serializeQuad(quad);
+  async multiPut(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    const importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
+    const batch = importedQuads.reduce((quadBatch, importedQuad) => {
+      const value = serializeImportedQuad(importedQuad);
       return this.indexes.reduce((indexBatch, index) => {
-        return indexBatch.put(index.getKey(quad), value);
+        return indexBatch.put(index.getKey(importedQuad), value);
       }, quadBatch);
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async del(quad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
+  async del(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const batch = this.indexes.reduce((batch, i) => {
-      return batch.del(i.getKey(quad));
+      return batch.del(i.getKey(importedQuad));
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async multiDel(quads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const batch = quads.reduce((quadBatch, quad) => {
+  async multiDel(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    let importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
+    const batch = importedQuads.reduce((quadBatch, importedQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        return indexBatch.del(index.getKey(quad));
+        return indexBatch.del(index.getKey(importedQuad));
       }, quadBatch);
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async patch(oldQuad: TSQuad, newQuad: TSQuad, opts?: TSEmptyOpts): Promise<TSVoidResult> {
-    const value = serializeQuad(newQuad);
+  async patch(oldQuad: Quad, newQuad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    const importedOldQuad = importQuad(oldQuad, this.defaultGraph, this.prefixes);
+    const importedNewQuad = importQuad(newQuad, this.defaultGraph, this.prefixes);
+    const value = serializeImportedQuad(importedNewQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
-      return indexBatch.del(i.getKey(oldQuad)).put(i.getKey(newQuad), value);
+      return indexBatch.del(i.getKey(importedOldQuad)).put(i.getKey(importedNewQuad), value);
     }, this.db.batch());
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async multiPatch(oldQuads: TSQuad[], newQuads: TSQuad[], opts?: TSEmptyOpts): Promise<TSVoidResult> {
+  async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    const importedOldQuads = oldQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
+    const importedNewQuads = newQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     let batch = this.db.batch();
-    batch = oldQuads.reduce((quadBatch, quad) => {
+    batch = importedOldQuads.reduce((quadBatch, importedOldQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        return indexBatch.del(index.getKey(quad));
+        return indexBatch.del(index.getKey(importedOldQuad));
       }, quadBatch);
     }, batch);
-    batch = newQuads.reduce((quadBatch, quad) => {
-      const value = serializeQuad(quad);
+    batch = importedNewQuads.reduce((quadBatch, importedNewQuad) => {
+      const value = serializeImportedQuad(importedNewQuad);
       return this.indexes.reduce((indexBatch, index) => {
-        return indexBatch.put(index.getKey(quad), value);
+        return indexBatch.put(index.getKey(importedNewQuad), value);
       }, quadBatch);
     }, batch);
     // @ts-ignore
     await batch.write();
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async get(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadArrayResult> {
-    if (isNil(opts)) opts = {};
-    if (isNil(pattern)) pattern = {};
-    assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
+  async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResult> {
     const results = await this.getStream(pattern, opts);
-    const quads = await streamToArray(results.iterator);
-    return { type: TSResultType.QUADS, items: quads, sorting: results.sorting };
+    const items: Quad[] = await streamToArray(results.iterator);
+    return { type: results.type, items };
   }
 
-  async search(stages: TSSearchStage[], opts: TSSearchOpts): Promise<TSQuadArrayResult|TSBindingArrayResult> {
-    if (isNil(opts)) opts = {};
-    assert(isArray(stages), 'The "patterns" argument is not an array.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    const results = await this.searchStream(stages, opts);
-    switch (results.type) {
-      case TSResultType.QUADS:
-        return { ...results, items: await streamToArray(results.iterator) };
-      case TSResultType.BINDINGS:
-        return { ...results, items: await streamToArray(results.iterator) };
-      default:
-        // @ts-ignore
-        throw new Error(`Unsupported result type "${results.type}"`);
-    }
+
+  // **************************************************************************
+  // ******************************* STREAM API *******************************
+  // **************************************************************************
+
+  async getStream(pattern: Pattern, opts: EmptyOpts = emptyObject): Promise<QuadStreamResult> {
+    const importedMatchTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
+    return await getStream(this, importedMatchTerms, opts);
   }
 
-  /*
-   * ==========================================================================
-   *                                COUNTING API
-   * ==========================================================================
-   */
-
-  async getApproximateSize(pattern: TSPattern, opts?: TSEmptyOpts): Promise<TSApproximateSizeResult> {
-    if (isNil(pattern)) pattern = {};
-    if (isNil(opts)) opts = {};
-    assert(isObject(pattern), 'The "matchTerms" argument is not a function..');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    return await getApproximateSize(this, pattern, opts);
-  }
-
-  /*
-   * ==========================================================================
-   *                            STREAMING API
-   * ==========================================================================
-   */
-
-  async getStream(pattern: TSPattern, opts?: TSGetOpts): Promise<TSQuadStreamResult> {
-    if (isNil(pattern)) pattern = {};
-    if (isNil(opts)) opts = {};
-    assert(isObject(pattern), 'The "matchTerms" argument is not an object.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    return await getStream(this, pattern, opts);
-  }
-
-  async searchStream(stages: TSSearchStage[], opts?: TSSearchOpts) {
-    if (isNil(opts)) opts = {};
-    assert(isArray(stages), 'The "patterns" argument is not an array.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    return await searchStream(this, stages, opts);
-  }
-
-  async putStream(source: TSReadable<TSQuad>, opts?: TSPutStreamOpts): Promise<TSVoidResult> {
-    if (isNil(opts)) opts = {};
-    assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    const batchSize = (opts && opts.batchSize) || 1;
+  async putStream(source: TSReadable<Quad>, opts: PutStreamOpts = emptyObject): Promise<VoidResult> {
+    const batchSize = opts.batchSize || 1;
     if (batchSize === 1) {
-      await consumeOneByOne<TSQuad>(source, quad => this.put(quad));
+      await consumeOneByOne<Quad>(source, quad => this.put(quad));
     } else {
-      await consumeInBatches<TSQuad>(source, batchSize, quads => this.multiPut(quads));
+      await consumeInBatches<Quad>(source, batchSize, quads => this.multiPut(quads));
     }
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  async delStream(source: TSReadable<TSQuad>, opts?: TSDelStreamOpts): Promise<TSVoidResult> {
-    if (isNil(opts)) opts = {};
-    assert(isReadableStream(source), 'The "source" argument is not a readable stream.');
-    assert(isObject(opts), 'The "opts" argument is not an object.');
-    const batchSize = (opts && opts.batchSize) || 1;
+  async delStream(source: TSReadable<Quad>, opts: DelStreamOpts = emptyObject): Promise<VoidResult> {
+    const batchSize = opts.batchSize || 1;
     if (batchSize === 1) {
-      await consumeOneByOne(source, quad => this.del(<TSQuad>quad, opts));
+      await consumeOneByOne<Quad>(source, quad => this.del(quad));
     } else {
-      await consumeInBatches(source, batchSize, quads => this.multiDel(<TSQuad[]>quads));
+      await consumeInBatches<Quad>(source, batchSize, quads => this.multiDel(quads));
     }
-    return { type: TSResultType.VOID };
+    return { type: ResultType.VOID };
   }
 
-  protected _isQuad(obj: any): boolean {
-    return isString(obj.subject)
-      && isString(obj.predicate)
-      && isString(obj.object)
-      && isString(obj.graph);
+  async sparqlStream(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadStreamResult|BindingStreamResult|VoidResult|BooleanResult> {
+    return await sparqlStream(this, query, opts);
   }
 
-  /*
-   * ==========================================================================
-   *                            LOW-LEVEL DB HELPERS
-   * ==========================================================================
-   */
-
-  getTermComparator(): (a: string, b: string) => -1|0|1 {
-    return (a: string, b: string) => {
-      if (a < b) return -1;
-      else if (a === b) return 0;
-      else return 1;
-    }
+  getTermComparator(): (a: Term, b: Term) => (-1 | 0 | 1) {
+    return (a: Term, b: Term): -1|0|1 => {
+      if (a.termType !== b.termType) {
+        return a.termType < b.termType ? -1 : 1;
+      }
+      if (a.termType !== 'Literal' || b.termType !== 'Literal') {
+        return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
+      }
+      if (a.datatype !== b.datatype) {
+        return a.datatype < b.datatype ? -1 : 1;
+      }
+      if (a.language !== b.language) {
+        return a.language < b.language ? -1 : 1;
+      }
+      return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
+    };
   }
 
-  getQuadComparator(_termNames: TSTermName[] = termNames): (a: TSQuad, b: TSQuad) => -1|0|1 {
+  getQuadComparator(_termNames: TermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) {
     const termComparator = this.getTermComparator();
-    return (a: TSQuad, b: TSQuad) => {
+    return (a: Quad, b: Quad) => {
       for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;
@@ -326,9 +379,9 @@ export class QuadStore extends events.EventEmitter implements TSStore {
     };
   }
 
-  getBindingComparator(_termNames: string[]): (a: TSBinding, b: TSBinding) => -1|0|1 {
+  getBindingComparator(_termNames: string[]): (a: Binding, b: Binding) => -1|0|1 {
     const termComparator = this.getTermComparator();
-    return (a: TSBinding, b: TSBinding) => {
+    return (a: Binding, b: Binding) => {
       for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
         r = termComparator(a[_termNames[i]], b[_termNames[i]]);
         if (r !== 0) return r;

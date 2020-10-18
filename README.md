@@ -4,8 +4,9 @@
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![NPM](https://nodei.co/npm/quadstore.png)](https://nodei.co/npm/quadstore/)
 
-A LevelDB-backed graph database for Node.js and the browser, written in Typescript.
-Supports quads, RDF/JS interfaces and SPARQL queries.
+Quadstore is a LevelDB-backed RDF graph database for Node.js and the browser 
+with native support for quads and querying across named graphs, RDF/JS 
+interfaces and SPARQL queries.
 
 ## Table of contents
 
@@ -13,38 +14,30 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
 - [Status](#status)
     - [Roadmap](#roadmap)
     - [Changelog](#changelog)
-    - [Current version and features](#current-version-and-features)
+    - [Current version and features](#current-version)
     - [Notes](#notes)
 - [Usage](#usage)
     - [Storage](#storage-backends)
-    - [Return Values](#return-values)
-    - [Result Types](#result-types)
-    - [Streaming](#streaming-vs-non-streaming)
-    - [Sorting](#sorting)
-    - [Graph Interface](#graph-api)
-        - [QuadStore class](#quadstore-class)
-        - [QuadStore.prototype.get](#quadstoreprototypeget)
-        - [QuadStore.prototype.search](#quadstoreprototypesearch)
-        - [QuadStore.prototype.put](#quadstoreprototypeput)
-        - [QuadStore.prototype.multiPut](#quadstoreprototypemultiput)
-        - [QuadStore.prototype.del](#quadstoreprototypedel)
-        - [QuadStore.prototype.multiDel](#quadstoreprototypemultidel)
-        - [QuadStore.prototype.patch](#quadstoreprototypepatch)
-        - [QuadStore.prototype.multiPatch](#quadstoreprototypemultipatch)
-        - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
-        - [QuadStore.prototype.searchStream](#quadstoreprototypesearchstream)
-        - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
-        - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
-    - [RDF Interface](#rdf-interface)
-        - [SPARQL support](#sparql-support)
-        - [RdfStore class](#rdfstore-class)
-        - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
-        - [RdfStore.prototype.sparql](#rdfstoreprototypesparql)
-        - [RdfStore.prototype.sparqlStream](#rdfstoreprototypesparqlstream)
-        - [RdfStore.prototype.match](#rdfstoreprototypematch)
-        - [RdfStore.prototype.import](#rdfstoreprototypeimport)
-        - [RdfStore.prototype.remove](#rdfstoreprototyperemove)
-        - [RdfStore.prototype.removeMatches](#rdfstoreprototyperemovematches)
+    - [Data model and return Values](#data-model-and-return-values)
+    - [Quadstore class](#quadstore-class)
+    - [Custom indexes](#custom-indexes)
+    - [Quadstore.prototype.get](#quadstoreprototypeget)
+    - [Range matching](#range-matching)
+    - [Quadstore.prototype.put](#quadstoreprototypeput)
+    - [Quadstore.prototype.multiPut](#quadstoreprototypemultiput)
+    - [Quadstore.prototype.del](#quadstoreprototypedel)
+    - [Quadstore.prototype.multiDel](#quadstoreprototypemultidel)
+    - [Quadstore.prototype.patch](#quadstoreprototypepatch)
+    - [Quadstore.prototype.multiPatch](#quadstoreprototypemultipatch)
+    - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
+    - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
+    - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
+    - [Quadstore.prototype.sparql](#quadstoreprototypesparql)
+    - [Quadstore.prototype.sparqlStream](#quadstoreprototypesparqlstream)
+    - [Quadstore.prototype.match](#quadstoreprototypematch)
+    - [Quadstore.prototype.import](#quadstoreprototypeimport)
+    - [Quadstore.prototype.remove](#quadstoreprototyperemove)
+    - [Quadstore.prototype.removeMatches](#quadstoreprototyperemovematches)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
@@ -95,10 +88,6 @@ GRAPH-1             SOURCE              FACEBOOK
 GRAPH-2             SOURCE              LINKEDIN
 ```
 
-Quadstore is a LevelDB-backed graph database for Node.js and the browser 
-with native support for quads, the RDF/JS interface specification, complex
-searches and SPARQL queries.
-
 Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
 maintaining multiple indexes each of which deals with a different permutation
 of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
@@ -106,13 +95,7 @@ that strikes a different compromise between expressiveness and performance,
 opting to natively supporting quads while working towards minimizing 
 [the performance penalty][i4] that comes with the fourth term. 
 
-Whereas previous versions of Quadstore used to maintain a pre-defined set of 
-indexes based on the paper [RDF-4X][i2], newer versions allow users to
-configure custom set of indexes according to the usage and query patterns 
-specific to each use case.
-
 [i1]: http://nodejsconfit.levelgraph.io
-[i2]: http://dl.acm.org/citation.cfm?id=3012104
 [i3]: https://github.com/levelgraph/levelgraph
 [i4]: https://github.com/levelgraph/levelgraph/issues/43#issuecomment-29519727
 
@@ -124,34 +107,24 @@ Active, under development.
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-### Current version and features
+### Current version
 
-Current version: **v7.0.1-alpha.6** available on NPM under the `alpha` tag or
-as `quadstore@7.0.1-alpha.6`
-
-- fully written in Typescript;
-- retrieval, update, insertion and removal of quads;
-- foundational support for complex searches;
-- foundational support for quad generation;
-- foundational support for SPARQL queries;
-- [RDF/JS](https://github.com/rdfjs/representation-task-force)' `Store`, `Source` and `Sink` interfaces.
+Current version: **v7.0.1-alpha.9** available on NPM under the `alpha` tag or
+as `quadstore@7.0.1-alpha.8`
 
 ### Roadmap
 
 We're currently working on the following features:
 
-- expanding support for complex searches;
 - expanding support for SPARQL queries;
 - general performance improvements.
 
 We're also evaluating the following features for future developments:
 
-- [RDF*][rdfstar-blog] (see also [these slides][rdfstar-slides])
+- [RDF*][r1] (see also [these slides][r2])
 
-[r1]: https://github.com/levelgraph/levelgraph#searches
-[r2]: https://github.com/levelgraph/levelgraph#triple-generation
-[rdfstar-blog]: https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
-[rdfstar-slides]: http://olafhartig.de/slides/W3CWorkshop2019RDFStarAndSPARQLStar.pdf
+[r1]: https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
+[r2]: http://olafhartig.de/slides/W3CWorkshop2019RDFStarAndSPARQLStar.pdf
 
 ### Notes
 
@@ -163,7 +136,7 @@ We're also evaluating the following features for future developments:
 
 ## Usage
 
-### Storage
+### Storage backends
 
 `quadstore` uses the [`levelup`](https://github.com/level/levelup) package to 
 interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
@@ -174,30 +147,11 @@ We test `quadstore` using the following backends:
   backed by LevelDB itself
 - [`memdown`](https://github.com/level/memdown) for volatile in-memory storage
 
-### Return values
+### Data model and return values
 
-With the exception of RDF/JS interfaces, `quadstore`'s APIs are promise-based
-and all methods return objects that include both the actual query results and
-relevant metadata such as the sorting criteria used for ordering such results.
-
-```js
-const results = await store.get({});
-console.log(JSON.stringify(results));
-```
-
-```json
-{
-  "type": "QUADS",
-  "items": [
-    { "subject":  "a", "predicate": "a", "object": "c", "graph": "d"},
-    { "subject":  "a", "predicate": "b", "object": "c", "graph": "d"},
-    { "subject":  "b", "predicate": "a", "object": "c", "graph": "d"}
-  ],
-  "sorting": ["subject", "predicate", "object", "graph"]
-} 
-```
-
-#### Result types
+Except for those related to the [RDF/JS stream interfaces][dm-2], `quadstore`'s
+API is promise-based and all methods return objects that include both the actual
+query results and the relevant metadata.
 
 Objects returned by `quadstore`'s APIs have the `type` property set to one of
 the following values:
@@ -205,56 +159,91 @@ the following values:
 - `"VOID"` - when there's no data returned by the database, such as with the
   `put` method or `INSERT DATA` SPARQL queries;
 - `"QUADS"` - when a query returns a collection of quads;
+- `"BOOLEAN"` - when a query returns a boolean result;
 - `"BINDINGS"` - when a query returns a collection of bindings;
 - `"APPROXIMATE_SIZE"` - when a query returns an approximate count of how many
   matching items are present.
-
-#### Streaming vs. non-streaming
 
 For those methods that return objects with the `type` property set to either
 `"QUADS"` or `"BINDINGS"`, `quadstore` provides query results either in streaming
 mode or in non-streaming mode. 
   
 Streaming methods such as `getStream` and `searchStream` return objects with
-the `iterator` property set to an instance of [`AsyncIterator`][asynciterator-gh],
-a subset of the `stream.Readable` interface. This instance emits either quads
-or bindings, depending on the value of the `type` property.
+the `iterator` property set to an instance of [`AsyncIterator`][dm-4],
+an implementation of a subset of the `stream.Readable` interface. This instance
+emits either quads or bindings, depending on the value of the `type` property.
 
 Non-streaming methods such as `get` and `search` return objects with the
 `items` property set to an array of either quads or bindings, depending on the
 value of the `type` property.
 
-[asynciterator-gh]: https://github.com/RubenVerborgh/AsyncIterator#readme
+Quads are returned as and expected to be instances of the
+ [RDF/JS `Quad` interface][dm-1] as produced by the implementation of the 
+ [RDF/JS `DataFactory` interface][dm-1] passed to the `Quadstore` constructor.
 
-#### Sorting
+Bindings are returned as and expected to be maps of variable names
+(including `?`) to instances of the [RDF/JS Term interface][dm-1] as produced
+by the same implementation of the [RDF/JS DataFactory interface][dm-1].
 
-All methods returning objects with the `type` property set to either `"QUADS"` or
-`"BINDINGS"` also include a `sorting` property set to an array that represents
-the sorting criteria by which the database is ordering the provided results. 
+Matching patterns, such as those used in the `get` and `getStream` methods, 
+are expected to be maps of term names to instances of the
+[RDF/JS Term interface][dm-1].
 
-### Graph API
+[dm-1]: https://rdf.js.org/data-model-spec/
+[dm-2]: https://rdf.js.org/stream-spec/
+[dm-3]: https://github.com/rdfjs-base/data-model
+[dm-4]: https://github.com/RubenVerborgh/AsyncIterator#readme
 
-#### QuadStore class
+### Quadstore class
 
-    const QuadStore = require('quadstore').QuadStore;
-    const store = new QuadStore(opts);
+```js
+const Quadstore = require('quadstore').Quadstore;
+const store = new Quadstore(opts);
+```
 
 Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
-    opts.backend = require('memdown')();    // REQUIRED: level instance
-    opts.indexes = [                        // OPTIONAL: custom indexes
-        ['subject', 'predicate', 'object', 'graph'],
-    ];
+```js
+opts.backend = require('memdown')();            // REQUIRED: level instance
+opts.dataFactory = require('@rdf-data-model');  // REQUIRED: RDF/JS DataFactory
+opts.indexes = [                                // OPTIONAL: custom indexes
+    ['subject', 'predicate', 'object', 'graph'],
+];
+
+```
     
 The `opts.backend` option **must** be an instance of a leveldb backend.
 
-##### Custom indexes
+The `dataFactory` option *must* be an implementation of the 
+[RDF/JS DataFactory interface][dm-1], such as one of the following: 
+
+- [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
+- [N3.DataFactory](https://www.npmjs.com/package/n3)
+
+Also, `Quadstore` can be configured with a `prefixes` object that defines a
+reversible mapping of IRIs to abbreviated forms, with the intention of reducing
+the storage cost where common HTTP prefixes are known in advance.
+
+The `prefixes` object defines a bijection using two functions `expandTerm` and
+`compactIri`, both of which take a string parameter and return a string, as in
+the following example:
+
+```js
+opts.prefixes = {
+  expandTerm: term => term.replace(/^ex:/, 'http://example.com/'),
+  compactIri: iri => iri.replace(/^http:\/\/example\.com\//, 'ex:'),
+}
+```
+
+This will replace the IRI `http://example.com/a` with `ex:a` in storage.
+
+### Custom indexes
 
 The `opts.indexes` option allows users to configure which indexes will be used
 by the store. If not set, the store will default to the following indexes:
 
-```
+```js
 [
   ['subject', 'predicate', 'object', 'graph'],
   ['object', 'graph', 'subject', 'predicate'],
@@ -274,176 +263,48 @@ The store will automatically select which index(es) to use for a given query
 based on the available indexes and the query itself. **If no suitable index is
 found for a given query, the store will throw an error**.
 
-#### QuadStore.prototype.get()
+### Quadstore.prototype.get()
 
-    const matchTerms = {graph: 'g'};
-    const { items } = await store.get(matchTerms);
+```js
+const pattern = {graph: dataFactory.namedNode('ex://g')};
+const { items } = await store.get(pattern);
+```
 
 Returns an array of all quads within the store matching the specified terms.
 
-##### Range matching
+### Range matching
 
-Quadstore supports range-based matching in addition to value-based matching. 
+`quadstore` supports range-based matching in addition to value-based matching. 
 Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
-    const matchTerms = {graph: { gt: 'g' } };
-    const { items } = await store.get(matchTerms);
-
-#### QuadStore.prototype.search()
-
-    const pipeline = [
-      { type: 'bgp', pattern: {subject: '?s', predicate: 'p1', object: '?o'} },
-      { type: 'bgp', pattern: {subject: '?s', predicate: 'p2', object: 'o2'} },
-      { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
-    ];
-    const { items } = await store.search(pipeline);
-
-Returns an array of all quads within the store matching the specified patterns
-and filters. Search methods such as `search()` and `searchStream()` support the
-use of variables.
-
-#### QuadStore.prototype.put()
-
-    const quad = {subject: 's', predicate: 'p', object: 'o', graph: 'g'};
-    await store.put(quad);
-
-Stores a new quad. Does *not* throw or return an error if the quad already exists.
-
-#### QuadStore.prototype.multiPut()
-
-    const quads = [
-        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
-    ];
-    await store.multiPut(quads);
-
-Stores new quads. Does *not* throw or return an error if quads already exists.
-
-#### QuadStore.prototype.del()
-
-This method deletes a single quad. It Does *not* throw or return an error if the 
-specified quad is not present in the store.
-
-    const quad = {subject: 's', predicate: 'p', object: 'o', graph: 'g'};
-    await store.del(quad);
+```js
+const pattern = {
+  object: { 
+    gt: dataFactory.literal('7', 'http://www.w3.org/2001/XMLSchema#integer')
+  }
+};
+const { items } = await store.get(matchTerms);
+```
     
-#### QuadStore.prototype.multiDel()
-
-This method deletes multiple quads. It Does *not* throw or return an error if
-the specified quads are not present in the store.
-
-    const quads = [
-        {subject: 's', predicate: 'p', object: 'o', graph: 'g'}
-    ];
-    await store.multiDel(quads)
-
-#### QuadStore.prototype.patch()
-
-This methods deletes one quad and inserts another quad in a single operation.
-It Does *not* throw or return an error if the specified quads are not present
-in the store (delete) or already present in the store (update).
-
-    const oldQuad = {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'};
-    const newQuads = {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'};
-    await store.patch(oldQuad, newQuad);
-    
-#### QuadStore.prototype.multiPatch()
-
-This methods deletes and inserts quads in a single operation. It Does *not* 
-throw or return an error if the specified quads are not present in the store 
-(delete) or already present in the store (update).
-
-    const oldQuads = [
-        {subject: 'so', predicate: 'po', object: 'oo', graph: 'go'}
-    ];
-    const newQuads = [
-        {subject: 'sn', predicate: 'pn', object: 'on', graph: 'gn'}
-    ];
-    await store.multiPatch(oldQuads, newQUads);
-
-#### QuadStore.prototype.getStream()
-
-    const matchTerms = {graph: 'c'};
-    const { iterator } = await store.getStream(matchTerms);
-
-This method supports [range matching](#range-matching). 
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
-
-#### QuadStore.prototype.searchStream()
-
-    const pipeline = [
-      { type: 'bgp', pattern: {subject: '?s', predicate: 'p1', object: '?o'} },
-      { type: 'bgp', pattern: {subject: '?s', predicate: 'p2', object: 'o2'} },
-      { type: 'lt', args: ['?o', 'http://example.com/lteBound'] }
-    ];
-    const { iterator } = await store.searchStream(pipeline);
- 
-See [QuadStore.prototype.search()](#quadstoreprototypesearch).
-
-#### QuadStore.prototype.putStream()
-
-    await store.putStream(readableStream);
-
-Imports all quads coming through the specified `stream.Readable` into the store.
-
-#### QuadStore.prototype.delStream()
-
-    await store.delStream(readableStream);
-
-Deletes all quads coming through the specified `stream.Readable` from the store.
-
-### RDF Interface
-
-`quadstore` aims to support the 
-[RDF/JS](https://github.com/rdfjs/representation-task-force) interface 
-specification through the specialized `RdfStore` class, which currently 
-implements the `Source`, `Sink` and `Store` interfaces. Additionally, the 
-`RdfStore` class also supports `SPARQL` queries.
-
-#### RdfStore class
-
-    const RdfStore = require('quadstore').RdfStore;
-    const store = new RdfStore(opts);
-
-Instantiates a new store. The `RdfStore` class extends `QuadStore` and requires
-an instance of a leveldb backend as the `opts.backend` argument. In 
-addition to all options supported by `QuadStore`, `RdfStore` supports the 
-following:
-
-    opts.dataFactory = require('@rdf-data-model');  // REQUIRED: instance of RDF/JS' dataFactory 
-
-The `dataFactory` option *must* be an implementation of the
-`dataFactory` interface defined in the RDF/JS specification, such as: 
-
-- [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
-- [N3.js' N3.DataFactory](https://www.npmjs.com/package/n3)
-
-#### Graph API, Quad and Term instances
-
-The `RdfStore` class extends the `QuadStore` class. All methods inherited from
-the latter return iterators and/or arrays of `Quad` objects as produced by the
-`dataFactory.quad` method (where applicable). 
-
-Matching terms, such as those used in the `get` and `getStream` methods,
-must be `Term` objects as produced by the `dataFactory.namedNode`, 
-`dataFactory.blankNode` or `dataFactory.literal` methods.
-
-Search methods such as `search` and `searchStream` support the use of variables
-via RDF/JS' `Variable` interface as implemented by `dataFactory.variable()`.
-
-#### RDF range matching
-
-The RdfStore class inherits support  for [range-based matching](#range-matching), 
-with ranges defined using `Term` instances as produced by `dataFactory.namedNode`, 
-`dataFactory.literal` and `dataFactory.blankNode`.
-
-Furthermore, values for literal terms with the following numeric datatypes are
-expressed and matched according to their numerical values rather than their 
-string representations:
+Values for literal terms with the following numeric datatypes are matched
+against their numerical values rather than their literal representations:
 
 ```
 http://www.w3.org/2001/XMLSchema#integer
-http://www.w3.org/2001/XMLSchema#double
 http://www.w3.org/2001/XMLSchema#decimal
+http://www.w3.org/2001/XMLSchema#double
+http://www.w3.org/2001/XMLSchema#nonPositiveInteger
+http://www.w3.org/2001/XMLSchema#negativeInteger
+http://www.w3.org/2001/XMLSchema#long
+http://www.w3.org/2001/XMLSchema#int
+http://www.w3.org/2001/XMLSchema#short
+http://www.w3.org/2001/XMLSchema#byte
+http://www.w3.org/2001/XMLSchema#nonNegativeInteger
+http://www.w3.org/2001/XMLSchema#unsignedLong
+http://www.w3.org/2001/XMLSchema#unsignedInt
+http://www.w3.org/2001/XMLSchema#unsignedShort
+http://www.w3.org/2001/XMLSchema#unsignedByte
+http://www.w3.org/2001/XMLSchema#positiveInteger
 ```
 
 This is also the case for terms with the following date/time datatypes:
@@ -452,7 +313,110 @@ This is also the case for terms with the following date/time datatypes:
 http://www.w3.org/2001/XMLSchema#dateTime
 ```
 
-#### RdfStore.prototype.sparql()
+#### Quadstore.prototype.put()
+
+```js
+await store.put(dataFactory.quad(/* ... */));
+```
+
+Stores a new quad. Does *not* throw or return an error if the quad already exists.
+
+#### Quadstore.prototype.multiPut()
+
+```js
+await store.multiPut([
+  dataFactory.quad(/* ... */),
+  dataFactory.quad(/* ... */),
+]);
+```
+
+Stores new quads. Does *not* throw or return an error if quads already exists.
+
+#### Quadstore.prototype.del()
+
+This method deletes a single quad. It Does *not* throw or return an error if the 
+specified quad is not present in the store.
+
+```js
+await store.del(dataFactory.quad(/* ... */));
+```
+    
+#### Quadstore.prototype.multiDel()
+
+This method deletes multiple quads. It Does *not* throw or return an error if
+the specified quads are not present in the store.
+
+```js
+await store.multiDel([
+  dataFactory.quad(/* ... */),
+  dataFactory.quad(/* ... */),
+]);
+```
+
+#### Quadstore.prototype.patch()
+
+This method deletes one quad and inserts another quad in a single operation.
+It Does *not* throw or return an error if the specified quads are not present
+in the store (delete) or already present in the store (update).
+
+```js
+await store.patch(
+  dataFactory.quad(/* ... */),  // will be deleted
+  dataFactory.quad(/* ... */),  // will be inserted
+);
+```
+    
+#### Quadstore.prototype.multiPatch()
+
+This method deletes and inserts quads in a single operation. It Does *not* 
+throw or return an error if the specified quads are not present in the store 
+(delete) or already present in the store (update).
+
+```js
+// will be deleted
+const oldQuads = [ 
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),
+];
+
+// will be inserted
+const newQuads = [ // will be inserted
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),        
+];
+
+await store.multiPatch(oldQuads, newQuads);
+```
+
+#### Quadstore.prototype.getStream()
+
+```js
+const pattern = {graph: dataFactory.namedNode('ex://g')};
+const { iterator } = await store.getStream(pattern);
+```
+
+This method supports [range matching](#range-matching). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
+
+#### Quadstore.prototype.putStream()
+
+```js
+await store.putStream(readableStream);
+```
+
+Imports all quads coming through the specified `stream.Readable` into the store.
+
+#### Quadstore.prototype.delStream()
+
+```js
+await store.delStream(readableStream);
+```
+
+Deletes all quads coming through the specified `stream.Readable` from the store.
+
+
+#### Quadstore.prototype.sparql()
 
 The `sparql()` method provides support for non-streaming SPARQL queries.
 Objects returned by `sparql()` have their `type` property set to different
@@ -464,7 +428,7 @@ values depending on each specific query:
   property set to `"QUADS"`;
 - `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and 
   `INSERT/DELETE WHERE` will result in objects having their `type` property set
-  to `"VOID"`.
+  to either `"VOID"` or `"BOOLEAN"`.
   
 ```js
 const { type, items } = await store.sparql(`
@@ -475,25 +439,38 @@ const { type, items } = await store.sparql(`
 The `sparql()` also accepts an optional `opts` parameter with the following
 properties:
 
-- `opts.defaultGraphMode`: this can be set to either `default` or `merge` and
-  allows client to specify whether the default graph used in queries should be
-  the actual default graph or the union of all graphs present in the database.
+- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
+  and allows client to specify whether the default graph used in queries should
+  be the actual default graph or the union of all graphs present in the 
+  database.
   
-We're using the [`rdf-test-suite`][rdf-test-suite-npm] package to validate our
+We're using the [`rdf-test-suite`][s4] package to validate our
 support for SPARQL queries against official test suites published by the W3C.
 
 We're currently testing against the following manifests:
 
-- [SPARQL 1.0][w3c-sparql10-manifest]: 219/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][w3c-sparql11-manifest]: 84/271 tests passing (`npm run test-rdf:sparql11`,
-limited to the [SPARQL 1.1 Query spec][w3c-sparql11-query-spec])
+- [SPARQL 1.0][s1]: 219/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][s2]: 84/271 tests passing (`npm run test-rdf:sparql11`,
+  limited to the [SPARQL 1.1 Query spec][s3])
 
-[w3c-sparql10-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
-[w3c-sparql11-manifest]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
-[w3c-sparql11-query-spec]: http://www.w3.org/TR/sparql11-query/
-[rdf-test-suite-npm]: https://www.npmjs.com/package/rdf-test-suite
+[s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
+[s2]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
+[s3]: http://www.w3.org/TR/sparql11-query/
+[s4]: https://www.npmjs.com/package/rdf-test-suite
+
+### Comunica
+
+`quadstore` runs most `SPARQL` queries through [a dedicated engine][c2] built
+on a custom configuration of the [Comunica meta-engine framework][c1].
+
+Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
+project with the global community.
+
+[c1]: https://github.com/comunica/comunica
+[c2]: https://github.com/beautifulinteractions/node-quadstore-comunica
+[c3]: https://github.com/comunica/comunica/graphs/contributors
   
-#### RdfStore.prototype.sparqlStream()
+### Quadstore.prototype.sparqlStream()
 
 The `sparqlStream()` method provides support for streaming SPARQL queries.
 Objects returned by `sparqlStream()` have their `type` property set to
@@ -505,7 +482,9 @@ const { iterator } = await store.sparqlStream(`
 `);
 ```
 
-#### RdfStore.prototype.match()
+See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
+
+#### Quadstore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
@@ -516,31 +495,28 @@ const { iterator } = await store.sparqlStream(`
       })
       .on('end', () => {});
 
-Returns an [RDF/JS stream](http://rdf.js.org/stream-spec/#stream-interface) 
-stream of `Quad` instances matching the provided terms.
-Supports [range-based matching](#rdf-range-matching).
-   
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
+Implementation of the [RDF/JS Source#match method][dm-2]. Supports 
+[range-based matching](#range-matching).
 
-#### RdfStore.prototype.import()
+#### Quadstore.prototype.import()
 
     const readableStream; // A stream.Readable of Quad() instances
     store.import(readableStream)
       .on('error', (err) => {})
       .on('end', () => {});
 
-Consumes the stream storing each incoming quad.
+Implementation of the [RDF/JS Sink#import method][dm-2].
 
-#### RdfStore.prototype.remove()
+#### Quadstore.prototype.remove()
 
     const readableStream; // A stream.Readable of Quad() instances
     store.remove(readableStream)
       .on('error', (err) => {})
       .on('end', () => {});
 
-Consumes the stream removing each incoming quad.
+Implementation of the [RDF/JS Store#remove method][dm-2].
 
-#### RdfStore.prototype.removeMatches()
+#### Quadstore.prototype.removeMatches()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
@@ -548,8 +524,7 @@ Consumes the stream removing each incoming quad.
       .on('error', (err) => {})
       .on('end', () => {});
 
-Removes all quads matching the provided terms.
-Supports [range-based matching](#rdf-range-matching).
+Implementation of the [RDF/JS Sink#removeMatches method][dm-2].
 
 ## Browser usage
 

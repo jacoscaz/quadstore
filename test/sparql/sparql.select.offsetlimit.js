@@ -2,7 +2,7 @@
 const _ = require('../../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist/lib/types');
+const {ResultType} = require('../../dist/lib/types');
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
@@ -56,7 +56,7 @@ module.exports = () => {
         SELECT * { ?s <http://ex.com/p> ?o . }
         LIMIT 1
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
       should(items[0]).have.property('?s');
       should(items[0]).have.property('?o');
@@ -70,7 +70,7 @@ module.exports = () => {
         SELECT * { ?s <http://ex.com/p> ?o . }
         OFFSET 1
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
       should(items[0]).have.property('?s');
       should(items[0]).have.property('?o');

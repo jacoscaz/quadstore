@@ -1,8 +1,9 @@
+const {streamToArray} = require('../../dist/lib/utils');
 
 const _ = require('../../dist/lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist/lib/types');
+const {ResultType} = require('../../dist/lib/types');
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 const xsdString  = xsd + 'string';
@@ -52,32 +53,25 @@ module.exports = () => {
     });
 
     it('should bind to the subject of a quad matched by predicate and object', async function () {
+
+      const rs = this.store.db.createReadStream();
+      const quads = await streamToArray(rs);
+
       const {type, items} = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> "42"^^<${xsdInteger}> . }
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
       should(items[0]).have.property('?s');
       should(items[0]['?s']).have.property('value');
       should(items[0]['?s']['value']).equal('http://ex.com/s2');
     });
 
-    it('should bind to the predicate of a quad matched by subject and object', async function () {
-      const {type, items} = await this.store.sparql(`
-        SELECT * { <http://ex.com/s2> ?p "42"^^<${xsdInteger}> . }
-      `);
-      should(type).equal(TSResultType.BINDINGS);
-      should(items).have.length(1);
-      should(items[0]).have.property('?p');
-      should(items[0]['?p']).have.property('value');
-      should(items[0]['?p']['value']).equal('http://ex.com/p');
-    });
-
     it('should bind to the object of a quad matched by subject and predicate', async function () {
       const {type, items} = await this.store.sparql(`
         SELECT * { <http://ex.com/s2> <http://ex.com/p> ?o . }
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
       should(items[0]).have.property('?o');
       should(items[0]['?o']).have.property('value');
@@ -90,7 +84,7 @@ module.exports = () => {
       const {type, items} = await this.store.sparql(`
         SELECT * { GRAPH ?g { <http://ex.com/s2> <http://ex.com/p> "42"^^<${xsdInteger}> . } . }
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
       should(items[0]).have.property('?g');
       should(items[0]['?g']).have.property('value');
@@ -101,7 +95,7 @@ module.exports = () => {
       const {type, items} = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> ?o . }
       `);
-      should(type).equal(TSResultType.BINDINGS);
+      should(type).equal(ResultType.BINDINGS);
       should(items).have.length(2);
       should(items[0]).have.property('?s');
       should(items[0]).have.property('?o');

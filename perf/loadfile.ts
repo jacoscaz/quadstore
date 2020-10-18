@@ -2,7 +2,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import * as utils from '../lib/utils';
-import { RdfStore } from '../lib/rdfstore';
+import { Quadstore } from '../lib/quadstore';
 import { DataFactory, StreamParser } from 'n3';
 import {disk, time} from './utils';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
@@ -25,7 +25,7 @@ import {AbstractLevelDOWN} from 'abstract-leveldown';
 
     debugger;
 
-    const store = new RdfStore({
+    const store = new Quadstore({
       backend,
       dataFactory: DataFactory,
     });

@@ -1,7 +1,7 @@
 
 const should = require('should');
 const factory = require('@rdfjs/data-model');
-const {TSResultType} = require('../../dist/lib/types');
+const {ResultType} = require('../../dist/lib/types');
 
 module.exports = () => {
   describe('CONSTRUCT', () => {
@@ -48,7 +48,7 @@ module.exports = () => {
         CONSTRUCT { ?s <http://ex.com/p3> <http://ex.com/o3> . }
         WHERE { ?s <http://ex.com/p> <http://ex.com/o>. }
       `);
-      should(result.type).equal(TSResultType.QUADS);
+      should(result.type).equal(ResultType.QUADS);
       should(result.items).be.equalToQuadArray(
         [
           factory.quad(

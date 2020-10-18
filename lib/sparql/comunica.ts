@@ -58,7 +58,7 @@ export const handleQueryStream = async (store: Quadstore, query: Algebra.Operati
     case 'quads':
       return {
         type: ResultType.QUADS,
-        iterator: new TransformIterator(results.quadStream),
+        iterator: results.quadStream,
       };
     default:
       // @ts-ignore

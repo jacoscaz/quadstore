@@ -110,7 +110,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 ### Current version
 
 Current version: **v7.0.1-alpha.9** available on NPM under the `alpha` tag or
-as `quadstore@7.0.1-alpha.8`
+as `quadstore@7.0.1-alpha.9`
 
 ### Roadmap
 
@@ -449,8 +449,8 @@ support for SPARQL queries against official test suites published by the W3C.
 
 We're currently testing against the following manifests:
 
-- [SPARQL 1.0][s1]: 219/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][s2]: 84/271 tests passing (`npm run test-rdf:sparql11`,
+- [SPARQL 1.0][s1]: 265/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][s2]: 226/271 tests passing (`npm run test-rdf:sparql11`,
   limited to the [SPARQL 1.1 Query spec][s3])
 
 [s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl

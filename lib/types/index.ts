@@ -44,13 +44,6 @@ export interface ImportedPatternTypes {
   [TermName.GRAPH]?: 'undefined'|'object'|'string'|'number'|'function'|'bigint'|'boolean'|'symbol',
 }
 
-export interface ImportedSimplePattern {
-  [TermName.SUBJECT]?: string,
-  [TermName.PREDICATE]?: string,
-  [TermName.OBJECT]?: string,
-  [TermName.GRAPH]?: string,
-}
-
 export interface ImportedQuad {
   [TermName.SUBJECT]: string,
   [TermName.PREDICATE]: string,
@@ -118,13 +111,6 @@ export interface Pattern {
   [TermName.SUBJECT]?: Quad_Subject,
   [TermName.PREDICATE]?: Quad_Predicate,
   [TermName.OBJECT]?: Quad_Object|Range,
-  [TermName.GRAPH]?: Quad_Graph,
-}
-
-export interface SimplePattern {
-  [TermName.SUBJECT]?: Quad_Subject,
-  [TermName.PREDICATE]?: Quad_Predicate,
-  [TermName.OBJECT]?: Quad_Object,
   [TermName.GRAPH]?: Quad_Graph,
 }
 

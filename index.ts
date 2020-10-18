@@ -7,7 +7,6 @@ export {
 
   ImportedRange,
   ImportedPattern,
-  ImportedSimplePattern,
 
   GetOpts,
   PutStreamOpts,
@@ -25,6 +24,5 @@ export {
 
   Range,
   Pattern,
-  SimplePattern,
 
 } from './lib/types'

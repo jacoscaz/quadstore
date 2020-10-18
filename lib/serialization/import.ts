@@ -5,11 +5,9 @@ import {
   ImportedPattern,
   ImportedQuad,
   ImportedRange,
-  ImportedSimplePattern,
   Pattern, Prefixes,
   Quad,
-  Range,
-  SimplePattern
+  Range
 } from '../types';
 
 export const importLiteralTerm = (term: Literal, prefixes: Prefixes, rangeBoundary = false): string => {

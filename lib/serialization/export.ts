@@ -2,7 +2,7 @@ import {DataFactory, Literal, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subj
 import {ImportedQuad, Prefixes, Quad} from '../types';
 import * as xsd from './xsd';
 
-export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Literal => {
+export const exportLiteralTerm = (term: string, dataFactory: DataFactory, prefixes: Prefixes): Literal => {
   const [, encoding, datatype, language, value] = term.split('^');
   switch (datatype) {
     case xsd.langString:
@@ -11,7 +11,7 @@ export const exportLiteralTerm = (term: string, dataFactory: DataFactory): Liter
       }
       return dataFactory.literal(value);
     default:
-      return dataFactory.literal(value, dataFactory.namedNode(datatype));
+      return dataFactory.literal(value, dataFactory.namedNode(prefixes.expandTerm(datatype)));
   }
 }
 
@@ -57,7 +57,7 @@ const exportQuadObject = (term: string, dataFactory: DataFactory, prefixes: Pref
       }
       throw new Error('DataFactory does not support variables');
     case '^':
-      return exportLiteralTerm(term, dataFactory);
+      return exportLiteralTerm(term, dataFactory, prefixes);
     default:
       return dataFactory.namedNode(prefixes.expandTerm(term));
   }

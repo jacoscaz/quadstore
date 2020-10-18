@@ -12,13 +12,13 @@ import {
   SimplePattern
 } from '../types';
 
-export const importLiteralTerm = (term: Literal, rangeBoundary = false): string => {
+export const importLiteralTerm = (term: Literal, prefixes: Prefixes, rangeBoundary = false): string => {
   const { language, datatype, value } = term;
   if (language !== '') {
     return `^^${xsd.langString}^${language}^${value}`;
   }
   if (!datatype || datatype.value === xsd.string) {
-    return `^^${xsd.string}^^${value}`;
+    return `^^${xsd.string}^^${prefixes.compactIri(value)}`;
   }
   switch (datatype.value) {
     case xsd.integer:
@@ -39,15 +39,15 @@ export const importLiteralTerm = (term: Literal, rangeBoundary = false): string 
       if (rangeBoundary) {
         return `^number:${encode(value)}^`;
       }
-      return `^number:${encode(value)}^${datatype.value}^^${value}^`;
+      return `^number:${encode(value)}^${prefixes.compactIri(datatype.value)}^^${value}^`;
     case xsd.dateTime:
       const timestamp = new Date(value).valueOf();
       if (rangeBoundary) {
         return `^datetime:${encode(timestamp)}^`;
       }
-      return `^datetime:${encode(timestamp)}^${datatype.value}^^${value}^`;
+      return `^datetime:${encode(timestamp)}^${prefixes.compactIri(datatype.value)}^^${value}^`;
     default:
-      return `^^${datatype.value}^^${value}^`;
+      return `^^${prefixes.compactIri(datatype.value)}^^${value}^`;
   }
 };
 
@@ -68,19 +68,19 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':
-      return importLiteralTerm(term, rangeBoundary);
+      return importLiteralTerm(term, prefixes, rangeBoundary);
     default:
       // @ts-ignore
       throw new Error(`Unexpected termType: "${term.termType}".`);
   }
 };
 
-export const importRange = (range: Range, rangeBoundary: boolean = false): ImportedRange => {
+export const importRange = (range: Range, prefixes: Prefixes, rangeBoundary: boolean = false): ImportedRange => {
   const importedRange: ImportedRange = {};
-  if (range.lt) importedRange.lt = importLiteralTerm(range.lt, rangeBoundary);
-  if (range.lte) importedRange.lte = importLiteralTerm(range.lte, rangeBoundary);
-  if (range.gt) importedRange.gt = importLiteralTerm(range.gt, rangeBoundary);
-  if (range.gte) importedRange.gte = importLiteralTerm(range.gte, rangeBoundary);
+  if (range.lt) importedRange.lt = importLiteralTerm(range.lt, prefixes, rangeBoundary);
+  if (range.lte) importedRange.lte = importLiteralTerm(range.lte, prefixes, rangeBoundary);
+  if (range.gt) importedRange.gt = importLiteralTerm(range.gt, prefixes, rangeBoundary);
+  if (range.gte) importedRange.gte = importLiteralTerm(range.gte, prefixes, rangeBoundary);
   return importedRange;
 };
 
@@ -98,16 +98,16 @@ export const importTerm = (term: Term|Range, isGraph: boolean, defaultGraphValue
       case 'Literal':
         // TODO: document why this is useful
         if (rangeBoundary) {
-          const value = importLiteralTerm(term, rangeBoundary);
+          const value = importLiteralTerm(term, prefixes, rangeBoundary);
           return { gte: value, lte: value };
         }
-        return importLiteralTerm(term, rangeBoundary);
+        return importLiteralTerm(term, prefixes, rangeBoundary);
       default:
         // @ts-ignore
         throw new Error(`Unexpected termType: "${term.termType}".`);
     }
   } else if ('gt' in term  || 'gte' in term || 'lt' in term || 'lte' in term) {
-    return importRange(term, rangeBoundary);
+    return importRange(term, prefixes, rangeBoundary);
   } else {
     throw new Error(`Unexpected type of "term" argument.`);
   }

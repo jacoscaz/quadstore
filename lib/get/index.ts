@@ -2,11 +2,13 @@ import {
   ApproximateSizeResult,
   DefaultGraphMode,
   GetOpts,
-  InternalIndex,
   ImportedPattern,
-  ImportedRange, QuadStreamResult,
+  ImportedPatternTypes,
+  ImportedRange,
+  InternalIndex,
+  QuadStreamResult,
   ResultType,
-  TermName, ImportedPatternTypes,
+  TermName,
 } from '../types';
 import {SimpleTransformIterator} from 'asynciterator';
 import {Quadstore} from '../quadstore';
@@ -197,18 +199,18 @@ const rangeToLevelOpts = (rangeOpts: RangeOpts): LevelOpts => {
 
 const reconcilePatternWithDefaultGraphMode = (pattern: ImportedPattern, store: Quadstore, opts: GetOpts = emptyObject): ImportedPattern => {
   const defaultGraphMode = opts.defaultGraphMode || store.defaultGraphMode;
-  if (defaultGraphMode === DefaultGraphMode.UNION) {
-    if (pattern[TermName.GRAPH] === store.defaultGraph) {
-      pattern = {
-        subject: pattern[TermName.SUBJECT],
-        predicate: pattern[TermName.PREDICATE],
-        object: pattern[TermName.OBJECT]
-      };
-    }
-  } else {
-    if (!pattern[TermName.GRAPH]) {
-      pattern = { ...pattern, [TermName.GRAPH]: store.defaultGraph };
-    }
+  if (defaultGraphMode === DefaultGraphMode.DEFAULT && !pattern[TermName.GRAPH]) {
+    return {
+      ...pattern,
+      [TermName.GRAPH]: store.defaultGraph,
+    };
+  }
+  if (store.sparqlMode && defaultGraphMode === DefaultGraphMode.UNION && pattern[TermName.GRAPH] === store.defaultGraph) {
+    return {
+      [TermName.SUBJECT]: pattern[TermName.SUBJECT],
+      [TermName.PREDICATE]: pattern[TermName.PREDICATE],
+      [TermName.OBJECT]: pattern[TermName.OBJECT],
+    };
   }
   return pattern;
 };

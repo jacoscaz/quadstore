@@ -130,7 +130,7 @@ module.exports = () => {
         should(matchedQuads[0]).deepEqual(quads[1]);
       });
 
-      it('should match the default graph when explicitly required',  async function () {
+      it('should match the default graph when explicitly passed',  async function () {
         const store = this.store;
         const rs = store;
         const quads = [
@@ -149,10 +149,60 @@ module.exports = () => {
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
-        const matchedQuads = await utils.streamToArray(rs.fork({defaultGraphMode: DefaultGraphMode.DEFAULT}).match(null, null, null, factory.defaultGraph()));
+        const matchedQuads = await utils.streamToArray(rs.match(null, null, null, factory.defaultGraph()));
         stripTermSerializedValue(matchedQuads);
         should(matchedQuads).have.length(1);
         should(matchedQuads[0]).deepEqual(quads[0]);
+      });
+
+      it('should match the default graph when using DEFAULT graph mode',  async function () {
+        const store = this.store;
+        const rs = store;
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.defaultGraph()
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s1'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+        const source = new AsyncIterator.ArrayIterator(quads);
+        await utils.waitForEvent(store.import(source), 'end', true);
+        const matchedQuads = await utils.streamToArray(rs.match(null, null, null, null, { defaultGraphMode: DefaultGraphMode.DEFAULT}));
+        stripTermSerializedValue(matchedQuads);
+        should(matchedQuads).have.length(1);
+        should(matchedQuads[0]).deepEqual(quads[0]);
+      });
+
+      it('should match the union graph when using UNION graph mode',  async function () {
+        const store = this.store;
+        const rs = store;
+        const quads = [
+          factory.quad(
+            factory.namedNode('http://ex.com/s0'),
+            factory.namedNode('http://ex.com/p0'),
+            factory.literal('o0', 'en-gb'),
+            factory.defaultGraph()
+          ),
+          factory.quad(
+            factory.namedNode('http://ex.com/s1'),
+            factory.namedNode('http://ex.com/p1'),
+            factory.literal('o1', 'en-gb'),
+            factory.namedNode('http://ex.com/g1')
+          )
+        ];
+        const source = new AsyncIterator.ArrayIterator(quads);
+        await utils.waitForEvent(store.import(source), 'end', true);
+        const matchedQuads = await utils.streamToArray(rs.match(null, null, null, null, { defaultGraphMode: DefaultGraphMode.UNION}));
+        stripTermSerializedValue(matchedQuads);
+        should(matchedQuads).have.length(2);
+        should(matchedQuads).be.equalToQuadArray(quads, store);
       });
 
     });

@@ -70,7 +70,7 @@ module.exports = () => {
     it('should bind to the terms of all quads in all graphs (explicit option)', async function () {
       const { type, items } = await this.store.sparql(`
         SELECT * { ?s ?p ?o . }
-      `, { defaultGraphMode: DefaultGraphMode.MERGE });
+      `, { defaultGraphMode: DefaultGraphMode.UNION });
       should(type).equal(ResultType.BINDINGS);
       should(items).have.length(5);
     });

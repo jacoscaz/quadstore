@@ -272,6 +272,14 @@ const { items } = await store.get(pattern);
 
 Returns an array of all quads within the store matching the specified terms.
 
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
+  and allows client to specify whether the default graph used in queries should
+  be the actual default graph or the union of all graphs present in the 
+  database.
+
 ### Range matching
 
 `quadstore` supports range-based matching in addition to value-based matching. 
@@ -314,7 +322,7 @@ This is also the case for terms with the following date/time datatypes:
 http://www.w3.org/2001/XMLSchema#dateTime
 ```
 
-#### Quadstore.prototype.put()
+### Quadstore.prototype.put()
 
 ```js
 await store.put(dataFactory.quad(/* ... */));
@@ -322,7 +330,7 @@ await store.put(dataFactory.quad(/* ... */));
 
 Stores a new quad. Does *not* throw or return an error if the quad already exists.
 
-#### Quadstore.prototype.multiPut()
+### Quadstore.prototype.multiPut()
 
 ```js
 await store.multiPut([
@@ -333,7 +341,7 @@ await store.multiPut([
 
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
-#### Quadstore.prototype.del()
+### Quadstore.prototype.del()
 
 This method deletes a single quad. It Does *not* throw or return an error if the 
 specified quad is not present in the store.
@@ -342,7 +350,7 @@ specified quad is not present in the store.
 await store.del(dataFactory.quad(/* ... */));
 ```
     
-#### Quadstore.prototype.multiDel()
+### Quadstore.prototype.multiDel()
 
 This method deletes multiple quads. It Does *not* throw or return an error if
 the specified quads are not present in the store.
@@ -354,7 +362,7 @@ await store.multiDel([
 ]);
 ```
 
-#### Quadstore.prototype.patch()
+### Quadstore.prototype.patch()
 
 This method deletes one quad and inserts another quad in a single operation.
 It Does *not* throw or return an error if the specified quads are not present
@@ -367,7 +375,7 @@ await store.patch(
 );
 ```
     
-#### Quadstore.prototype.multiPatch()
+### Quadstore.prototype.multiPatch()
 
 This method deletes and inserts quads in a single operation. It Does *not* 
 throw or return an error if the specified quads are not present in the store 
@@ -390,17 +398,25 @@ const newQuads = [ // will be inserted
 await store.multiPatch(oldQuads, newQuads);
 ```
 
-#### Quadstore.prototype.getStream()
+### Quadstore.prototype.getStream()
 
 ```js
 const pattern = {graph: dataFactory.namedNode('ex://g')};
 const { iterator } = await store.getStream(pattern);
 ```
 
-This method supports [range matching](#range-matching). 
-See [QuadStore.prototype.get()](#quadstoreprototypeget).
+This method supports [range matching](#range-matching),
+see [QuadStore.prototype.get()](#quadstoreprototypeget).
 
-#### Quadstore.prototype.putStream()
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
+  and allows client to specify whether the default graph used in queries should
+  be the actual default graph or the union of all graphs present in the 
+  database.
+
+### Quadstore.prototype.putStream()
 
 ```js
 await store.putStream(readableStream);
@@ -408,7 +424,7 @@ await store.putStream(readableStream);
 
 Imports all quads coming through the specified `stream.Readable` into the store.
 
-#### Quadstore.prototype.delStream()
+### Quadstore.prototype.delStream()
 
 ```js
 await store.delStream(readableStream);
@@ -417,7 +433,7 @@ await store.delStream(readableStream);
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
 
-#### Quadstore.prototype.sparql()
+### Quadstore.prototype.sparql()
 
 The `sparql()` method provides support for non-streaming SPARQL queries.
 Objects returned by `sparql()` have their `type` property set to different
@@ -485,7 +501,7 @@ const { iterator } = await store.sparqlStream(`
 
 See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
 
-#### Quadstore.prototype.match()
+### Quadstore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');
@@ -499,7 +515,15 @@ See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
 Implementation of the [RDF/JS Source#match method][dm-2]. Supports 
 [range-based matching](#range-matching).
 
-#### Quadstore.prototype.import()
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
+  and allows client to specify whether the default graph used in queries should
+  be the actual default graph or the union of all graphs present in the 
+  database.
+
+### Quadstore.prototype.import()
 
     const readableStream; // A stream.Readable of Quad() instances
     store.import(readableStream)
@@ -508,7 +532,7 @@ Implementation of the [RDF/JS Source#match method][dm-2]. Supports
 
 Implementation of the [RDF/JS Sink#import method][dm-2].
 
-#### Quadstore.prototype.remove()
+### Quadstore.prototype.remove()
 
     const readableStream; // A stream.Readable of Quad() instances
     store.remove(readableStream)
@@ -517,7 +541,7 @@ Implementation of the [RDF/JS Sink#import method][dm-2].
 
 Implementation of the [RDF/JS Store#remove method][dm-2].
 
-#### Quadstore.prototype.removeMatches()
+### Quadstore.prototype.removeMatches()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
     const graph = dataFactory.namedNode('http://example.com/graph');

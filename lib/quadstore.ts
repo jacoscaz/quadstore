@@ -64,45 +64,37 @@ export class Quadstore extends EventEmitter implements Store {
 
   readonly dataFactory: DataFactory;
 
+  sparqlMode: boolean;
   defaultGraphMode: DefaultGraphMode;
 
   constructor(opts: StoreOpts) {
-
     super();
-
     assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
-
     assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
-
     this.dataFactory = opts.dataFactory;
-
     this.abstractLevelDOWN = opts.backend;
     this.db = levelup(this.abstractLevelDOWN);
     this.indexes = [];
     this.id = nanoid();
     this.boundary = opts.boundary || '\uDBFF\uDFFF';
     this.separator = opts.separator || '\u0000\u0000';
-
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
     setImmediate(() => { this._initialize(); });
-
     this.engine = newEngine();
-
     this.prefixes = opts.prefixes || {
       expandTerm: term => term,
       compactIri: iri => iri,
     };
-
+    this.sparqlMode = false;
     this.defaultGraphMode = opts.defaultGraphMode || DefaultGraphMode.UNION;
-
     this.defaultGraph = importSimpleTerm(this.dataFactory.defaultGraph(), true, 'urn:rdfstore:dg', this.prefixes);
-
   }
 
-  fork(opts: { defaultGraphMode?: DefaultGraphMode} = {}): Quadstore {
+  fork(opts: { defaultGraphMode?: DefaultGraphMode, sparqlMode?: boolean } = {}): Quadstore {
     const fork = <Quadstore>Object.create(this);
+    if (typeof opts.sparqlMode === 'boolean') fork.sparqlMode = opts.sparqlMode;
     if (opts.defaultGraphMode) fork.defaultGraphMode = opts.defaultGraphMode;
     return fork;
   }
@@ -119,12 +111,6 @@ export class Quadstore extends EventEmitter implements Store {
     });
   }
 
-  /*
-   * ==========================================================================
-   *                           STORE SERIALIZATION
-   * ==========================================================================
-   */
-
   toString() {
     return this.toJSON();
   }
@@ -132,12 +118,6 @@ export class Quadstore extends EventEmitter implements Store {
   toJSON() {
     return `[object ${this.constructor.name}::${this.id}]`;
   }
-
-  /*
-   * ==========================================================================
-   *                                  INDEXES
-   * ==========================================================================
-   */
 
   _addIndex(terms: TermName[]): void {
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
@@ -149,15 +129,10 @@ export class Quadstore extends EventEmitter implements Store {
     });
   }
 
-  // **************************************************************************
-  // ******************************** RDF/JS **********************************
-  // **************************************************************************
-
-
-  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph): Stream<Quad> {
+  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Stream<Quad> {
     const iterator = new TransformIterator<Quad, Quad>();
     const pattern: Pattern = { subject, predicate, object, graph };
-    this.getStream(pattern, {})
+    this.getStream(pattern, opts)
       .then((results) => {
         iterator.source = <AsyncIterator<Quad>>results.iterator;
       })
@@ -170,12 +145,6 @@ export class Quadstore extends EventEmitter implements Store {
     return <Stream<Quad>>iterator;
   }
 
-  /**
-   * RDF/JS.Sink.import()
-   * @param source
-   * @param opts
-   * @returns {*|EventEmitter}
-   */
   import(source: Stream<Quad>): EventEmitter {
     const emitter = new EventEmitter();
     this.putStream(<TSReadable<Quad>>source, {})
@@ -192,33 +161,16 @@ export class Quadstore extends EventEmitter implements Store {
     return emitter;
   }
 
-  /**
-   * RDF/JS.Store.removeMatches()
-   * @param subject
-   * @param predicate
-   * @param object
-   * @param graph
-   * @returns {*}
-   */
-  removeMatches(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph) {
-    const source = this.match(subject, predicate, object, graph);
+  removeMatches(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject) {
+    const source = this.match(subject, predicate, object, graph, opts);
     return this.remove(source);
   }
 
-  /**
-   * RDF/JS.Store.deleteGraph()
-   * @param graph
-   * @returns {*}
-   */
   deleteGraph(graph: Quad_Graph) {
     return this.removeMatches(undefined, undefined, undefined, graph);
   }
 
-  // **************************************************************************
-  // ******************************* ARRAY API ********************************
-  // **************************************************************************
-
-  async getApproximateSize(pattern: Pattern, opts: EmptyOpts = emptyObject) {
+  async getApproximateSize(pattern: Pattern, opts: GetOpts = emptyObject) {
     const importedTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
     return await getApproximateSize(this, importedTerms, opts);
   }
@@ -226,12 +178,6 @@ export class Quadstore extends EventEmitter implements Store {
   async sparql(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadArrayResult|BindingArrayResult|VoidResult|BooleanResult> {
     return sparql(this, query, opts);
   }
-
-  /*
-   * ==========================================================================
-   *                            NON-STREAMING API
-   * ==========================================================================
-   */
 
   async put(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
@@ -317,12 +263,7 @@ export class Quadstore extends EventEmitter implements Store {
     return { type: results.type, items };
   }
 
-
-  // **************************************************************************
-  // ******************************* STREAM API *******************************
-  // **************************************************************************
-
-  async getStream(pattern: Pattern, opts: EmptyOpts = emptyObject): Promise<QuadStreamResult> {
+  async getStream(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadStreamResult> {
     const importedMatchTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
     return await getStream(this, importedMatchTerms, opts);
   }

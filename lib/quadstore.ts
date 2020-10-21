@@ -145,6 +145,12 @@ export class Quadstore extends EventEmitter implements Store {
     return <Stream<Quad>>iterator;
   }
 
+  async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {
+    const pattern: Pattern = { subject, predicate, object, graph };
+    const results = await this.getApproximateSize(pattern, opts);
+    return results.approximateSize;
+  }
+
   import(source: Stream<Quad>): EventEmitter {
     const emitter = new EventEmitter();
     this.putStream(<TSReadable<Quad>>source, {})

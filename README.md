@@ -553,12 +553,18 @@ Implementation of the [RDF/JS Sink#removeMatches method][dm-2].
 
 ## Browser usage
 
-The [`level-js`](https://github.com/Level/level-js) backend for levelDB offers
-support for browser-side persistent storage. Any modern build system / bundler
-should be able to work with Quadstore. Support for tree-shaking will come when
-we figure out a way to [build an ES version][issues-97].
+The [`level-js`][b1] backend for levelDB offers support for browser-side
+persistent storage. 
 
-[issues-97]: https://github.com/beautifulinteractions/node-quadstore/issues/97 
+`quadstore` can be bundled for browser-side usage via Webpack, preferably using
+version 4.x. The [reference repository][b0] is meant to help in getting to a
+working Webpack configuration and also hosts a pre-built bundle with everything
+that is required to use `quadstore` in the browser.
+
+Rollup, ES modules and tree-shaking are not supported (yet).
+ 
+[b0]: https://github.com/beautifulinteractions/node-quadstore-webpack-bundle
+[b1]: https://github.com/Level/level-js
 
 ## Performance
 

@@ -160,6 +160,14 @@ export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (i
 export { flatMap };
 export { pReduce };
 
+export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) => void) => void): Promise<T|undefined> => {
+  return new Promise((resolve, reject) => {
+    fn((err: Error|undefined|null, val?: T) => {
+      err ? reject(err) : resolve(val);
+    });
+  });
+};
+
 export const emptyArray: any[] = [];
 export const emptyObject: { [key: string]: any } = {};
 

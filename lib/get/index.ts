@@ -3,17 +3,21 @@ import {
   DefaultGraphMode,
   GetOpts,
   ImportedPattern,
-  ImportedPatternTypes,
+  ImportedPatternTypes, ImportedQuad,
   ImportedRange,
   InternalIndex,
   QuadStreamResult,
   ResultType,
   TermName,
+  Quad,
 } from '../types';
-import {SimpleTransformIterator} from 'asynciterator';
+import {SimpleTransformIterator, BufferedIterator} from 'asynciterator';
 import {Quadstore} from '../quadstore';
 import {deserializeImportedQuad, exportQuad} from '../serialization';
 import {emptyObject} from '../utils';
+import {AbstractIterator} from 'abstract-leveldown';
+import {LevelIterator} from './leveliterator';
+
 
 type RangeOpts = {
   lt: string,
@@ -28,6 +32,10 @@ type RangeOpts = {
 };
 
 type LevelOpts = {
+  keys?: boolean,
+  values?: boolean,
+  keyAsBuffer?: boolean,
+  valueAsBuffer?: boolean,
   lt?: string,
   lte?: string,
   gt?: string,
@@ -177,7 +185,12 @@ export const getRangeOpts = (store: Quadstore, pattern: ImportedPattern, opts?: 
 };
 
 const rangeToLevelOpts = (rangeOpts: RangeOpts): LevelOpts => {
-  const levelOpts: LevelOpts = {};
+  const levelOpts: LevelOpts = {
+    keys: false,
+    values: true,
+    keyAsBuffer: true,
+    valueAsBuffer: true,
+  };
   if (rangeOpts.lte) {
     levelOpts.lte = rangeOpts.lt;
   } else if (rangeOpts.lt) {
@@ -215,20 +228,24 @@ const reconcilePatternWithDefaultGraphMode = (pattern: ImportedPattern, store: Q
   return pattern;
 };
 
+
+
 export const getStream = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): Promise<QuadStreamResult> => {
   pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   const rangeOpts = getRangeOpts(store, pattern, opts);
   const levelOpts = rangeToLevelOpts(rangeOpts);
-  const iterator = new SimpleTransformIterator(store.db.createValueStream(levelOpts),{
-    map(buf: Buffer) {
-      return exportQuad(
-        deserializeImportedQuad(buf.toString('utf8')),
-        store.defaultGraph,
-        store.dataFactory,
-        store.prefixes,
-      );
-    },
-  });
+  const iterator = new LevelIterator(store, store.db.iterator(levelOpts));
+
+  // const iterator = new SimpleTransformIterator(store.db.createValueStream(levelOpts),{
+  //   map(buf: Buffer) {
+  //     return exportQuad(
+  //       deserializeImportedQuad(buf.toString('utf8')),
+  //       store.defaultGraph,
+  //       store.dataFactory,
+  //       store.prefixes,
+  //     );
+  //   },
+  // });
   return { type: ResultType.QUADS, iterator };
 };
 

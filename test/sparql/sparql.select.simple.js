@@ -53,10 +53,6 @@ module.exports = () => {
     });
 
     it('should bind to the subject of a quad matched by predicate and object', async function () {
-
-      const rs = this.store.db.createReadStream();
-      const quads = await streamToArray(rs);
-
       const {type, items} = await this.store.sparql(`
         SELECT * { ?s <http://ex.com/p> "42"^^<${xsdInteger}> . }
       `);

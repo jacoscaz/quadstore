@@ -11,6 +11,7 @@ import {
   streamToArray,
   termNames,
   defaultIndexes,
+  pFromCallback,
 } from './utils';
 import assert from 'assert';
 import {EventEmitter} from 'events';
@@ -40,7 +41,6 @@ import {
   TermName, Prefixes,
 } from './types';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
-import levelup from 'levelup';
 import {getApproximateSize, getStream, compileCanBeUsedWithPatternFn, compileGetKeyFn} from './get';
 import {Algebra} from 'sparqlalgebrajs';
 import {newEngine, ActorInitSparql} from 'quadstore-comunica';
@@ -50,7 +50,6 @@ import {sparql, sparqlStream} from './sparql';
 export class Quadstore extends EventEmitter implements Store {
 
   readonly db: AbstractLevelDOWN;
-  readonly abstractLevelDOWN: AbstractLevelDOWN;
 
   readonly defaultGraph: string;
   readonly indexes: InternalIndex[];
@@ -73,8 +72,7 @@ export class Quadstore extends EventEmitter implements Store {
     assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
     this.dataFactory = opts.dataFactory;
-    this.abstractLevelDOWN = opts.backend;
-    this.db = levelup(this.abstractLevelDOWN);
+    this.db = opts.backend;
     this.indexes = [];
     this.id = nanoid();
     this.boundary = opts.boundary || '\uDBFF\uDFFF';
@@ -100,15 +98,62 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   _initialize() {
-    this.emit('ready');
+    this.open()
+      .then(() => {
+        this.emit('ready');
+      })
+      .catch((err) => {
+        this.emit('error', err);
+      });
+  }
+
+  protected waitForStatus(status: string, timeout: number = 200) {
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => {
+        clearInterval(i);
+        clearTimeout(t);
+        reject(new Error(`Timeout while waiting for status "${status}"`));
+      }, timeout);
+      const i = setInterval(() => {
+        if (this.db.status === status) {
+          clearInterval(i);
+          clearTimeout(t);
+          resolve();
+        }
+      }, 1);
+    });
+  }
+
+  async open() {
+    switch (this.db.status) {
+      case 'closing':
+        await this.waitForStatus('closed');
+      case 'new':
+      case 'closed':
+        await pFromCallback((cb) => { this.db.open(cb); });
+        break;
+      case 'opening':
+        await this.waitForStatus('open');
+        break;
+      case 'open':
+      default:
+    }
   }
 
   async close() {
-    await new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        err ? reject(err) : resolve();
-      });
-    });
+    switch (this.db.status) {
+      case 'opening':
+        await this.waitForStatus('open');
+      case 'open':
+      case 'new':
+        await pFromCallback((cb) => { this.db.close(cb); });
+        break;
+      case 'closing':
+        await this.waitForStatus('closed');
+        break;
+      case 'closed':
+      default:
+    }
   }
 
   toString() {
@@ -191,8 +236,7 @@ export class Quadstore extends EventEmitter implements Store {
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.put(i.getKey(importedQuad), value);
     }, this.db.batch());
-    // @ts-ignore
-    await batch.write();
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
@@ -204,8 +248,7 @@ export class Quadstore extends EventEmitter implements Store {
         return indexBatch.put(index.getKey(importedQuad), value);
       }, quadBatch);
     }, this.db.batch());
-    // @ts-ignore
-    await batch.write();
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
@@ -214,8 +257,8 @@ export class Quadstore extends EventEmitter implements Store {
     const batch = this.indexes.reduce((batch, i) => {
       return batch.del(i.getKey(importedQuad));
     }, this.db.batch());
-    // @ts-ignore
-    await batch.write();
+
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
@@ -226,8 +269,8 @@ export class Quadstore extends EventEmitter implements Store {
         return indexBatch.del(index.getKey(importedQuad));
       }, quadBatch);
     }, this.db.batch());
-    // @ts-ignore
-    await batch.write();
+
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
@@ -238,8 +281,8 @@ export class Quadstore extends EventEmitter implements Store {
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.del(i.getKey(importedOldQuad)).put(i.getKey(importedNewQuad), value);
     }, this.db.batch());
-    // @ts-ignore
-    await batch.write();
+
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
@@ -258,8 +301,7 @@ export class Quadstore extends EventEmitter implements Store {
         return indexBatch.put(index.getKey(importedNewQuad), value);
       }, quadBatch);
     }, batch);
-    // @ts-ignore
-    await batch.write();
+    await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 

@@ -17,7 +17,7 @@ module.exports = () => {
         indexes: this.indexes,
         prefixes: this.prefixes,
       });
-      await utils.waitForEvent(this.store, 'ready');
+      await this.store.open();
     });
 
     afterEach(async function () {

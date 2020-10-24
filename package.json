@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "7.0.1-alpha.12",
+  "version": "7.0.1-beta.1",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -22,7 +22,8 @@
     "test-rdf:sparql10": "rdf-test-suite -c .rdf-test-suite-cache/ dist/lib/engine.js https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl -o summary",
     "ts:build": "tsc --project ./tsconfig.json",
     "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
-    "publish:alpha": "npm publish --tag alpha"
+    "publish:alpha": "npm publish --tag alpha",
+    "publish:beta": "npm publish --tag beta"
   },
   "files": [
     "dist/lib/**/*.js",
@@ -53,7 +54,7 @@
   },
   "dependencies": {
     "asynciterator": "^3.0.3",
-    "quadstore-comunica": "^0.0.2",
+    "quadstore-comunica": "^0.0.3",
     "sparqlalgebrajs": "^2.4.0"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
@@ -66,11 +67,5 @@
   },
   "license": "MIT",
   "homepage": "https://github.com/beautifulinteractions/node-quadstore",
-  "bugs": "https://github.com/beautifulinteractions/node-quadstore/issues",
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm test",
-      "pre-push": "npm test"
-    }
-  }
+  "bugs": "https://github.com/beautifulinteractions/node-quadstore/issues"
 }

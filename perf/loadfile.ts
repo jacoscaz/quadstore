@@ -21,16 +21,12 @@ import {AbstractLevelDOWN} from 'abstract-leveldown';
 
   await disk(async (backend: AbstractLevelDOWN, checkDiskUsage) => {
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    debugger;
-
     const store = new Quadstore({
       backend,
       dataFactory: DataFactory,
     });
 
-    await utils.waitForEvent(store, 'ready');
+    await store.open();
 
     const absFilePath = path.resolve(process.cwd(), filePath);
 
@@ -44,6 +40,8 @@ import {AbstractLevelDOWN} from 'abstract-leveldown';
 
     console.log(`TIME: ${putTime} s`);
     console.log(`DISK: ${diskUsage}`);
+
+    await store.close();
 
   });
 

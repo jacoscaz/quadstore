@@ -79,7 +79,6 @@ export class Quadstore extends EventEmitter implements Store {
     this.separator = opts.separator || '\u0000\u0000';
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
-    setImmediate(() => { this._initialize(); });
     this.engine = newEngine();
     this.prefixes = opts.prefixes || {
       expandTerm: term => term,
@@ -97,14 +96,10 @@ export class Quadstore extends EventEmitter implements Store {
     return fork;
   }
 
-  _initialize() {
-    this.open()
-      .then(() => {
-        this.emit('ready');
-      })
-      .catch((err) => {
-        this.emit('error', err);
-      });
+  protected ensureReady() {
+    if (this.db.status !== 'open') {
+      throw new Error(`Store is not ready (status: "${this.db.status}"). Did you call store.open()?`);
+    }
   }
 
   protected waitForStatus(status: string, timeout: number = 200) {
@@ -222,15 +217,18 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async getApproximateSize(pattern: Pattern, opts: GetOpts = emptyObject) {
+    await this.ensureReady();
     const importedTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
     return await getApproximateSize(this, importedTerms, opts);
   }
 
   async sparql(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadArrayResult|BindingArrayResult|VoidResult|BooleanResult> {
+    this.ensureReady();
     return sparql(this, query, opts);
   }
 
   async put(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
@@ -241,6 +239,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async multiPut(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     const batch = importedQuads.reduce((quadBatch, importedQuad) => {
       const value = serializeImportedQuad(importedQuad);
@@ -253,6 +252,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async del(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const batch = this.indexes.reduce((batch, i) => {
       return batch.del(i.getKey(importedQuad));
@@ -263,6 +263,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async multiDel(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     let importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     const batch = importedQuads.reduce((quadBatch, importedQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
@@ -275,6 +276,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async patch(oldQuad: Quad, newQuad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const importedOldQuad = importQuad(oldQuad, this.defaultGraph, this.prefixes);
     const importedNewQuad = importQuad(newQuad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedNewQuad);
@@ -287,6 +289,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const importedOldQuads = oldQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     const importedNewQuads = newQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     let batch = this.db.batch();
@@ -306,17 +309,20 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResult> {
+    this.ensureReady();
     const results = await this.getStream(pattern, opts);
     const items: Quad[] = await streamToArray(results.iterator);
     return { type: results.type, items };
   }
 
   async getStream(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadStreamResult> {
+    this.ensureReady();
     const importedMatchTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
     return await getStream(this, importedMatchTerms, opts);
   }
 
   async putStream(source: TSReadable<Quad>, opts: PutStreamOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const batchSize = opts.batchSize || 1;
     if (batchSize === 1) {
       await consumeOneByOne<Quad>(source, quad => this.put(quad));
@@ -327,6 +333,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async delStream(source: TSReadable<Quad>, opts: DelStreamOpts = emptyObject): Promise<VoidResult> {
+    this.ensureReady();
     const batchSize = opts.batchSize || 1;
     if (batchSize === 1) {
       await consumeOneByOne<Quad>(source, quad => this.del(quad));
@@ -337,6 +344,7 @@ export class Quadstore extends EventEmitter implements Store {
   }
 
   async sparqlStream(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadStreamResult|BindingStreamResult|VoidResult|BooleanResult> {
+    this.ensureReady();
     return await sparqlStream(this, query, opts);
   }
 

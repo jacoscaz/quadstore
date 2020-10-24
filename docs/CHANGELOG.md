@@ -15,11 +15,13 @@
 - **[breaking]** refactored all APIs to return results wrapped in results objects
 - **[breaking]** refactored all streaming APIs to use `AsyncIterator` and
   asynchronous entrypoints with the exception of `RDF/JS` methods
-- **[breaking]** dropped support for non-RDF API 
+- **[breaking]** dropped support for the non-RDF API 
 - **[breaking]** dropped support for previous implementation of custom indexes
 - **[breaking]** dropped support for callbacks
 - **[breaking]** refactored constructors to only use a single `opts` argument,
   passing the leveldb backend instance via the `opts.backend` property
+- **[breaking]** dropped support for the `ready` event, replaced by the 
+  `.open()` and `.close()` methods
 - *[internal]* dropped a few dependencies by pulling in the relevant code
 - *[internal]* added index-specific test suites
 - *[internal]* refactored folder structure

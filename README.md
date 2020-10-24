@@ -21,6 +21,8 @@ interfaces and SPARQL queries.
     - [Data model and return Values](#data-model-and-return-values)
     - [Quadstore class](#quadstore-class)
     - [Custom indexes](#custom-indexes)
+    - [Quadstore.prototype.open](#quadstoreprototypeopen)
+    - [Quadstore.prototype.close](#quadstoreprototypeclose)
     - [Quadstore.prototype.get](#quadstoreprototypeget)
     - [Range matching](#range-matching)
     - [Quadstore.prototype.put](#quadstoreprototypeput)
@@ -138,14 +140,18 @@ We're also evaluating the following features for future developments:
 
 ### Storage backends
 
-`quadstore` uses the [`levelup`](https://github.com/level/levelup) package to 
-interface with any [LevelDB](http://leveldb.org)-compatible storage backend.
+`quadstore` can work with any [LevelDB][db0]-compatible storage backend that
+implements the [AbstractLevelDOWN interface][db1].
 
 We test `quadstore` using the following backends:
 
-- [`leveldown`](https://github.com/level/leveldown/) for persistent storage
-  backed by LevelDB itself
-- [`memdown`](https://github.com/level/memdown) for volatile in-memory storage
+- [`leveldown`][db2] for persistent storage backed by LevelDB itself
+- [`memdown`][db3] for volatile in-memory storage
+
+[db0]: http://leveldb.org
+[db1]: https://github.com/Level/abstract-leveldown
+[db2]: https://github.com/level/leveldown
+[db3]: https://github.com/level/memdown
 
 ### Data model and return values
 
@@ -210,7 +216,6 @@ opts.dataFactory = require('@rdf-data-model');  // REQUIRED: RDF/JS DataFactory
 opts.indexes = [                                // OPTIONAL: custom indexes
     ['subject', 'predicate', 'object', 'graph'],
 ];
-
 ```
     
 The `opts.backend` option **must** be an instance of a leveldb backend.
@@ -262,6 +267,14 @@ supported.
 The store will automatically select which index(es) to use for a given query 
 based on the available indexes and the query itself. **If no suitable index is
 found for a given query, the store will throw an error**.
+
+### Quadstore.prototype.open()
+
+This method opens the store and throws if the open operation fails for any reason.
+
+### Quadstore.prototype.close()
+
+This method closes the store and throws if the open operation fails for any reason.
 
 ### Quadstore.prototype.get()
 
@@ -466,8 +479,8 @@ support for SPARQL queries against official test suites published by the W3C.
 
 We're currently testing against the following manifests:
 
-- [SPARQL 1.0][s1]: 265/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][s2]: 226/271 tests passing (`npm run test-rdf:sparql11`,
+- [SPARQL 1.0][s1]: 269/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][s2]: 245/271 tests passing (`npm run test-rdf:sparql11`,
   limited to the [SPARQL 1.1 Query spec][s3])
 
 [s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
@@ -568,22 +581,38 @@ Rollup, ES modules and tree-shaking are not supported (yet).
 
 ## Performance
 
-Although we've yet to develop proper benchmarks, we do keep an eye on write
-speeds by often importing the entire [`21million.rdf`][21mil-rdf] file or a
-subset of it.
-
 The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
 running Node v14.0.0.
+
+### Importing quads
+
+We keep an eye on write speeds by importing the [`21million.rdf`][21mil-rdf]
+file or a subset of it. 
  
 With the default six indexes and the `leveldown` backend, the `RdfStore` class
 clocks at **~15k quads per second** when importing quads one-by-one and at 
-**~18k quads per second** when importing quads in batches, with a density of
-**~4k quads per MB**. 
+**~18k quads per second** when importing quads in small batches, with a density
+of **~4k quads per MB**. 
 
-    node perf/loadfile.js /path/to/21million.rdf
-    
+```
+node dist/perf/loadfile.js /path/to/21million.rdf
+```
+
 [21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz
- 
+
+### Join queries
+
+We track the computational cost of handling `get()` and `getStream()` queries
+(setting up iterators, etc...) by running a benchmark based on a SPARQL query
+that results in a high number of concatenated join operations, each producing
+a single quad.   
+
+```
+node dist/perf/search.js
+```
+
+Quadstore is currently able to process **~5k join operations per second**.
+
 ## LICENSE
 
 MIT. See [LICENSE.md](./LICENSE.md).

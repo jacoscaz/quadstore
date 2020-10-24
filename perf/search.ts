@@ -49,6 +49,7 @@ disk(async (backend, checkDiskUsage) => {
     backend,
     dataFactory,
   });
+  await store.open();
   await doWrites(store);
   console.log('written to disk');
   const { time: readTime, value: readQty } = await time(() => doReads(store));
@@ -57,5 +58,6 @@ disk(async (backend, checkDiskUsage) => {
   console.log('total data', readQty);
   console.log('join result/s', readQty / readTime * 1000);
   console.log('disk usage', diskUsage);
+  await store.close();
 });
 

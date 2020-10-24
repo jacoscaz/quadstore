@@ -30,16 +30,22 @@ class RdfStoreQueryEngine implements IQueryEngine {
       dataFactory,
       backend: memdown(),
     });
+    await store.open();
     await store.multiPut(data);
-    const result = await store.sparql(queryString);
-    switch (result.type) {
+    const results = await store.sparql(queryString);
+    let preparedResults: IQueryResult;
+    switch (results.type) {
       case ResultType.BINDINGS:
-        return await this.prepareBindingResult(store, result);
+        preparedResults = await this.prepareBindingResult(store, results);
+        break;
       case ResultType.QUADS:
-        return await this.prepareQuadResult(store, result);
+        preparedResults = await this.prepareQuadResult(store, results);
+        break;
       default:
         throw new Error(`Unsupported`);
     }
+    await store.close();
+    return preparedResults;
   }
 
   async prepareBindingResult(store: Quadstore, result: BindingArrayResult): Promise<IQueryResultBindings> {

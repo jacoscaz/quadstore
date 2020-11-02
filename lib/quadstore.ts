@@ -91,8 +91,12 @@ export class Quadstore extends EventEmitter implements Store {
 
   fork(opts: { defaultGraphMode?: DefaultGraphMode, sparqlMode?: boolean } = {}): Quadstore {
     const fork = <Quadstore>Object.create(this);
-    if (typeof opts.sparqlMode === 'boolean') fork.sparqlMode = opts.sparqlMode;
-    if (opts.defaultGraphMode) fork.defaultGraphMode = opts.defaultGraphMode;
+    if (typeof opts.sparqlMode === 'boolean') {
+      fork.sparqlMode = opts.sparqlMode;
+    }
+    if (opts.defaultGraphMode) {
+      fork.defaultGraphMode = opts.defaultGraphMode;
+    }
     return fork;
   }
 
@@ -115,7 +119,7 @@ export class Quadstore extends EventEmitter implements Store {
           clearTimeout(t);
           resolve();
         }
-      }, 1);
+      }, 10);
     });
   }
 
@@ -240,8 +244,8 @@ export class Quadstore extends EventEmitter implements Store {
 
   async multiPut(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
-    const batch = importedQuads.reduce((quadBatch, importedQuad) => {
+    const batch = quads.reduce((quadBatch, quad) => {
+      const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
       const value = serializeImportedQuad(importedQuad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(importedQuad), value);
@@ -253,19 +257,17 @@ export class Quadstore extends EventEmitter implements Store {
 
   async del(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const batch = this.indexes.reduce((batch, i) => {
-      return batch.del(i.getKey(importedQuad));
+      return batch.del(i.getKey(importQuad(quad, this.defaultGraph, this.prefixes)));
     }, this.db.batch());
-
     await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
   async multiDel(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    let importedQuads = quads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
-    const batch = importedQuads.reduce((quadBatch, importedQuad) => {
+    const batch = quads.reduce((quadBatch, quad) => {
+      const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.del(index.getKey(importedQuad));
       }, quadBatch);
@@ -277,28 +279,26 @@ export class Quadstore extends EventEmitter implements Store {
 
   async patch(oldQuad: Quad, newQuad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const importedOldQuad = importQuad(oldQuad, this.defaultGraph, this.prefixes);
     const importedNewQuad = importQuad(newQuad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedNewQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
-      return indexBatch.del(i.getKey(importedOldQuad)).put(i.getKey(importedNewQuad), value);
+      return indexBatch.del(i.getKey(importQuad(oldQuad, this.defaultGraph, this.prefixes)))
+        .put(i.getKey(importedNewQuad), value);
     }, this.db.batch());
-
     await pFromCallback((cb) => { batch.write(cb); });
     return { type: ResultType.VOID };
   }
 
   async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const importedOldQuads = oldQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
-    const importedNewQuads = newQuads.map(quad => importQuad(quad, this.defaultGraph, this.prefixes));
     let batch = this.db.batch();
-    batch = importedOldQuads.reduce((quadBatch, importedOldQuad) => {
+    batch = oldQuads.reduce((quadBatch, oldQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        return indexBatch.del(index.getKey(importedOldQuad));
+        return indexBatch.del(index.getKey(importQuad(oldQuad, this.defaultGraph, this.prefixes)));
       }, quadBatch);
     }, batch);
-    batch = importedNewQuads.reduce((quadBatch, importedNewQuad) => {
+    batch = newQuads.reduce((quadBatch, newQuad) => {
+      const importedNewQuad = importQuad(newQuad, this.defaultGraph, this.prefixes)
       const value = serializeImportedQuad(importedNewQuad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(importedNewQuad), value);
@@ -317,8 +317,7 @@ export class Quadstore extends EventEmitter implements Store {
 
   async getStream(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadStreamResult> {
     this.ensureReady();
-    const importedMatchTerms: ImportedPattern = importPattern(pattern, this.defaultGraph, this.prefixes);
-    return await getStream(this, importedMatchTerms, opts);
+    return await getStream(this, importPattern(pattern, this.defaultGraph, this.prefixes), opts);
   }
 
   async putStream(source: TSReadable<Quad>, opts: PutStreamOpts = emptyObject): Promise<VoidResult> {

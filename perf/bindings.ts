@@ -7,8 +7,9 @@ import {Quadstore} from '../lib/quadstore';
 import {BindingStreamResult} from '../lib/types';
 import {disk, time} from './utils';
 import {waitForEvent} from '../lib/utils';
-import dataFactory from '@rdfjs/data-model';
+import {DataFactory} from 'rdf-data-factory';
 
+const dataFactory = new DataFactory();
 const qty = 200000;
 
 const doWrites = async (store: Quadstore) => {

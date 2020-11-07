@@ -3,14 +3,13 @@
 
 const _ = require('../dist/lib/utils');
 const should = require('should');
-const dataFactory = require('@rdfjs/data-model');
 
 module.exports = () => {
 
   describe('QuadStore.prototype.del()', () => {
 
     it('should delete a quad correctly', async function () {
-      const store = this.store;
+      const { dataFactory, store } = this;
       const quads = [
         dataFactory.quad(
           dataFactory.namedNode('ex://s'),

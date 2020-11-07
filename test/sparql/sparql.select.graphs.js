@@ -1,46 +1,46 @@
 
 const _ = require('../../dist/lib/utils');
 const should = require('should');
-const factory = require('@rdfjs/data-model');
 const {ResultType, DefaultGraphMode} = require('../../dist/lib/types');
 
 module.exports = () => {
   describe('named graphs', () => {
 
     beforeEach(async function () {
+      const { dataFactory, store } = this;
       const quads = [
-        factory.quad(
-          factory.namedNode('http://ex.com/s'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o'),
-          factory.namedNode('http://ex.com/g')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o'),
+          dataFactory.namedNode('http://ex.com/g')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s'),
-          factory.namedNode('http://ex.com/p2'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.namedNode('http://ex.com/g2')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.namedNode('http://ex.com/g2')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o'),
-          factory.namedNode('http://ex.com/g')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o'),
+          dataFactory.namedNode('http://ex.com/g')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.defaultGraph(),
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.defaultGraph(),
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p2'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.namedNode('http://ex.com/g2')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.namedNode('http://ex.com/g2')
         ),
       ];
-      await this.store.multiPut(quads);
+      await store.multiPut(quads);
     });
 
     it('should bind to the terms of multiple quads matched by graph', async function () {

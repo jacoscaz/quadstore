@@ -15,7 +15,6 @@ import {
 } from './utils';
 import assert from 'assert';
 import {EventEmitter} from 'events';
-
 import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term,} from 'rdf-js';
@@ -45,9 +44,10 @@ import {getApproximateSize, getStream, compileCanBeUsedWithPatternFn, compileGet
 import {Algebra} from 'sparqlalgebrajs';
 import {newEngine, ActorInitSparql} from 'quadstore-comunica';
 import {sparql, sparqlStream} from './sparql';
+import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 
 
-export class Quadstore extends EventEmitter implements Store {
+export class Quadstore implements Store {
 
   readonly db: AbstractLevelDOWN;
 
@@ -67,11 +67,10 @@ export class Quadstore extends EventEmitter implements Store {
   defaultGraphMode: DefaultGraphMode;
 
   constructor(opts: StoreOpts) {
-    super();
     assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
-    assert(isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
+    // assert(typeof opts.dataFactory === 'undefined' || isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
-    this.dataFactory = opts.dataFactory;
+    this.dataFactory = opts.dataFactory || new RdfDataFactory();
     this.db = opts.backend;
     this.indexes = [];
     this.id = nanoid();

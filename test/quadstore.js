@@ -2,8 +2,6 @@
 
 'use strict';
 
-const utils = require('../dist/lib/utils');
-const dataFactory = require('@rdfjs/data-model');
 const {Quadstore} = require('..');
 
 module.exports = () => {
@@ -12,7 +10,7 @@ module.exports = () => {
 
     beforeEach(async function () {
       this.store = new Quadstore({
-        dataFactory,
+        dataFactory: this.dataFactory,
         backend: this.db,
         indexes: this.indexes,
         prefixes: this.prefixes,

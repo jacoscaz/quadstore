@@ -1,70 +1,71 @@
 
 const should = require('should');
-const factory = require('@rdfjs/data-model');
 const {ResultType} = require('../../dist/lib/types');
 
 module.exports = () => {
   describe('CONSTRUCT', () => {
 
     beforeEach(async function () {
+      const { dataFactory, store } = this;
       const quads = [
-        factory.quad(
-          factory.namedNode('http://ex.com/s'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o'),
-          factory.namedNode('http://ex.com/g')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o'),
+          dataFactory.namedNode('http://ex.com/g')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s'),
-          factory.namedNode('http://ex.com/p2'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.namedNode('http://ex.com/g2')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.namedNode('http://ex.com/g2')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o'),
-          factory.namedNode('http://ex.com/g')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o'),
+          dataFactory.namedNode('http://ex.com/g')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.namedNode('http://ex.com/g')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.namedNode('http://ex.com/g')
         ),
-        factory.quad(
-          factory.namedNode('http://ex.com/s2'),
-          factory.namedNode('http://ex.com/p2'),
-          factory.namedNode('http://ex.com/o2'),
-          factory.namedNode('http://ex.com/g2')
+        dataFactory.quad(
+          dataFactory.namedNode('http://ex.com/s2'),
+          dataFactory.namedNode('http://ex.com/p2'),
+          dataFactory.namedNode('http://ex.com/o2'),
+          dataFactory.namedNode('http://ex.com/g2')
         ),
       ];
-      await this.store.multiPut(quads);
+      await store.multiPut(quads);
     });
 
 
     it('should construct with a single pattern', async function () {
-      const result = await this.store.sparql(`
+      const { dataFactory, store } = this;
+      const result = await store.sparql(`
         CONSTRUCT { ?s <http://ex.com/p3> <http://ex.com/o3> . }
         WHERE { ?s <http://ex.com/p> <http://ex.com/o>. }
       `);
       should(result.type).equal(ResultType.QUADS);
       should(result.items).be.equalToQuadArray(
         [
-          factory.quad(
-            factory.namedNode('http://ex.com/s'),
-            factory.namedNode('http://ex.com/p3'),
-            factory.namedNode('http://ex.com/o3'),
-            factory.defaultGraph(),
+          dataFactory.quad(
+            dataFactory.namedNode('http://ex.com/s'),
+            dataFactory.namedNode('http://ex.com/p3'),
+            dataFactory.namedNode('http://ex.com/o3'),
+            dataFactory.defaultGraph(),
           ),
-          factory.quad(
-            factory.namedNode('http://ex.com/s2'),
-            factory.namedNode('http://ex.com/p3'),
-            factory.namedNode('http://ex.com/o3'),
-            factory.defaultGraph(),
+          dataFactory.quad(
+            dataFactory.namedNode('http://ex.com/s2'),
+            dataFactory.namedNode('http://ex.com/p3'),
+            dataFactory.namedNode('http://ex.com/o3'),
+            dataFactory.defaultGraph(),
           ),
         ],
-        this.store,
+        store,
       );
     });
 

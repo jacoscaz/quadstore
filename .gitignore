@@ -333,3 +333,7 @@ dist/cjs
 # Optional rdf-test-suite cache directory
 .rdf-test-suite-cache
 
+# Lock files
+package-lock.json
+yarn.lock
+

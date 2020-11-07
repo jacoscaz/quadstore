@@ -10,7 +10,7 @@ import {
   QuadArrayResult,
   ResultType
 } from './types';
-import dataFactory from '@rdfjs/data-model';
+import {DataFactory} from 'rdf-data-factory';
 import {parse} from './sparql';
 
 class RdfStoreQueryEngine implements IQueryEngine {
@@ -19,7 +19,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
 
   async parse(queryString: string, options: Record<string, any>): Promise<void> {
     const store = new Quadstore({
-      dataFactory,
+      dataFactory: new DataFactory(),
       backend: memdown(),
     });
     await parse(store, queryString);
@@ -27,7 +27,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
 
   async query(data: Quad[], queryString: string, options: Record<string, any>): Promise<IQueryResult> {
     const store = new Quadstore({
-      dataFactory,
+      dataFactory: new DataFactory(),
       backend: memdown(),
     });
     await store.open();

@@ -1,7 +1,6 @@
 
 const _ = require('../../dist/lib/utils');
 const should = require('should');
-const factory = require('@rdfjs/data-model');
 
 module.exports = () => {
   describe('DELETE DATA', () => {

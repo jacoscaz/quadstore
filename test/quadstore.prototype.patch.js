@@ -3,49 +3,45 @@
 
 const _ = require('../dist/lib/utils');
 const should = require('./should');
-const { quadArrayEqual } = require('./utils');
-const dataFactory = require('@rdfjs/data-model');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.patch()', () => {
-
-    const quadsSamples = [
-      dataFactory.quad(
-        dataFactory.namedNode('ex://s'),
-        dataFactory.namedNode('ex://p'),
-        dataFactory.namedNode('ex://o'),
-        dataFactory.namedNode('ex://g'),
-      ),
-      dataFactory.quad(
-        dataFactory.namedNode('ex://s'),
-        dataFactory.namedNode('ex://p2'),
-        dataFactory.namedNode('ex://o2'),
-        dataFactory.namedNode('ex://g2'),
-      ),
-      dataFactory.quad(
-        dataFactory.namedNode('ex://s2'),
-        dataFactory.namedNode('ex://p'),
-        dataFactory.namedNode('ex://o'),
-        dataFactory.namedNode('ex://g'),
-      ),
-      dataFactory.quad(
-        dataFactory.namedNode('ex://s2'),
-        dataFactory.namedNode('ex://p'),
-        dataFactory.namedNode('ex://o2'),
-        dataFactory.namedNode('ex://g'),
-      ),
-      dataFactory.quad(
-        dataFactory.namedNode('ex://s2'),
-        dataFactory.namedNode('ex://p2'),
-        dataFactory.namedNode('ex://o2'),
-        dataFactory.namedNode('ex://g2'),
-      ),
-    ];
+  describe('QuadStore.prototype.patch()', async function () {
 
     it('should delete old quads and add new ones', async function () {
-      const store = this.store;
-      const quadsArray = quadsSamples;
+      const { dataFactory, store } = this;
+      const quadsArray = [
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p2'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g2'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s2'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s2'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g'),
+        ),
+        dataFactory.quad(
+          dataFactory.namedNode('ex://s2'),
+          dataFactory.namedNode('ex://p2'),
+          dataFactory.namedNode('ex://o2'),
+          dataFactory.namedNode('ex://g2'),
+        ),
+      ];
       const oldQuads = [
         dataFactory.quad(
           dataFactory.namedNode('ex://s'),
@@ -74,7 +70,7 @@ module.exports = () => {
           dataFactory.namedNode('ex://g'),
         ),
       ];
-      const expected = quadsSamples.slice(2).concat(newQuads);
+      const expected = quadsArray.slice(2).concat(newQuads);
       await store.multiPut(quadsArray);
       await store.multiPatch(oldQuads, newQuads);
       const { items: quads } = await store.get({});

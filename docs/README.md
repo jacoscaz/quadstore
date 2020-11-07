@@ -210,40 +210,25 @@ const store = new Quadstore(opts);
 Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
-```js
-opts.backend = require('memdown')();            // REQUIRED: level instance
-opts.dataFactory = require('@rdf-data-model');  // REQUIRED: RDF/JS DataFactory
-opts.indexes = [                                // OPTIONAL: custom indexes
-    ['subject', 'predicate', 'object', 'graph'],
-];
-```
-    
+##### opts.backend
+
 The `opts.backend` option **must** be an instance of a leveldb backend.
+See [storage backends](#storage-backends).
+
+##### opts.dataFactory
 
 The `dataFactory` option *must* be an implementation of the 
-[RDF/JS DataFactory interface][dm-1], such as one of the following: 
+[RDF/JS DataFactory interface][dm-1]. Some of the available
+implementations: 
 
+- [rdf-data-factory](https://www.npmjs.com/package/rdf-data-factory) (default)
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
 - [N3.DataFactory](https://www.npmjs.com/package/n3)
 
-Also, `Quadstore` can be configured with a `prefixes` object that defines a
-reversible mapping of IRIs to abbreviated forms, with the intention of reducing
-the storage cost where common HTTP prefixes are known in advance.
+If left undefined, `quadstore` will automatically instantiate 
+one using `rdf-data-factory`.
 
-The `prefixes` object defines a bijection using two functions `expandTerm` and
-`compactIri`, both of which take a string parameter and return a string, as in
-the following example:
-
-```js
-opts.prefixes = {
-  expandTerm: term => term.replace(/^ex:/, 'http://example.com/'),
-  compactIri: iri => iri.replace(/^http:\/\/example\.com\//, 'ex:'),
-}
-```
-
-This will replace the IRI `http://example.com/a` with `ex:a` in storage.
-
-### Custom indexes
+##### opts.indexes
 
 The `opts.indexes` option allows users to configure which indexes will be used
 by the store. If not set, the store will default to the following indexes:
@@ -267,6 +252,25 @@ supported.
 The store will automatically select which index(es) to use for a given query 
 based on the available indexes and the query itself. **If no suitable index is
 found for a given query, the store will throw an error**.
+
+##### opts.prefixes
+
+Also, `Quadstore` can be configured with a `prefixes` object that defines a
+reversible mapping of IRIs to abbreviated forms, with the intention of reducing
+the storage cost where common HTTP prefixes are known in advance.
+
+The `prefixes` object defines a bijection using two functions `expandTerm` and
+`compactIri`, both of which take a string parameter and return a string, as in
+the following example:
+
+```js
+opts.prefixes = {
+  expandTerm: term => term.replace(/^ex:/, 'http://example.com/'),
+  compactIri: iri => iri.replace(/^http:\/\/example\.com\//, 'ex:'),
+}
+```
+
+This will replace the IRI `http://example.com/a` with `ex:a` in storage.
 
 ### Quadstore.prototype.open()
 
@@ -479,8 +483,8 @@ support for SPARQL queries against official test suites published by the W3C.
 
 We're currently testing against the following manifests:
 
-- [SPARQL 1.0][s1]: 265/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][s2]: 226/271 tests passing (`npm run test-rdf:sparql11`,
+- [SPARQL 1.0][s1]: 269/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][s2]: 245/271 tests passing (`npm run test-rdf:sparql11`,
   limited to the [SPARQL 1.1 Query spec][s3])
 
 [s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl

@@ -1,5 +1,4 @@
 
-const dataFactory = require('@rdfjs/data-model');
 const should = require('./should');
 
 module.exports = () => {
@@ -7,7 +6,7 @@ module.exports = () => {
   describe('QuadStore.prototype.put()', () => {
 
     it('should store a single quad', async function () {
-      const store = this.store;
+      const { dataFactory, store } = this;
       const newQuad = dataFactory.quad(
         dataFactory.namedNode('ex://s'),
         dataFactory.namedNode('ex://p'),
@@ -20,7 +19,7 @@ module.exports = () => {
     });
 
     it('should store multiple quads', async function () {
-      const store = this.store;
+      const { dataFactory, store } = this;
       const newQuads = [
         dataFactory.quad(
           dataFactory.namedNode('ex://s'),
@@ -42,7 +41,7 @@ module.exports = () => {
     });
 
     it('should not duplicate quads', async function () {
-      const store = this.store;
+      const { dataFactory, store } = this;
       const newQuads = [
         dataFactory.quad(
           dataFactory.namedNode('ex://s'),

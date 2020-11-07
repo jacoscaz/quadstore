@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "7.0.1-beta.2",
+  "version": "7.0.1-beta.3",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -36,7 +36,6 @@
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
-    "@rdfjs/data-model": "^1.2.0",
     "@types/abstract-leveldown": "^5.0.1",
     "@types/fs-extra": "^9.0.2",
     "@types/leveldown": "^4.0.2",
@@ -54,8 +53,10 @@
   },
   "dependencies": {
     "asynciterator": "^3.0.3",
-    "quadstore-comunica": "^0.0.4",
-    "sparqlalgebrajs": "^2.4.0"
+    "quadstore-comunica": "^0.0.6-beta.0",
+    "sparqlalgebrajs": "^2.4.0",
+    "sparqljs": "^3.2.0",
+    "rdf-data-factory": "^1.0.4"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
   "contributors": [

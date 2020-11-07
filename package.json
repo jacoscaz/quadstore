@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "7.0.1-beta.3",
+  "version": "7.0.1",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -22,6 +22,7 @@
     "test-rdf:sparql10": "rdf-test-suite -c .rdf-test-suite-cache/ dist/lib/engine.js https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl -o summary",
     "ts:build": "tsc --project ./tsconfig.json",
     "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
+    "build": "npm run ts:build",
     "publish:alpha": "npm publish --tag alpha",
     "publish:beta": "npm publish --tag beta"
   },
@@ -53,7 +54,7 @@
   },
   "dependencies": {
     "asynciterator": "^3.0.3",
-    "quadstore-comunica": "^0.0.6-beta.0",
+    "quadstore-comunica": "^0.0.6",
     "sparqlalgebrajs": "^2.4.0",
     "sparqljs": "^3.2.0",
     "rdf-data-factory": "^1.0.4"

@@ -111,8 +111,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version: **v7.0.1-alpha.12** available on NPM under the `alpha` tag or
-as `quadstore@7.0.1-alpha.12`
+Current version: **v7.0.2** available on NPM under the tag `latest`.
 
 ### Roadmap
 

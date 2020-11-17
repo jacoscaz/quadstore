@@ -61,8 +61,8 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
       return prefixes.compactIri(term.value);
     case 'BlankNode':
       return `_:${term.value}`;
-    case 'Variable':
-      return `?${term.value}`;
+    // case 'Variable':
+    //   return `?${term.value}`;
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':

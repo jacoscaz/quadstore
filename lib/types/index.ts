@@ -167,3 +167,49 @@ export interface StoreOpts {
 export interface SparqlOpts {
   defaultGraphMode?: DefaultGraphMode,
 }
+
+// RDF/JS expressions
+
+export interface RDFJS_Expression {
+  expressionType: 'operator' | 'term';
+}
+
+export interface RDFJS_OperatorExpression extends RDFJS_Expression {
+  expressionType: 'operator';
+  operator: string;
+  args: RDFJS_Expression[];
+}
+
+export interface RDFJS_TermExpression extends RDFJS_Expression {
+  expressionType: 'term';
+  term: Term;
+}
+
+export interface RDFJS_MetadataOpts {
+  count?: 'estimate' | 'exact';
+}
+
+export interface RDFJS_Metadata {
+  count: {
+    type: 'estimate' | 'exact';
+    value: number;
+  };
+}
+
+export interface RDFJS_Result {
+  quads(): Promise<AsyncIterator<Quad>>;
+  metadata(opts?: RDFJS_MetadataOpts): Promise<RDFJS_Metadata>;
+  isSupported(): Promise<boolean>;
+}
+
+export interface RDFJS_FilterableSource {
+  matchExpression(
+    s?: Term,
+    p?: Term,
+    o?: Term,
+    g?: Term,
+    expression?: RDFJS_Expression,
+  ): RDFJS_Result
+}
+
+

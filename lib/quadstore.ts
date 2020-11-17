@@ -37,7 +37,7 @@ import {
   TSReadable,
   ResultType,
   SparqlOpts,
-  TermName, Prefixes,
+  TermName, Prefixes, RDFJS_FilterableSource, RDFJS_Expression, RDFJS_Result,
 } from './types';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
 import {getApproximateSize, getStream, compileCanBeUsedWithPatternFn, compileGetKeyFn} from './get';
@@ -47,7 +47,7 @@ import {sparql, sparqlStream} from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 
 
-export class Quadstore implements Store {
+export class Quadstore implements Store /*, RDFJS_FilterableSource */ {
 
   readonly db: AbstractLevelDOWN;
 
@@ -187,6 +187,14 @@ export class Quadstore implements Store {
       });
     return <Stream<Quad>>iterator;
   }
+
+
+
+  // matchExpression(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, expression?: RDFJS_Expression): RDFJS_Result {
+  //   const pattern: Pattern = { subject, predicate, object, graph };
+  //
+  // }
+
 
   async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {
     const pattern: Pattern = { subject, predicate, object, graph };

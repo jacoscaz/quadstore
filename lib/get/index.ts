@@ -3,7 +3,7 @@ import {
   DefaultGraphMode,
   GetOpts,
   ImportedPattern,
-  ImportedPatternTypes, ImportedQuad,
+  ImportedPatternTypes,
   ImportedRange,
   InternalIndex,
   QuadStreamResult,
@@ -11,13 +11,10 @@ import {
   TermName,
   Quad,
 } from '../types';
-import {SimpleTransformIterator, BufferedIterator} from 'asynciterator';
+import {AsyncIterator} from 'asynciterator';
 import {Quadstore} from '../quadstore';
-import {deserializeImportedQuad, exportQuad} from '../serialization';
 import {emptyObject} from '../utils';
-import {AbstractIterator} from 'abstract-leveldown';
 import {LevelIterator} from './leveliterator';
-
 
 type RangeOpts = {
   lt: string,
@@ -228,24 +225,11 @@ const reconcilePatternWithDefaultGraphMode = (pattern: ImportedPattern, store: Q
   return pattern;
 };
 
-
-
 export const getStream = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): Promise<QuadStreamResult> => {
   pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   const rangeOpts = getRangeOpts(store, pattern, opts);
   const levelOpts = rangeToLevelOpts(rangeOpts);
   const iterator = new LevelIterator(store, store.db.iterator(levelOpts));
-
-  // const iterator = new SimpleTransformIterator(store.db.createValueStream(levelOpts),{
-  //   map(buf: Buffer) {
-  //     return exportQuad(
-  //       deserializeImportedQuad(buf.toString('utf8')),
-  //       store.defaultGraph,
-  //       store.dataFactory,
-  //       store.prefixes,
-  //     );
-  //   },
-  // });
   return { type: ResultType.QUADS, iterator };
 };
 
@@ -264,3 +248,79 @@ export const getApproximateSize = async (store: Quadstore, pattern: ImportedPatt
     });
   });
 };
+
+
+interface MetadataOpts {
+  count?: 'estimate' | 'exact';
+}
+
+interface Metadata {
+  count?: {
+    type: 'estimate' | 'exact';
+    value: number;
+  };
+}
+
+interface Result {
+  quads(): Promise<AsyncIterator<Quad>>;
+  metadata(opts?: MetadataOpts): Promise<Metadata>;
+}
+
+class GetResult implements Result {
+
+  private readonly store: Quadstore;
+  private readonly levelOpts: LevelOpts;
+
+  constructor(store: Quadstore, pattern: ImportedPattern, opts: GetOpts = emptyObject)  {
+    this.store = store;
+    const reconciledPattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
+    const rangeOpts = getRangeOpts(store, reconciledPattern, opts);
+    this.levelOpts = rangeToLevelOpts(rangeOpts);
+  }
+
+  async quads() {
+    return new LevelIterator(this.store, this.store.db.iterator(this.levelOpts));
+  }
+
+  private async countEstimate(): Promise<{ type: 'estimate', value: number }> {
+    const start = this.levelOpts.gte || this.levelOpts.gt;
+    const end = this.levelOpts.lte || this.levelOpts.lt;
+    return new Promise((resolve, reject) => {
+      this.store.db.approximateSize(start, end, (err: Error|null, approximateSize: number) => {
+        err ? reject(err) : resolve({ type: 'estimate', value: approximateSize});
+      });
+    });
+  }
+
+  private async countExact(): Promise<{ type: 'exact', value: number }> {
+    let count = 0;
+    const iterator = await this.quads();
+    return new Promise((resolve, reject) => {
+      iterator.on('data', () => { count += 1; });
+      iterator.on('end', () => { resolve({ type: 'exact', value: count }); });
+      iterator.on('error', (err) => { reject(err); iterator.destroy(err); });
+    });
+  }
+
+  async count(type: 'estimate' | 'exact'): Promise<{ type: 'estimate' | 'exact', value: number }> {
+    switch (type) {
+      case 'estimate': return this.countEstimate();
+      case 'exact': return this.countExact();
+      default: throw new Error(`Unsupported count type "${type}"`);
+    }
+  }
+
+  async metadata(opts: MetadataOpts = emptyObject) {
+    const metadata: Metadata = {};
+    if (opts.count) {
+      metadata.count = await this.count(opts.count);
+    }
+    return metadata;
+  }
+
+}
+
+export const get = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts) => {
+  return new GetResult(store, pattern, opts);
+};
+

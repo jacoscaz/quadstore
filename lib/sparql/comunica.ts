@@ -5,7 +5,6 @@ import {
   VoidResult,
   ResultType
 } from '../types';
-import {TransformIterator} from 'asynciterator';
 import {Algebra} from 'sparqlalgebrajs';
 import {Quadstore} from '../quadstore';
 
@@ -20,10 +19,6 @@ export const handleQuery = async (store: Quadstore, query: Algebra.Operation): P
     case 'bindings':
       return {
         type: ResultType.BINDINGS,
-        // TODO: there seems to be something wrong with Comunica's typings as
-        //       `results.bindings()` returns an array of Immutable.js objects
-        //       while the compiler thinks it's an array of `Term`.
-        // @ts-ignore
         items: (await results.bindings()).map(binding => binding.toObject()),
         variables: results.variables,
       };
@@ -48,10 +43,6 @@ export const handleQueryStream = async (store: Quadstore, query: Algebra.Operati
     case 'bindings':
       return {
         type: ResultType.BINDINGS,
-        // TODO: there seems to be something wrong with Comunica's typings as
-        //       `results.bindings()` returns an array of Immutable.js objects
-        //       while the compiler thinks it's an array of `Term`.
-        // @ts-ignore
         iterator: results.bindingsStream.map(binding => binding.toObject()),
         variables: results.variables,
       };

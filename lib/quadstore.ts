@@ -3,9 +3,9 @@
 
 import {
   consumeInBatches,
-  consumeOneByOne, emptyObject,
+  consumeOneByOne,
+  emptyObject,
   isAbstractLevelDOWNInstance,
-  isDataFactory,
   isObject,
   nanoid,
   streamToArray,
@@ -17,7 +17,7 @@ import assert from 'assert';
 import {EventEmitter} from 'events';
 import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
-import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term,} from 'rdf-js';
+import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term} from 'rdf-js';
 import {
   DefaultGraphMode,
   DelStreamOpts,
@@ -68,7 +68,6 @@ export class Quadstore implements Store {
 
   constructor(opts: StoreOpts) {
     assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
-    // assert(typeof opts.dataFactory === 'undefined' || isDataFactory(opts.dataFactory), 'Invalid "opts" argument: "opts.dataFactory" is not an instance of DataFactory');
     assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
     this.dataFactory = opts.dataFactory || new RdfDataFactory();
     this.db = opts.backend;

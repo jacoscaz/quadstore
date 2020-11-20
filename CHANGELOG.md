@@ -1,6 +1,16 @@
 
 # CHANGELOG
 
+## v7.1.0 (unreleased)
+
+- *[fix]* prefix-based compaction/expansion of literal datatype IRIs
+  (https://github.com/beautifulinteractions/node-quadstore/issues/118)
+- *[fix]* quadstore can now be bundles using browserify without the 
+  `ignoreMissing` configuration param 
+  (https://github.com/beautifulinteractions/node-quadstore/issues/117)
+- *[fix]* dropped indirect dev dependency on `@comunica/actor-init-sparql`
+  (https://github.com/beautifulinteractions/node-quadstore/issues/116)
+
 ## v7.0.1
 
 - *[new]* added support for range queries

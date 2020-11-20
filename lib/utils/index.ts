@@ -4,8 +4,6 @@ import {nanoid} from './nanoid.js';
 import {TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
-import {AbstractLevelDOWN} from 'abstract-leveldown';
-import {DataFactory} from 'rdf-js';
 
 export const termNames: TermName[] = [
   TermName.SUBJECT,
@@ -14,16 +12,8 @@ export const termNames: TermName[] = [
   TermName.GRAPH,
 ];
 
-export const isFunction = (f: any): boolean => {
-  return typeof(f) === 'function';
-};
-
 export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;
-};
-
-export const isNil = (n: any): boolean => {
-  return n === null || n === undefined;
 };
 
 export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
@@ -34,30 +24,6 @@ export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
       .on('end', () => { resolve(chunks); })
       .on('error', (err) => { reject(err); });
   });
-}
-
-export const isReadableStream = (obj: any): obj is TSReadable<any> => {
-  return isObject(obj)
-    && isFunction(obj.on)
-    && isFunction(obj.read);
-}
-
-export const isAbstractLevelDOWNInstance = (obj: any): obj is AbstractLevelDOWN => {
-  return isObject(obj)
-    && isFunction(obj.put)
-    && isFunction(obj.del)
-    && isFunction(obj.batch);
-}
-
-export const isDataFactory = (obj: any): obj is DataFactory => {
-  return (isObject(obj) || isFunction(obj))
-    && isFunction(obj.literal)
-    && isFunction(obj.defaultGraph)
-    && isFunction(obj.blankNode)
-    && isFunction(obj.namedNode)
-    && isFunction(obj.variable)
-    && isFunction(obj.triple)
-    && isFunction(obj.quad);
 }
 
 export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnError?: boolean): Promise<any> => {

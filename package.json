@@ -56,9 +56,9 @@
   "dependencies": {
     "asynciterator": "^3.0.3",
     "quadstore-comunica": "^0.1.0-beta.1",
+    "rdf-data-factory": "^1.0.4",
     "sparqlalgebrajs": "^2.4.0",
-    "sparqljs": "^3.2.0",
-    "rdf-data-factory": "^1.0.4"
+    "sparqljs": "^3.2.0"
   },
   "author": "Jacopo Scazzosi <me@jacoscaz.com>",
   "contributors": [

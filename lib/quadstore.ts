@@ -5,15 +5,12 @@ import {
   consumeInBatches,
   consumeOneByOne,
   emptyObject,
-  isAbstractLevelDOWNInstance,
-  isObject,
   nanoid,
   streamToArray,
   termNames,
   defaultIndexes,
   pFromCallback,
 } from './utils';
-import assert from 'assert';
 import {EventEmitter} from 'events';
 import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
 import {AsyncIterator, TransformIterator} from 'asynciterator';
@@ -67,8 +64,6 @@ export class Quadstore implements Store {
   defaultGraphMode: DefaultGraphMode;
 
   constructor(opts: StoreOpts) {
-    assert(isObject(opts), 'Invalid "opts" argument: "opts" is not an object');
-    assert(isAbstractLevelDOWNInstance(opts.backend), 'Invalid "opts" argument: "opts.backend" is not an instance of AbstractLevelDOWN');
     this.dataFactory = opts.dataFactory || new RdfDataFactory();
     this.db = opts.backend;
     this.indexes = [];

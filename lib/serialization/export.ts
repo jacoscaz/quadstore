@@ -4,14 +4,15 @@ import * as xsd from './xsd';
 
 export const exportLiteralTerm = (term: string, dataFactory: DataFactory, prefixes: Prefixes): Literal => {
   const [, encoding, datatype, language, value] = term.split('^');
-  switch (datatype) {
+  const expandedDatatype = prefixes.expandTerm(datatype);
+  switch (expandedDatatype) {
     case xsd.langString:
       if (language !== '') {
         return dataFactory.literal(value, language);
       }
       return dataFactory.literal(value);
     default:
-      return dataFactory.literal(value, dataFactory.namedNode(prefixes.expandTerm(datatype)));
+      return dataFactory.literal(value, dataFactory.namedNode(expandedDatatype));
   }
 }
 

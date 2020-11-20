@@ -13,10 +13,10 @@ import {
 export const importLiteralTerm = (term: Literal, prefixes: Prefixes, rangeBoundary = false): string => {
   const { language, datatype, value } = term;
   if (language !== '') {
-    return `^^${xsd.langString}^${language}^${value}`;
+    return `^^${prefixes.compactIri(xsd.langString)}^${language}^${value}`;
   }
   if (!datatype || datatype.value === xsd.string) {
-    return `^^${xsd.string}^^${prefixes.compactIri(value)}`;
+    return `^^${prefixes.compactIri(xsd.string)}^^${prefixes.compactIri(value)}`;
   }
   switch (datatype.value) {
     case xsd.integer:

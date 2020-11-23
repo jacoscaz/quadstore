@@ -1,10 +1,12 @@
 
 import { Readable } from 'stream';
-import { AbstractLevelDOWN } from 'abstract-leveldown'
+import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
 import {AsyncIterator} from 'asynciterator';
 import {Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term} from 'rdf-js';
 
-export interface EmptyOpts {}
+export interface BatchOpts {
+  preWrite?: (batch: AbstractChainedBatch) => Promise<unknown> | void;
+}
 
 export enum TermName {
   SUBJECT = 'subject',

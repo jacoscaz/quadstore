@@ -123,7 +123,7 @@ export const consumeInBatches = async <T>(iterator: TSReadable<T>, batchSize: nu
 };
 
 export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (item: T) => Promise<any>) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     let ended = false;
     let waiting = false;
     let working = false;

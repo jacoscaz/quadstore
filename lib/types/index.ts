@@ -5,7 +5,20 @@ import {AsyncIterator} from 'asynciterator';
 import {Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term} from 'rdf-js';
 
 export interface BatchOpts {
-  preWrite?: (batch: AbstractChainedBatch) => Promise<unknown> | void;
+  /**
+   * Factory for additional Key-Value Pair operations to be included atomically
+   * in a batch.
+   */
+  preWrite?: (batch: AbstractChainedBatch) => Promise<any> | any;
+}
+
+export interface DelOpts extends BatchOpts {
+}
+
+export interface PutOpts extends BatchOpts {
+}
+
+export interface PatchOpts extends BatchOpts {
 }
 
 export enum TermName {

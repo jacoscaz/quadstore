@@ -18,7 +18,10 @@ import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject
 import {
   DefaultGraphMode,
   DelStreamOpts,
-  EmptyOpts,
+  BatchOpts,
+  DelOpts,
+  PutOpts,
+  PatchOpts,
   GetOpts,
   InternalIndex,
   ImportedPattern,
@@ -36,7 +39,7 @@ import {
   SparqlOpts,
   TermName, Prefixes,
 } from './types';
-import {AbstractLevelDOWN} from 'abstract-leveldown';
+import {AbstractChainedBatch, AbstractLevelDOWN} from 'abstract-leveldown';
 import {getApproximateSize, getStream, compileCanBeUsedWithPatternFn, compileGetKeyFn} from './get';
 import {Algebra} from 'sparqlalgebrajs';
 import {newEngine, ActorInitSparql} from 'quadstore-comunica';
@@ -100,7 +103,7 @@ export class Quadstore implements Store {
   }
 
   protected waitForStatus(status: string, timeout: number = 200) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const t = setTimeout(() => {
         clearInterval(i);
         clearTimeout(t);
@@ -224,18 +227,18 @@ export class Quadstore implements Store {
     return sparql(this, query, opts);
   }
 
-  async put(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedQuad);
     const batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.put(i.getKey(importedQuad), value);
     }, this.db.batch());
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  async multiPut(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async multiPut(quads: Quad[], opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const batch = quads.reduce((quadBatch, quad) => {
       const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
@@ -244,20 +247,20 @@ export class Quadstore implements Store {
         return indexBatch.put(index.getKey(importedQuad), value);
       }, quadBatch);
     }, this.db.batch());
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  async del(quad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async del(quad: Quad, opts: DelOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const batch = this.indexes.reduce((batch, i) => {
       return batch.del(i.getKey(importQuad(quad, this.defaultGraph, this.prefixes)));
     }, this.db.batch());
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  async multiDel(quads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async multiDel(quads: Quad[], opts: DelOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const batch = quads.reduce((quadBatch, quad) => {
       const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
@@ -265,12 +268,11 @@ export class Quadstore implements Store {
         return indexBatch.del(index.getKey(importedQuad));
       }, quadBatch);
     }, this.db.batch());
-
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  async patch(oldQuad: Quad, newQuad: Quad, opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async patch(oldQuad: Quad, newQuad: Quad, opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const importedNewQuad = importQuad(newQuad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedNewQuad);
@@ -278,11 +280,11 @@ export class Quadstore implements Store {
       return indexBatch.del(i.getKey(importQuad(oldQuad, this.defaultGraph, this.prefixes)))
         .put(i.getKey(importedNewQuad), value);
     }, this.db.batch());
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: EmptyOpts = emptyObject): Promise<VoidResult> {
+  async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     let batch = this.db.batch();
     batch = oldQuads.reduce((quadBatch, oldQuad) => {
@@ -297,8 +299,15 @@ export class Quadstore implements Store {
         return indexBatch.put(index.getKey(importedNewQuad), value);
       }, quadBatch);
     }, batch);
-    await pFromCallback((cb) => { batch.write(cb); });
+    await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
+  }
+
+  private async writeBatch(batch: AbstractChainedBatch, opts: BatchOpts) {
+    if (opts.preWrite) {
+      await opts.preWrite(batch);
+    }
+    await pFromCallback((cb) => { batch.write(cb); });
   }
 
   async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResult> {

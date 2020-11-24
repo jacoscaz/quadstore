@@ -12,6 +12,10 @@ export {
   PutStreamOpts,
   DelStreamOpts,
 
+  DelOpts,
+  PutOpts,
+  PatchOpts,
+
   StoreOpts,
 
   Quad,

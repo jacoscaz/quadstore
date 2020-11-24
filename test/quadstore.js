@@ -33,5 +33,6 @@ module.exports = () => {
     require('./quadstore.prototype.import')();
     require('./quadstore.prototype.removematches')();
 
+    require('./quadstore.prewrite')();
   });
 };

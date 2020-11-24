@@ -199,6 +199,22 @@ are expected to be maps of term names to instances of the
 [dm-3]: https://github.com/rdfjs-base/data-model
 [dm-4]: https://github.com/RubenVerborgh/AsyncIterator#readme
 
+### Access to the backend
+
+The backend of a `quadstore` can be accessed with the `db` property, to perform
+additional storage operations independently of quads.
+
+In order to perform write operations atomically with quad storage, the `put`,
+`multiPut`, `del`, `multiDel`, `patch` and `multiPatch` methods accept a
+`preWrite` option which defines a procedure to augment the batch, as in the
+following example:
+
+```js
+await store.put(dataFactory.quad(/* ... */), {
+  preWrite: batch => batch.put('my.key', Buffer.from('my.value'))
+});
+```
+
 ### Quadstore class
 
 ```js
@@ -346,6 +362,14 @@ await store.put(dataFactory.quad(/* ... */));
 
 Stores a new quad. Does *not* throw or return an error if the quad already exists.
 
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
+
 ### Quadstore.prototype.multiPut()
 
 ```js
@@ -357,6 +381,14 @@ await store.multiPut([
 
 Stores new quads. Does *not* throw or return an error if quads already exists.
 
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
+
 ### Quadstore.prototype.del()
 
 This method deletes a single quad. It Does *not* throw or return an error if the 
@@ -365,7 +397,15 @@ specified quad is not present in the store.
 ```js
 await store.del(dataFactory.quad(/* ... */));
 ```
-    
+
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
+
 ### Quadstore.prototype.multiDel()
 
 This method deletes multiple quads. It Does *not* throw or return an error if
@@ -377,6 +417,14 @@ await store.multiDel([
   dataFactory.quad(/* ... */),
 ]);
 ```
+
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
 
 ### Quadstore.prototype.patch()
 
@@ -390,7 +438,15 @@ await store.patch(
   dataFactory.quad(/* ... */),  // will be inserted
 );
 ```
-    
+
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
+
 ### Quadstore.prototype.multiPatch()
 
 This method deletes and inserts quads in a single operation. It Does *not* 
@@ -413,6 +469,14 @@ const newQuads = [ // will be inserted
 
 await store.multiPatch(oldQuads, newQuads);
 ```
+
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.preWrite`: this can be set to a function which accepts a
+  [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
+  performs additional backend operations atomically with the `put` operation.
+  See [Access to the backend](#access-to-the-backend) for more information.
 
 ### Quadstore.prototype.getStream()
 

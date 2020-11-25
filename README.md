@@ -111,7 +111,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version: **v7.0.2** available on NPM under the tag `latest`.
+Current version: **v7.1.0-beta.2** available on NPM under the tag `beta`.
 
 ### Roadmap
 

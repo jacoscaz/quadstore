@@ -5,7 +5,6 @@
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom
    key-value pairs (https://github.com/beautifulinteractions/node-quadstore/pull/120)
-  (https://github.com/beautifulinteractions/node-quadstore/issues/118)
 - *[fix]* prefix-based compaction/expansion of literal datatype IRIs
   (https://github.com/beautifulinteractions/node-quadstore/issues/118)
 - *[fix]* quadstore can now be bundles using browserify without the 

@@ -1,7 +1,7 @@
 
 # CHANGELOG
 
-## v7.1.0 (unreleased, currently at v7.1.0-beta.2)
+## v7.1.0
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom
    key-value pairs (https://github.com/beautifulinteractions/node-quadstore/pull/120)

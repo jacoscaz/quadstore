@@ -7,6 +7,7 @@ module.exports = () => {
     require('./sparql/sparql.select')();
     require('./sparql/sparql.update')();
     require('./sparql/sparql.construct')();
+    require('./sparql/sparql.describe')();
   });
 
 }

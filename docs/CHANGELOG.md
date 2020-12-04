@@ -1,14 +1,19 @@
 
 # CHANGELOG
 
+## v7.1.1
+
+- *[fix]* fixes unsupported `DESCRIBE` SPARQL queries
+- *[fix]* fixes unsupported `ORDER BY` SPARQL expressions
+
 ## v7.1.0
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom
-   key-value pairs (https://github.com/beautifulinteractions/node-quadstore/pull/120)
+  key-value pairs (https://github.com/beautifulinteractions/node-quadstore/pull/120)
 - *[fix]* prefix-based compaction/expansion of literal datatype IRIs
   (https://github.com/beautifulinteractions/node-quadstore/issues/118)
-- *[fix]* quadstore can now be bundles using browserify without the 
-  `ignoreMissing` configuration param 
+- *[fix]* quadstore can now be bundles using browserify without the
+  `ignoreMissing` configuration param
   (https://github.com/beautifulinteractions/node-quadstore/issues/117)
 - *[fix]* dropped indirect dev dependency on `@comunica/actor-init-sparql`
   (https://github.com/beautifulinteractions/node-quadstore/issues/116)
@@ -17,7 +22,7 @@
 
 - *[new]* added support for range queries
 - *[new]* added support for user-defined indexes
-- *[new]* added support for SPARQL queries via 
+- *[new]* added support for SPARQL queries via
   [quadstore-comunica](https://github.com/beautifulinteractions/node-quadstore-comunica)
 - **[breaking]** moved to using `master` as the development branch
 - **[breaking]** dropped support for matching terms in `del()` and `patch()`
@@ -27,12 +32,12 @@
 - **[breaking]** refactored all APIs to return results wrapped in results objects
 - **[breaking]** refactored all streaming APIs to use `AsyncIterator` and
   asynchronous entrypoints with the exception of `RDF/JS` methods
-- **[breaking]** dropped support for the non-RDF API 
+- **[breaking]** dropped support for the non-RDF API
 - **[breaking]** dropped support for previous implementation of custom indexes
 - **[breaking]** dropped support for callbacks
 - **[breaking]** refactored constructors to only use a single `opts` argument,
   passing the leveldb backend instance via the `opts.backend` property
-- **[breaking]** dropped support for the `ready` event, replaced by the 
+- **[breaking]** dropped support for the `ready` event, replaced by the
   `.open()` and `.close()` methods
 - *[internal]* dropped a few dependencies by pulling in the relevant code
 - *[internal]* added index-specific test suites
@@ -76,8 +81,8 @@
 ## v2.1.1
 
 - new, (hopefully) cleaner API
-    - `getStream()`, `putStream()` and `delStream()` methods
-    - `query.get()`, `query().del()` methods
+  - `getStream()`, `putStream()` and `delStream()` methods
+  - `query.get()`, `query().del()` methods
 - less code duplication
 - `master` branch now tracking NPM
 - work now happening in `devel` branch

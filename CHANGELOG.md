@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## v7.1.1
+
+- *[fix]* fixes unsupported `DESCRIBE` SPARQL queries
+- *[fix]* fixes unsupported `ORDER BY` SPARQL expressions 
+
 ## v7.1.0
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom

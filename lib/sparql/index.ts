@@ -29,6 +29,7 @@ export const sparql = async (store: Quadstore, query: Algebra.Operation|string, 
     case Algebra.types.BGP:
     case Algebra.types.SLICE:
     case Algebra.types.CONSTRUCT:
+    case Algebra.types.DESCRIBE:
       return await comunica.handleQuery(fork, operation);
     case Algebra.types.DELETE_INSERT:
       // TODO: why do we need to cast the operation into its sub-type?
@@ -51,6 +52,7 @@ export const sparqlStream = async (store: Quadstore, query: Algebra.Operation|st
     case Algebra.types.PROJECT:
     case Algebra.types.BGP:
     case Algebra.types.SLICE:
+    case Algebra.types.DESCRIBE:
     case Algebra.types.CONSTRUCT:
     case Algebra.types.ORDER_BY:
       return await comunica.handleQueryStream(fork, operation);

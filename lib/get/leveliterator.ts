@@ -56,13 +56,15 @@ export class LevelIterator extends BufferedIterator<Quad> {
 
 
   protected _end(destroy?: boolean) {
-    super._end(destroy);
-    if (!destroy) {
-      this.level.end((endErr?: Error) => {
-        if (endErr) {
-          this.emit('error', endErr);
-        }
-      });
+    if (!this.ended) {
+      super._end(destroy);
+      if (!destroy) {
+        this.level.end((endErr?: Error) => {
+          if (endErr) {
+            this.emit('error', endErr);
+          }
+        });
+      }
     }
   }
 

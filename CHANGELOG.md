@@ -1,6 +1,12 @@
 
 # CHANGELOG
 
+##v7.2.1 
+
+- *[fix]* fixes broken browser builds due to naming collisions between nested
+  webpack bundles  
+  (https://github.com/beautifulinteractions/node-quadstore-comunica/blob/5cfc803cb0864f089b07d3cf9850c0e377373e58/README.md#build)
+
 ## v7.2.0
 
 - *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`  

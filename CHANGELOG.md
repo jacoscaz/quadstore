@@ -1,6 +1,13 @@
 
 # CHANGELOG
 
+## v7.2.0
+
+- *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`  
+  (https://github.com/beautifulinteractions/node-quadstore/pull/125)
+- *[internal]* updates to `quadstore-comunica@0.2.0` (non-minified bundle)
+- *[internal]* updates third-party dependencies to their latest versions
+
 ## v7.1.1
 
 - *[fix]* fixes unsupported `DESCRIBE` SPARQL queries

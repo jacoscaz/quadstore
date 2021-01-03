@@ -110,7 +110,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version: **v7.1.1** available on NPM under the tag `latest`.
+Current version: **v7.2.0** available on NPM under the tag `latest`.
 
 ### Roadmap
 
@@ -433,8 +433,8 @@ in the store (delete) or already present in the store (update).
 
 ```js
 await store.patch(
-        dataFactory.quad(/* ... */),  // will be deleted
-        dataFactory.quad(/* ... */),  // will be inserted
+  dataFactory.quad(/* ... */),  // will be deleted
+  dataFactory.quad(/* ... */),  // will be inserted
 );
 ```
 
@@ -454,16 +454,16 @@ throw or return an error if the specified quads are not present in the store
 
 ```js
 // will be deleted
-const oldQuads = [
-  dataFactory.quad(/* ... */),
-  dataFactory.quad(/* ... */),
+const oldQuads = [ 
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),
 ];
 
 // will be inserted
 const newQuads = [ // will be inserted
-  dataFactory.quad(/* ... */),
-  dataFactory.quad(/* ... */),
-  dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),
+    dataFactory.quad(/* ... */),        
 ];
 
 await store.multiPatch(oldQuads, newQuads);

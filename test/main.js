@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const util = require('util');
 const path = require('path');
 const utils = require('../dist/lib/utils');
+const rocksdb = require('rocksdb');
 const memdown = require('memdown');
 const leveldown = require('leveldown');
 const {DataFactory} = require('rdf-data-factory');
@@ -14,7 +15,7 @@ const remove = util.promisify(fs.remove);
 
 require('./fpstring')();
 
-describe('MemDOWN backend, standard indexes', () => {
+describe('MemDOWN backend', () => {
 
   beforeEach(async function () {
     this.db = memdown();
@@ -26,11 +27,28 @@ describe('MemDOWN backend, standard indexes', () => {
 
 });
 
-describe('LevelDOWN backend, standard indexes', () => {
+describe('LevelDOWN backend', () => {
 
   beforeEach(async function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
     this.db = leveldown(this.location);
+    this.indexes = null;
+    this.dataFactory = new DataFactory();
+  });
+
+  afterEach(async function () {
+    await remove(this.location);
+  });
+
+  require('./quadstore')();
+
+});
+
+describe('RocksDB backend', () => {
+
+  beforeEach(async function () {
+    this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
+    this.db = rocksdb(this.location);
     this.indexes = null;
     this.dataFactory = new DataFactory();
   });

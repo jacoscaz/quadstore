@@ -138,18 +138,23 @@ We're also evaluating the following features for future developments:
 
 ### Storage backends
 
-`quadstore` can work with any [LevelDB][db0]-compatible storage backend that
-implements the [AbstractLevelDOWN interface][db1].
+`quadstore` can work with any storage backend that implements the 
+[AbstractLevelDOWN interface][db1]. An incomplete list of available backends
+is available at [level/awesome#stores][db6].
 
-We test `quadstore` using the following backends:
+Our test suite focuses on the following backends:
 
-- [`leveldown`][db2] for persistent storage backed by LevelDB itself
-- [`memdown`][db3] for volatile in-memory storage
+- [`leveldown`][db2] for persistent storage using [LevelDB][db0]
+- [`rocksdb`][db4] for persistent storage using [RocksDB][db5]
+- [`memdown`][db3] for volatile in-memory storage using red-black trees
 
 [db0]: http://leveldb.org
 [db1]: https://github.com/Level/abstract-leveldown
 [db2]: https://github.com/level/leveldown
 [db3]: https://github.com/level/memdown
+[db4]: https://github.com/level/rocksdb
+[db5]: https://rocksdb.org
+[db6]: https://github.com/level/awesome#stores
 
 ### Data model and return values
 

@@ -188,8 +188,8 @@ const rangeToLevelOpts = (rangeOpts: RangeOpts): LevelOpts => {
   const levelOpts: LevelOpts = {
     keys: false,
     values: true,
-    keyAsBuffer: true,
-    valueAsBuffer: true,
+    keyAsBuffer: false,
+    valueAsBuffer: false,
   };
   if (rangeOpts.lte) {
     levelOpts.lte = rangeOpts.lt;
@@ -228,24 +228,16 @@ const reconcilePatternWithDefaultGraphMode = (pattern: ImportedPattern, store: Q
   return pattern;
 };
 
-
-
 export const getStream = async (store: Quadstore, pattern: ImportedPattern, opts?: GetOpts): Promise<QuadStreamResult> => {
   pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   const rangeOpts = getRangeOpts(store, pattern, opts);
   const levelOpts = rangeToLevelOpts(rangeOpts);
-  const iterator = new LevelIterator(store, store.db.iterator(levelOpts));
-
-  // const iterator = new SimpleTransformIterator(store.db.createValueStream(levelOpts),{
-  //   map(buf: Buffer) {
-  //     return exportQuad(
-  //       deserializeImportedQuad(buf.toString('utf8')),
-  //       store.defaultGraph,
-  //       store.dataFactory,
-  //       store.prefixes,
-  //     );
-  //   },
-  // });
+  const iterator = new LevelIterator(store.db.iterator(levelOpts), (key, value) => exportQuad(
+    deserializeImportedQuad(value),
+    store.defaultGraph,
+    store.dataFactory,
+    store.prefixes
+  ));
   return { type: ResultType.QUADS, iterator };
 };
 

@@ -1,17 +1,17 @@
+
 import {BufferedIterator} from 'asynciterator';
-import {Quad} from '../types';
-import {Quadstore} from '../quadstore';
 import {AbstractIterator} from 'abstract-leveldown';
-import {deserializeImportedQuad, exportQuad} from '../serialization';
 
-export class LevelIterator extends BufferedIterator<Quad> {
+type MapFn<K, V, T> = (key: K, value: V) => T;
 
-  store: Quadstore;
-  level: AbstractIterator<any, any>;
+export class LevelIterator<K, V, T> extends BufferedIterator<T> {
 
-  constructor(store: Quadstore, levelIterator: AbstractIterator<string, Buffer>) {
+  level: AbstractIterator<K, V>;
+  mapFn: MapFn<K, V, T>;
+
+  constructor(levelIterator: AbstractIterator<K, V>, mapper: MapFn<K, V, T>) {
     super();
-    this.store = store;
+    this.mapFn = mapper;
     this.level = levelIterator;
   }
 
@@ -21,7 +21,7 @@ export class LevelIterator extends BufferedIterator<Quad> {
         done();
         return;
       }
-      this.level.next((err, key: Buffer|undefined, value: Buffer|undefined) => {
+      this.level.next((err, key: K, value: V) => {
         this.onNextValue(err, key, value, remaining, loop, done);
       });
     };
@@ -30,8 +30,8 @@ export class LevelIterator extends BufferedIterator<Quad> {
 
   protected onNextValue(
     err: Error|undefined,
-    key: Buffer|undefined,
-    value: Buffer|undefined,
+    key: K,
+    value: V,
     remaining: number,
     loop: (remaining: number) => void,
     done: (err?: Error) => void,
@@ -45,12 +45,7 @@ export class LevelIterator extends BufferedIterator<Quad> {
       done();
       return;
     }
-    this._push(exportQuad(
-      deserializeImportedQuad(value.toString('utf8')),
-      this.store.defaultGraph,
-      this.store.dataFactory,
-      this.store.prefixes
-    ));
+    this._push(this.mapFn(key, value));
     loop(remaining - 1);
   };
 

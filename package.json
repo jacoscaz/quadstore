@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "asynciterator": "^3.0.3",
+    "nanoid": "^3.1.20",
     "quadstore-comunica": "^0.2.1",
     "rdf-data-factory": "^1.0.4",
     "sparqlalgebrajs": "^2.4.0",

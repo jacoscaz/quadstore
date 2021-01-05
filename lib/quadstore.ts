@@ -45,6 +45,7 @@ import {Algebra} from 'sparqlalgebrajs';
 import {newEngine, ActorInitSparql} from 'quadstore-comunica';
 import {sparql, sparqlStream} from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
+import {Scope} from './scope';
 
 
 export class Quadstore implements Store {
@@ -229,24 +230,32 @@ export class Quadstore implements Store {
 
   async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
+    let batch = this.db.batch();
+    if (opts.scope) {
+      quad = opts.scope.parseQuad(quad, batch);
+    }
     const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
     const value = serializeImportedQuad(importedQuad);
-    const batch = this.indexes.reduce((indexBatch, i) => {
+    batch = this.indexes.reduce((indexBatch, i) => {
       return indexBatch.put(i.getKey(importedQuad), value);
-    }, this.db.batch());
+    }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async multiPut(quads: Quad[], opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const batch = quads.reduce((quadBatch, quad) => {
+    let batch = this.db.batch();
+    batch = quads.reduce((quadBatch, quad) => {
+      if (opts.scope) {
+        quad = opts.scope.parseQuad(quad, batch);
+      }
       const importedQuad = importQuad(quad, this.defaultGraph, this.prefixes);
       const value = serializeImportedQuad(importedQuad);
       return this.indexes.reduce((indexBatch, index) => {
         return indexBatch.put(index.getKey(importedQuad), value);
       }, quadBatch);
-    }, this.db.batch());
+    }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
@@ -326,9 +335,9 @@ export class Quadstore implements Store {
     this.ensureReady();
     const batchSize = opts.batchSize || 1;
     if (batchSize === 1) {
-      await consumeOneByOne<Quad>(source, quad => this.put(quad));
+      await consumeOneByOne<Quad>(source, quad => this.put(quad, opts));
     } else {
-      await consumeInBatches<Quad>(source, batchSize, quads => this.multiPut(quads));
+      await consumeInBatches<Quad>(source, batchSize, quads => this.multiPut(quads, opts));
     }
     return { type: ResultType.VOID };
   }
@@ -347,6 +356,26 @@ export class Quadstore implements Store {
   async sparqlStream(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadStreamResult|BindingStreamResult|VoidResult|BooleanResult> {
     this.ensureReady();
     return await sparqlStream(this, query, opts);
+  }
+
+  async initScope(): Promise<Scope> {
+    await this.ensureReady();
+    return await Scope.init(this);
+  }
+
+  async loadScope(scopeId: string): Promise<Scope> {
+    await this.ensureReady();
+    return await Scope.load(this, scopeId);
+  }
+
+  async deleteScope(scopeId: string): Promise<void> {
+    await this.ensureReady();
+    await Scope.delete(this, scopeId);
+  }
+
+  async deleteAllScopes(): Promise<void> {
+    await this.ensureReady();
+    await Scope.delete(this);
   }
 
   getTermComparator(): (a: Term, b: Term) => (-1 | 0 | 1) {

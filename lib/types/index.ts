@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
 import {AsyncIterator} from 'asynciterator';
 import {Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term} from 'rdf-js';
+import {Scope} from '../scope';
 
 export interface BatchOpts {
   /**
@@ -16,6 +17,7 @@ export interface DelOpts extends BatchOpts {
 }
 
 export interface PutOpts extends BatchOpts {
+  scope?: Scope,
 }
 
 export interface PatchOpts extends BatchOpts {
@@ -89,6 +91,7 @@ export interface GetOpts {
 
 export interface PutStreamOpts {
   batchSize?: number,
+  scope?: Scope,
 }
 
 export interface DelStreamOpts {

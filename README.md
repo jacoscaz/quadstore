@@ -115,7 +115,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version: **v7.2.1** available on NPM under the tag `latest`.
+Current version: **v7.3.0** available on NPM under the tag `latest`.
 
 ### Roadmap
 
@@ -798,22 +798,39 @@ Rollup, ES modules and tree-shaking are not supported (yet).
 
 ## Performance
 
+The performance profile of `quadstore` is strongly influenced by its design
+choices in terms of atomicity. As all update operations are implemented 
+through [AbstractLevelDOWN#batch][perf-1] operations that atomically update 
+all indexes, they are performed in a manner that closely approximates batch
+random updates.
+
+[perf-1]: https://github.com/Level/abstract-leveldown#dbbatch
+[perf-2]: https://github.com/Level/bench
+
 The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
 running Node v14.0.0.
 
 ### Importing quads
 
-We keep an eye on write speeds by importing the [`21million.rdf`][21mil-rdf]
-file or a subset of it. 
- 
-With the default six indexes and the `leveldown` backend, the `RdfStore` class
-clocks at **~15k quads per second** when importing quads one-by-one and at 
-**~18k quads per second** when importing quads in small batches, with a density
-of **~4k quads per MB**. 
+Our reference benchmark for import performance is the [`level-bench`][perf-2]
+`batch-put` benchmark, which scores ~200k updates per second when run as follows:
+
+```
+node level-bench.js run batch-put leveldown --concurrency 1 --chained true --batchSize 10 --valueSize 256
+```
+
+We test import performance by importing the [`21million.rdf`][21mil-rdf] file
+or a subset of it. 
 
 ```
 node dist/perf/loadfile.js /path/to/21million.rdf
 ```
+
+With the default six indexes and the `leveldown` backend, import performance
+clocks at **~15k quads per second** when importing quads one-by-one, with a
+density of **~4k quads per MB**. Due to the six indexes, this translates to 
+~90k batched update operations per second, ~0.4 times the reference 
+target.
 
 [21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz
 

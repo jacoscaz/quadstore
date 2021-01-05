@@ -1,11 +1,13 @@
 
 # CHANGELOG
 
-## v7.2.2
+## v7.3.0
 
-- *[new]* scope support via `initScope()`, `loadScope()`, `deleteScope()`
-  and `deleteAllScopes()` methods   
+- *[new]* quad scoping support via `initScope()`, `loadScope()`, 
+  `deleteScope()` and `deleteAllScopes()` methods   
   (https://github.com/beautifulinteractions/node-quadstore/issues/124)
+- *[new]* added [`rocksdb`](https://github.com/level/rocksdb) to the list of
+  tested backends 
 
 ## v7.2.1 
 

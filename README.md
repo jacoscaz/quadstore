@@ -39,6 +39,11 @@ interfaces and SPARQL queries.
     - [Quadstore.prototype.import](#quadstoreprototypeimport)
     - [Quadstore.prototype.remove](#quadstoreprototyperemove)
     - [Quadstore.prototype.removeMatches](#quadstoreprototyperemovematches)
+    - [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping)
+        - [Quadstore.prototype.initScope](#quadstoreprototypeinitscope)
+        - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
+        - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
+        - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
@@ -69,7 +74,7 @@ A set of statements / triples can also be thought of as a graph:
      │                                  │  PAUL  │
      └─────────────────────────────────▶│(object)│
               KNOWS (predicate)         └────────┘
-```                                                      
+```
 
 A `quad` is a triple with an additional term, usually called `graph` or
 `context`.
@@ -373,6 +378,11 @@ properties:
   [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
   performs additional backend operations atomically with the `put` operation.
   See [Access to the backend](#access-to-the-backend) for more information.
+- `opts.scope`: this can be set to a `Scope` instance as returned by
+  [`initScope()`](#quadstoreprototypeinitscope) and 
+  [`loadScope()`](#quadstoreprototypeloadscope). If set, blank node labels will
+  be changed to prevent blank node collisions. See 
+  [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping).
 
 ### Quadstore.prototype.multiPut()
 
@@ -392,6 +402,11 @@ properties:
   [chainedBatch](https://github.com/Level/abstract-leveldown#chainedbatch) and
   performs additional backend operations atomically with the `put` operation.
   See [Access to the backend](#access-to-the-backend) for more information.
+- `opts.scope`: this can be set to a `Scope` instance as returned by
+  [`initScope()`](#quadstoreprototypeinitscope) and
+  [`loadScope()`](#quadstoreprototypeloadscope). If set, blank node labels will
+  be changed to prevent blank node collisions. See
+  [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping).
 
 ### Quadstore.prototype.del()
 
@@ -507,6 +522,15 @@ await store.putStream(readableStream);
 ```
 
 Imports all quads coming through the specified `stream.Readable` into the store.
+
+This method also accepts an optional `opts` parameter with the following
+properties:
+
+- `opts.scope`: this can be set to a `Scope` instance as returned by
+  [`initScope()`](#quadstoreprototypeinitscope) and
+  [`loadScope()`](#quadstoreprototypeloadscope). If set, blank node labels will
+  be changed to prevent blank node collisions. See
+  [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping).
 
 ### Quadstore.prototype.delStream()
 
@@ -634,6 +658,128 @@ Implementation of the [RDF/JS Store#remove method][dm-2].
       .on('end', () => {});
 
 Implementation of the [RDF/JS Sink#removeMatches method][dm-2].
+
+## Blank nodes and quad scoping
+
+Blank nodes are defined as _existential_ variables in that they merely indicate
+the existence of an entity rather than act as references to the entity itself.
+
+While the semantics of blank nodes [can][bnode-disc-1] [be][bnode-disc-2]
+[rather][bnode-disc-3] [confusing][bnode-disc-4], one of the most practical 
+consequences of their definition is that two blank nodes having the same label
+may not refer to the same entity unless both nodes come from the same logical
+set of quads.
+
+As an example, here's two JSON-LD documents converted to N-Quads using the  
+[JSON-LD playground][jsonld-plg]:
+
+```json
+{
+  "@id": "http://example.com/bob",
+  "foaf:knows": {
+    "foaf:name": "Alice"
+  }
+}
+```
+
+```
+<http://example.com/bob> <foaf:knows> _:b0 .
+_:b0 <foaf:name> "Alice" .
+```
+
+```json
+{
+  "@id": "http://example.com/alice",
+  "foaf:knows": {
+    "foaf:name": "Bob"
+  }
+}
+```
+
+```
+<http://example.com/alice> <foaf:knows> _:b0 .
+_:b0 <foaf:name> "Bob" .
+```
+
+The N-Quads equivalent for both of these documents contains a blank node with
+the `b0` label. However, although the label is the same, these blank nodes
+indicate the existence of two different entities. Intuitively, we can say that
+a blank node is scoped to the logical grouping of quads that contains it, be it
+a single quad, a document or a stream.
+
+As quadstore treats all write operations as if they were happening within the 
+same scope, importing these two sets of quads would result in a collision of 
+two unrelated blank nodes, leading to a corrupted dataset. 
+
+A good way to address these issues is to skolemize [skolemize][skolem-def] all 
+blank nodes into IRIs / named nodes. However, this is not always possible and
+/ or practical.
+
+The [`initScope()`](#quadstoreprototypeinitscope) method returns a `Scope`
+instance which can be passed to the `put`, `multiPut` and `putStream` methods. 
+When doing so, quadstore will replace each occurrence of a given blank node 
+with a different blank node having a randomly-generated label, preventing blank
+node collisions.
+
+Each `Scope` instance keeps an internal cache of mappings between previously
+encountered blank nodes and their replacements, so that it is able to always 
+return the same replacement blank node for a given label. Each new mapping is
+atomically persisted to the store together with its originating quad, leading
+each scope to be incrementally persisted to the store consistently with each 
+successful `put` and `multiPut` operation. This allows scopes to be re-used
+even across process restarts via the 
+[`loadScope()`](#quadstoreprototypeloadscope) method.
+
+[jsonld-plg]: https://json-ld.org/playground/
+[bnode-disc-1]: https://lists.w3.org/Archives/Public/semantic-web/2020Jun/0077.html
+[bnode-disc-2]: https://github.com/w3c/EasierRDF/issues/19
+[bnode-disc-3]: https://www.w3.org/2011/rdf-wg/wiki/User:Azimmerm/Blank-node-scope
+[bnode-disc-4]: https://www.w3.org/2011/rdf-wg/wiki/User:Azimmerm/Blank-node-scope-again
+[skolem-def]: https://www.w3.org/2011/rdf-wg/wiki/Skolemisation
+
+### Quadstore.prototype.initScope()
+
+Initializes a new, empty scope.
+
+```js
+const scope = await store.initScope();
+await store.put(quad, { scope });
+await store.multiPut(quads, { scope });
+await store.putStream(stream, { scope });
+```
+
+### Quadstore.prototype.loadScope()
+
+Each `Scope` instance has an `.id` property that acts as its unique identifier.
+The `loadScope()` method can be used to re-hydrate a scope through its `.id`: 
+
+```js
+const scope = await store.initScope();
+/* store scope.id somewhere */
+```
+
+```js
+/* read the previously-stored scope.id */
+const scope = await store.loadScope(scopeId);
+```
+
+### Quadstore.prototype.deleteScope()
+
+Deletes all mappings of a given scope from the store.
+
+```js
+const scope = await store.initScope();
+/* ... */
+await store.deleteScope(scope.id);
+```
+
+### Quadstore.prototype.deleteAllScopes()
+
+Deletes all mappings of all scopes from the store.
+
+```js
+await store.deleteAllScopes();
+```
 
 ## Browser usage
 

@@ -1,7 +1,13 @@
 
 # CHANGELOG
 
-##v7.2.1 
+## v7.2.2
+
+- *[new]* scope support via `initScope()`, `loadScope()`, `deleteScope()`
+  and `deleteAllScopes()` methods   
+  (https://github.com/beautifulinteractions/node-quadstore/issues/124)
+
+## v7.2.1 
 
 - *[fix]* fixes broken browser builds due to naming collisions between nested
   webpack bundles  
@@ -9,7 +15,7 @@
 
 ## v7.2.0
 
-- *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`  
+- *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`
   (https://github.com/beautifulinteractions/node-quadstore/pull/125)
 - *[internal]* updates to `quadstore-comunica@0.2.0` (non-minified bundle)
 - *[internal]* updates third-party dependencies to their latest versions

@@ -126,6 +126,9 @@ export const serializeImportedQuad = (quad: ImportedQuad): string => {
 
 export const importPattern = (terms: Pattern, defaultGraph: string, prefixes: Prefixes): ImportedPattern => {
   const importedTerms: ImportedPattern = {};
+  if (!terms) {
+    return importedTerms;
+  }
   if (terms.subject) {
     importedTerms.subject = importTerm(terms.subject, false, defaultGraph, prefixes, true);
   }

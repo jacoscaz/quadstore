@@ -32,7 +32,7 @@ module.exports = () => {
     require('./quadstore.prototype.remove')();
     require('./quadstore.prototype.import')();
     require('./quadstore.prototype.removematches')();
-
+    require('./quadstore.scope')();
     require('./quadstore.prewrite')();
   });
 };

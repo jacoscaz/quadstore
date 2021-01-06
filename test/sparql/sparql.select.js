@@ -6,5 +6,6 @@ module.exports = () => {
     require('./sparql.select.filters')();
     require('./sparql.select.literals')();
     require('./sparql.select.offsetlimit')();
+    require('./sparql.select.join')();
   });
 };

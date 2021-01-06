@@ -10,10 +10,11 @@ import {
   termNames,
   defaultIndexes,
   pFromCallback,
+  asPattern,
 } from './utils';
 import {EventEmitter} from 'events';
 import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
-import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {AsyncIterator, EmptyIterator, TransformIterator} from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term} from 'rdf-js';
 import {
   DefaultGraphMode,
@@ -170,26 +171,34 @@ export class Quadstore implements Store {
     });
   }
 
-  match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Stream<Quad> {
-    const iterator = new TransformIterator<Quad, Quad>();
-    const pattern: Pattern = { subject, predicate, object, graph };
-    this.getStream(pattern, opts)
-      .then((results) => {
-        iterator.source = <AsyncIterator<Quad>>results.iterator;
-      })
-      .catch((err) => {
-        // TODO: is the destroy() method really supported by AsyncIterator?
-        // @ts-ignore
-        iterator.emit('error', err);
-        iterator.destroy();
-      });
-    return <Stream<Quad>>iterator;
+  match(subject?: Term, predicate?: Term, object?: Term, graph?: Term, opts: GetOpts = emptyObject): Stream<Quad> {
+    const pattern = asPattern(subject, predicate, object, graph);
+    if (pattern) {
+      const iterator = new TransformIterator<Quad, Quad>();
+      this.getStream(pattern, opts)
+        .then((results) => {
+          iterator.source = <AsyncIterator<Quad>>results.iterator;
+        })
+        .catch((err) => {
+          // TODO: is the destroy() method really supported by AsyncIterator?
+          // @ts-ignore
+          iterator.emit('error', err);
+          iterator.destroy();
+        });
+      return <Stream<Quad>>iterator;
+    } else {
+      return new EmptyIterator();
+    }
   }
 
-  async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {
-    const pattern: Pattern = { subject, predicate, object, graph };
-    const results = await this.getApproximateSize(pattern, opts);
-    return results.approximateSize;
+  async countQuads(subject?: Term, predicate?: Term, object?: Term, graph?: Term, opts: GetOpts = emptyObject): Promise<number> {
+    const pattern = asPattern(subject, predicate, object, graph);
+    if (pattern) {
+      const results = await this.getApproximateSize(pattern, opts);
+      return results.approximateSize;
+    } else {
+      return 0;
+    }
   }
 
   import(source: Stream<Quad>): EventEmitter {
@@ -208,7 +217,7 @@ export class Quadstore implements Store {
     return emitter;
   }
 
-  removeMatches(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject) {
+  removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term, opts: GetOpts = emptyObject) {
     const source = this.match(subject, predicate, object, graph, opts);
     return this.remove(source);
   }

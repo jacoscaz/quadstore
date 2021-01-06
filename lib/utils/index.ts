@@ -1,9 +1,10 @@
-import {TSReadable, TermName} from '../types';
+import {TSReadable, TermName, Pattern} from '../types';
 import {EventEmitter} from 'events';
 import {nanoid} from './nanoid.js';
 import {TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
+import {Quad, Term} from 'rdf-js';
 
 export const termNames: TermName[] = [
   TermName.SUBJECT,
@@ -45,6 +46,27 @@ export const defaultIndexes: TermName[][] = [
   [TermName.PREDICATE, TermName.OBJECT, TermName.GRAPH, TermName.SUBJECT],
   [TermName.GRAPH, TermName.PREDICATE, TermName.OBJECT, TermName.SUBJECT],
 ];
+
+export const asPattern = (subject?: Term, predicate?: Term, object?: Term, graph?: Term): Pattern | undefined => {
+  if ((!subject || canBePatternPos(TermName.SUBJECT, subject)) &&
+    (!predicate || canBePatternPos(TermName.PREDICATE, predicate)) &&
+    (!object || canBePatternPos(TermName.OBJECT, object)) &&
+    (!graph || canBePatternPos(TermName.GRAPH, graph))) {
+    return { subject, predicate, object, graph };
+  }
+}
+
+export const canBePatternPos = <P extends TermName>(pos: P, term: Term): term is Quad[P] => {
+  // Subjects and Predicate don't allow literals
+  if ((pos == 'subject' || pos == 'predicate') && term.termType == 'Literal') {
+    return false;
+  }
+  // Predicates don't allow blank nodes
+  if (pos == 'predicate' && term.termType == 'BlankNode') {
+    return false;
+  }
+  return true;
+}
 
 export { nanoid };
 

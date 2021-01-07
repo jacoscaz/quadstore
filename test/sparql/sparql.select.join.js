@@ -63,7 +63,7 @@ module.exports = () => {
       should(items[0]['?s']['value']).equal('http://ex.com/bob');
     });
 
-    it.skip('should join quad patterns with numeric candidate', async function () {
+    it('should join quad patterns with numeric candidate', async function () {
       // `?s ?p ?s2` can generate a candidate where s2 is numeric
       // With bottom-up evaluation, this can lead to using the number as a subject
       const {type, items} = await this.store.sparql(`

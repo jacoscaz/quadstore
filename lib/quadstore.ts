@@ -13,7 +13,7 @@ import {
 } from './utils';
 import {EventEmitter} from 'events';
 import {importPattern, importQuad, importSimpleTerm, serializeImportedQuad} from './serialization';
-import {AsyncIterator, TransformIterator} from 'asynciterator';
+import {AsyncIterator, EmptyIterator, TransformIterator} from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term} from 'rdf-js';
 import {
   DefaultGraphMode,
@@ -171,6 +171,14 @@ export class Quadstore implements Store {
   }
 
   match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Stream<Quad> {
+    // This is required due to the fact that Comunica may invoke the `.match()`
+    // method in generalized RDF mode, under which the subject may be a literal
+    // term.
+    // TODO: rework support for strict vs. generalized mode
+    // @ts-ignore
+    if (subject && subject.termType === 'Literal') {
+      return new EmptyIterator();
+    }
     const pattern: Pattern = { subject, predicate, object, graph };
     return new TransformIterator<Quad, Quad>(
       this.getStream(pattern, opts).then(results => results.iterator),

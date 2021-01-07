@@ -40,7 +40,7 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
       done(err);
       return;
     }
-    if (value === undefined) {
+    if (key === undefined && value === undefined) {
       this.close();
       done();
       return;

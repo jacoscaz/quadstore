@@ -61,15 +61,15 @@ export const importSimpleTerm = (term: Term, isGraph: boolean, defaultGraphValue
       return prefixes.compactIri(term.value);
     case 'BlankNode':
       return `_:${term.value}`;
-    case 'Variable':
-      return `?${term.value}`;
     case 'DefaultGraph':
       return defaultGraphValue;
     case 'Literal':
       return importLiteralTerm(term, prefixes, rangeBoundary);
+    case 'Variable':
+      throw new Error(`Unexpected termType "${term.termType}" in a quad`);
     default:
       // @ts-ignore
-      throw new Error(`Unexpected termType: "${term.termType}".`);
+      throw new Error(`Unsupported termType: "${term.termType}".`);
   }
 };
 
@@ -107,7 +107,7 @@ export const importTerm = (term: Term|Range, isGraph: boolean, defaultGraphValue
       return importRange(term, prefixes, rangeBoundary);
     default:
       // @ts-ignore
-      throw new Error(`Unexpected termType: "${term.termType}".`);
+      throw new Error(`Unsupported termType: "${term.termType}".`);
   }
 };
 

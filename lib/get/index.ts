@@ -11,11 +11,10 @@ import {
   TermName,
   Quad,
 } from '../types';
-import {SimpleTransformIterator, BufferedIterator} from 'asynciterator';
+import {EmptyIterator} from 'asynciterator';
 import {Quadstore} from '../quadstore';
 import {deserializeImportedQuad, exportQuad} from '../serialization';
 import {emptyObject} from '../utils';
-import {AbstractIterator} from 'abstract-leveldown';
 import {LevelIterator} from './leveliterator';
 
 
@@ -252,7 +251,14 @@ export const getApproximateSize = async (store: Quadstore, pattern: ImportedPatt
   const end = levelOpts.lte || levelOpts.lt;
   return new Promise((resolve, reject) => {
     store.db.approximateSize(start, end, (err: Error|null, approximateSize: number) => {
-      err ? reject(err) : resolve({ type: ResultType.APPROXIMATE_SIZE, approximateSize });
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve({
+        type: ResultType.APPROXIMATE_SIZE,
+        approximateSize: Math.max(1, approximateSize),
+      });
     });
   });
 };

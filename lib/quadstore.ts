@@ -171,19 +171,10 @@ export class Quadstore implements Store {
   }
 
   match(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Stream<Quad> {
-    const iterator = new TransformIterator<Quad, Quad>();
     const pattern: Pattern = { subject, predicate, object, graph };
-    this.getStream(pattern, opts)
-      .then((results) => {
-        iterator.source = <AsyncIterator<Quad>>results.iterator;
-      })
-      .catch((err) => {
-        // TODO: is the destroy() method really supported by AsyncIterator?
-        // @ts-ignore
-        iterator.emit('error', err);
-        iterator.destroy();
-      });
-    return <Stream<Quad>>iterator;
+    return new TransformIterator<Quad, Quad>(
+      this.getStream(pattern, opts).then(results => results.iterator),
+    );
   }
 
   async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {

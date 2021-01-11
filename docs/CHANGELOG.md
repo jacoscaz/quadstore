@@ -1,6 +1,15 @@
 
 # CHANGELOG
 
+## v7.3.1
+
+- *[fix]* fixes broken `JOIN` SPARQL queries when `approximateSize()` rounds to 0  
+  (https://github.com/beautifulinteractions/node-quadstore/pull/127)
+- *[fix]* fixes broken SPARQL queries due to Comunica operating in generalized
+  RDF mode which can lead to literals being passed as the `subject` arg to
+  `match()`  
+  (https://github.com/beautifulinteractions/node-quadstore/pull/127)
+
 ## v7.3.0
 
 - *[new]* quad scoping support via `initScope()`, `loadScope()`,
@@ -17,7 +26,7 @@
 
 ## v7.2.0
 
-- *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`
+- *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`  
   (https://github.com/beautifulinteractions/node-quadstore/pull/125)
 - *[internal]* updates to `quadstore-comunica@0.2.0` (non-minified bundle)
 - *[internal]* updates third-party dependencies to their latest versions
@@ -30,13 +39,14 @@
 ## v7.1.0
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom
-  key-value pairs (https://github.com/beautifulinteractions/node-quadstore/pull/120)
-- *[fix]* prefix-based compaction/expansion of literal datatype IRIs
+  key-value pairs  
+  (https://github.com/beautifulinteractions/node-quadstore/pull/120)
+- *[fix]* prefix-based compaction/expansion of literal datatype IRIs  
   (https://github.com/beautifulinteractions/node-quadstore/issues/118)
 - *[fix]* quadstore can now be bundles using browserify without the
-  `ignoreMissing` configuration param
+  `ignoreMissing` configuration param  
   (https://github.com/beautifulinteractions/node-quadstore/issues/117)
-- *[fix]* dropped indirect dev dependency on `@comunica/actor-init-sparql`
+- *[fix]* dropped indirect dev dependency on `@comunica/actor-init-sparql`  
   (https://github.com/beautifulinteractions/node-quadstore/issues/116)
 
 ## v7.0.1

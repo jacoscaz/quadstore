@@ -3,11 +3,6 @@ export {Quadstore} from './lib/quadstore';
 
 export {
 
-  ImportedQuad,
-
-  ImportedRange,
-  ImportedPattern,
-
   GetOpts,
   PutStreamOpts,
   DelStreamOpts,

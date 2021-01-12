@@ -7,7 +7,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.get() with literals', () => {
+  describe('Quadstore.prototype.get() with literals', () => {
 
     it('should match quads by numeric object', async function () {
       const { dataFactory, store } = this;

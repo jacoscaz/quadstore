@@ -8,7 +8,7 @@ const AsyncIterator = require('asynciterator');
 
 module.exports = () => {
 
-  describe('RdfStore.prototype.import()', () => {
+  describe('Quadstore.prototype.import()', () => {
 
     it('should import a single quad correctly', async function () {
       const { dataFactory, store } = this;

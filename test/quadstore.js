@@ -34,5 +34,6 @@ module.exports = () => {
     require('./quadstore.prototype.removematches')();
     require('./quadstore.scope')();
     require('./quadstore.prewrite')();
+    require('./quadstore.serialization')();
   });
 };

@@ -6,7 +6,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.get()', () => {
+  describe('Quadstore.prototype.get()', () => {
 
     beforeEach(async function () {
       const { dataFactory } = this;

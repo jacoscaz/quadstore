@@ -42,46 +42,13 @@ export enum ResultType {
 
 export interface InternalIndex {
   terms: TermName[],
-  name: string,
-  getKey: (quad: ImportedQuad) => string,
-  canBeUsedWithPattern: (pattern: ImportedPatternTypes) => boolean,
+  prefix: string,
 }
-
-export interface ImportedPattern {
-  [TermName.SUBJECT]?: string|ImportedRange,
-  [TermName.PREDICATE]?: string|ImportedRange,
-  [TermName.OBJECT]?: string|ImportedRange,
-  [TermName.GRAPH]?: string|ImportedRange,
-}
-
-export interface ImportedPatternTypes {
-  [TermName.SUBJECT]?: 'undefined'|'object'|'string'|'number'|'function'|'bigint'|'boolean'|'symbol',
-  [TermName.PREDICATE]?: 'undefined'|'object'|'string'|'number'|'function'|'bigint'|'boolean'|'symbol',
-  [TermName.OBJECT]?: 'undefined'|'object'|'string'|'number'|'function'|'bigint'|'boolean'|'symbol',
-  [TermName.GRAPH]?: 'undefined'|'object'|'string'|'number'|'function'|'bigint'|'boolean'|'symbol',
-}
-
-export interface ImportedQuad {
-  [TermName.SUBJECT]: string,
-  [TermName.PREDICATE]: string,
-  [TermName.OBJECT]: string,
-  [TermName.GRAPH]: string,
-}
-
-export interface ImportedRange {
-  lt?: string,
-  lte?: string,
-  gt?: string,
-  gte?: string,
-}
-
 
 export interface ApproximateSizeResult {
   type: ResultType.APPROXIMATE_SIZE,
   approximateSize: number,
 }
-
-
 
 export interface GetOpts {
   limit?: number,

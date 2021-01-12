@@ -6,7 +6,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore preWrite option', () => {
+  describe('Quadstore preWrite option', () => {
 
     let quads;
 
@@ -27,7 +27,7 @@ module.exports = () => {
         ),
       ];
     });
-    
+
     it('should pre-write kvps when putting a quad', async function () {
       const { store } = this;
       await store.put(quads[0], {

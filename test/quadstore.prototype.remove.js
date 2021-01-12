@@ -8,7 +8,7 @@ const AsyncIterator = require('asynciterator');
 
 module.exports = () => {
 
-  describe('RdfStore.prototype.remove()', () => {
+  describe('Quadstore.prototype.remove()', () => {
 
     it('should remove streamed quads correctly', async function () {
       const { dataFactory, store } = this;

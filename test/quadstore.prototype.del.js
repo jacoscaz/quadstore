@@ -6,7 +6,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.del()', () => {
+  describe('Quadstore.prototype.del()', () => {
 
     it('should delete a quad correctly', async function () {
       const { dataFactory, store } = this;

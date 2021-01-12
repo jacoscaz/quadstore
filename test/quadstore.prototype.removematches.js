@@ -7,7 +7,7 @@ const should = require('should');
 const AsyncIterator = require('asynciterator');
 
 module.exports = () => {
-  describe('RdfStore.prototype.removeMatches()', () => {
+  describe('Quadstore.prototype.removeMatches()', () => {
     it('should remove matching quads correctly', async function () {
       const { dataFactory, store } = this;
       const importQuads = [

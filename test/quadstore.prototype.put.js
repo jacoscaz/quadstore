@@ -7,7 +7,7 @@ const { LevelIterator } = require('../dist/lib/get/leveliterator');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.put()', () => {
+  describe('Quadstore.prototype.put()', () => {
 
     it('should store a single quad', async function () {
       const { dataFactory, store } = this;

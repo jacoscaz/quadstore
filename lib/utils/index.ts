@@ -6,10 +6,10 @@ import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
 
 export const termNames: TermName[] = [
-  TermName.SUBJECT,
-  TermName.PREDICATE,
-  TermName.OBJECT,
-  TermName.GRAPH,
+  'subject',
+  'predicate',
+  'object',
+  'graph',
 ];
 
 export const isObject = (o: any): boolean => {
@@ -38,12 +38,12 @@ export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnErr
 export const waitForEvent = resolveOnEvent;
 
 export const defaultIndexes: TermName[][] = [
-  [TermName.SUBJECT, TermName.PREDICATE, TermName.OBJECT, TermName.GRAPH],
-  [TermName.OBJECT, TermName.GRAPH, TermName.SUBJECT, TermName.PREDICATE],
-  [TermName.GRAPH, TermName.SUBJECT, TermName.PREDICATE, TermName.OBJECT],
-  [TermName.OBJECT, TermName.SUBJECT, TermName.PREDICATE, TermName.GRAPH],
-  [TermName.PREDICATE, TermName.OBJECT, TermName.GRAPH, TermName.SUBJECT],
-  [TermName.GRAPH, TermName.PREDICATE, TermName.OBJECT, TermName.SUBJECT],
+  ['subject', 'predicate', 'object', 'graph'],
+  ['object', 'graph', 'subject', 'predicate'],
+  ['graph', 'subject', 'predicate', 'object'],
+  ['object', 'subject', 'predicate', 'graph'],
+  ['predicate', 'object', 'graph', 'subject'],
+  ['graph', 'predicate', 'object', 'subject'],
 ];
 
 export { nanoid };

@@ -23,12 +23,7 @@ export interface PutOpts extends BatchOpts {
 export interface PatchOpts extends BatchOpts {
 }
 
-export enum TermName {
-  SUBJECT = 'subject',
-  PREDICATE = 'predicate',
-  OBJECT = 'object',
-  GRAPH = 'graph',
-}
+export type TermName = 'subject' | 'predicate' | 'object' | 'graph';
 
 export type TSReadable<T> = Readable | AsyncIterator<T>;
 
@@ -93,10 +88,10 @@ export interface Range {
 }
 
 export interface Pattern {
-  [TermName.SUBJECT]?: Quad_Subject,
-  [TermName.PREDICATE]?: Quad_Predicate,
-  [TermName.OBJECT]?: Quad_Object|Range,
-  [TermName.GRAPH]?: Quad_Graph,
+  subject?: Quad_Subject,
+  predicate?: Quad_Predicate,
+  object?: Quad_Object|Range,
+  graph?: Quad_Graph,
 }
 
 export interface Binding {

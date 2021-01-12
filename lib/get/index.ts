@@ -34,17 +34,17 @@ type LevelOpts = {
 
 const reconcilePatternWithDefaultGraphMode = (pattern: Pattern, store: Quadstore, opts: GetOpts = emptyObject): Pattern => {
   const defaultGraphMode = opts.defaultGraphMode || store.defaultGraphMode;
-  if (defaultGraphMode === DefaultGraphMode.DEFAULT && !pattern[TermName.GRAPH]) {
+  if (defaultGraphMode === DefaultGraphMode.DEFAULT && !pattern.graph) {
     return {
       ...pattern,
-      [TermName.GRAPH]: store.dataFactory.defaultGraph(),
+      graph: store.dataFactory.defaultGraph(),
     };
   }
-  if (store.sparqlMode && defaultGraphMode === DefaultGraphMode.UNION && pattern[TermName.GRAPH]?.termType === 'DefaultGraph') {
+  if (store.sparqlMode && defaultGraphMode === DefaultGraphMode.UNION && pattern.graph && pattern.graph.termType === 'DefaultGraph') {
     return {
-      [TermName.SUBJECT]: pattern[TermName.SUBJECT],
-      [TermName.PREDICATE]: pattern[TermName.PREDICATE],
-      [TermName.OBJECT]: pattern[TermName.OBJECT],
+      subject: pattern.subject,
+      predicate: pattern.predicate,
+      object: pattern.object,
     };
   }
   return pattern;

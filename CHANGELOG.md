@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## Unreleased
+
+- **[breaking]** deep revision of the serialization mechanism to remove 
+  duplicated quad serializations across indexes.
+
 ## v7.3.1
 
 - *[fix]* fixes broken `JOIN` SPARQL queries when `approximateSize()` rounds to 0  

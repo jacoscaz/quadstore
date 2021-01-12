@@ -810,6 +810,15 @@ random updates.
 The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
 running Node v14.0.0.
 
+### Reading quads
+
+Sequential reads iterating through quads in any given index run at about ~340k
+quads per second~.
+
+```
+node dist/perf/read.js
+```
+
 ### Importing quads
 
 Our reference benchmark for import performance is the [`level-bench`][perf-2]
@@ -839,7 +848,7 @@ target.
 We track the computational cost of handling `get()` and `getStream()` queries
 (setting up iterators, etc...) by running a benchmark based on a SPARQL query
 that results in a high number of concatenated join operations, each producing
-a single quad.   
+a single quad.
 
 ```
 node dist/perf/search.js

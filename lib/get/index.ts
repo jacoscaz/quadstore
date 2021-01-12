@@ -5,16 +5,12 @@ import {
   InternalIndex,
   QuadStreamResult,
   ResultType,
-  TermName,
-  Pattern,
+  Pattern, Prefixes,
 } from '../types';
-import {EmptyIterator} from 'asynciterator';
 import {Quadstore} from '../quadstore';
 import {emptyObject} from '../utils';
 import {LevelIterator} from './leveliterator';
-import {writePattern, copyBufferIntoBuffer, quadReader} from '../serialization';
-
-
+import {writePattern, quadReader} from '../serialization';
 
 type LevelOpts = {
   keys?: boolean,
@@ -28,9 +24,7 @@ type LevelOpts = {
   limit?: number,
   offset?: number,
   reverse?: boolean,
-  ___index: InternalIndex,
 };
-
 
 const reconcilePatternWithDefaultGraphMode = (pattern: Pattern, store: Quadstore, opts: GetOpts = emptyObject): Pattern => {
   const defaultGraphMode = opts.defaultGraphMode || store.defaultGraphMode;
@@ -50,38 +44,37 @@ const reconcilePatternWithDefaultGraphMode = (pattern: Pattern, store: Quadstore
   return pattern;
 };
 
-const getLevelOpts = (pattern: Pattern, store: Quadstore): LevelOpts => {
+const getLevelOptsForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes): LevelOpts|false => {
+    const res = writePattern(pattern, index.prefix, index.terms, prefixes);
+    return res ? {
+      [res.gte ? 'gte' : 'gt']: res.gt,
+      [res.lte ? 'lte' : 'lt']: res.lt,
+      keys: true,
+      values: true,
+      keyAsBuffer: false,
+      valueAsBuffer: true,
+    } : false;
+};
 
-  for (let i = 0, index; i < store.indexes.length; i += 1) {
-
-    index = store.indexes[i];
-
-    const res = writePattern(pattern, index.prefix, store.separator, store.boundary, index.terms, store.prefixes);
-
-    if (res) {
-      return {
-        [res.gte ? 'gte' : 'gt']: res.gt,
-        [res.lte ? 'lte' : 'lt']: res.lt,
-        keys: true,
-        values: true,
-        keyAsBuffer: false,
-        valueAsBuffer: true,
-        ___index: index,
-      };
+const selectIndexAndGetLevelOpts = (pattern: Pattern, indexes: InternalIndex[], prefixes: Prefixes): [InternalIndex, LevelOpts] => {
+  for (let i = 0, index, levelOpts; i < indexes.length; i += 1) {
+    index = indexes[i];
+    levelOpts = getLevelOptsForIndex(pattern, index, prefixes);
+    if (levelOpts) {
+      return [index, levelOpts];
     }
   }
-
-  throw new Error(`No index found`);
+  throw new Error(`No index found for pattern ${JSON.stringify(pattern, null, 2)}`);
 };
 
 export const getStream = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<QuadStreamResult> => {
   pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
-  const levelOpts = getLevelOpts(pattern, store);
-  const { dataFactory, prefixes, separator } = store;
+  const { dataFactory, prefixes, indexes } = store;
+  const [index, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
   const iterator = new LevelIterator(store.db.iterator(levelOpts), (key: string, value: Buffer) => {
-    return quadReader.read(key, levelOpts.___index.prefix.length, value, 0, separator, levelOpts.___index.terms, dataFactory, prefixes);
+    return quadReader.read(key, index.prefix.length, value, 0, index.terms, dataFactory, prefixes);
   });
-  return { type: ResultType.QUADS, iterator };
+  return {type: ResultType.QUADS, iterator};
 };
 
 export const getApproximateSize = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<ApproximateSizeResult> => {
@@ -89,7 +82,8 @@ export const getApproximateSize = async (store: Quadstore, pattern: Pattern, opt
   if (!store.db.approximateSize) {
     return { type: ResultType.APPROXIMATE_SIZE, approximateSize: Infinity };
   }
-  const levelOpts = getLevelOpts(pattern, store);
+  const { indexes, prefixes } = store;
+  const [, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
   const start = levelOpts.gte || levelOpts.gt;
   const end = levelOpts.lte || levelOpts.lt;
   return new Promise((resolve, reject) => {

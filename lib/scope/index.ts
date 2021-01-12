@@ -9,7 +9,9 @@ import {
 } from 'rdf-js';
 import {
   nanoid,
-} from '../utils/nanoid';
+  separator,
+  boundary,
+} from '../utils';
 import {AbstractChainedBatch} from 'abstract-leveldown';
 import {Quadstore} from '../quadstore';
 import {LevelIterator} from '../get/leveliterator';
@@ -21,9 +23,6 @@ export class Scope {
 
   readonly blankNodes: Map<string, BlankNode>;
   readonly factory: DataFactory;
-
-  static boundary = '\uDBFF\uDFFF'
-  static separator = '\u0000\u0000'
 
   static async init(store: Quadstore): Promise<Scope> {
     return new Scope(store.dataFactory, nanoid(), new Map());
@@ -59,20 +58,20 @@ export class Scope {
 
   static getLevelIteratorOpts(keys: boolean, values: boolean, scopeId?: string) {
     const gte = scopeId
-      ? `SCOPE${Scope.separator}${scopeId}${Scope.separator}`
-      : `SCOPE${Scope.separator}`;
+      ? `SCOPE${separator}${scopeId}${separator}`
+      : `SCOPE${separator}`;
     return {
       keys,
       values,
       keyAsBuffer: false,
       valueAsBuffer: false,
       gte,
-      lte: `${gte}${Scope.boundary}`,
+      lte: `${gte}${boundary}`,
     };
   }
 
   static addMappingToLevelBatch(scopeId: string, batch: AbstractChainedBatch<any, any>, originalLabel: string, randomLabel: string) {
-    batch.put(`SCOPE${Scope.separator}${scopeId}${Scope.separator}${originalLabel}`, JSON.stringify({ originalLabel, randomLabel }));
+    batch.put(`SCOPE${separator}${scopeId}${separator}${originalLabel}`, JSON.stringify({ originalLabel, randomLabel }));
   }
 
   constructor(factory: DataFactory, id: string, blankNodes: Map<string, BlankNode>) {

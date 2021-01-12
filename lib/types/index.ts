@@ -137,8 +137,6 @@ export interface Prefixes {
 export interface StoreOpts {
   backend: AbstractLevelDOWN,
   prefixes?: Prefixes,
-  boundary?: string,
-  separator?: string,
   indexes?: TermName[][],
   dataFactory: DataFactory,
   defaultGraphMode?: DefaultGraphMode,

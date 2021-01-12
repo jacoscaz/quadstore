@@ -52,19 +52,15 @@ export const handleQuery = async (store: Quadstore, operation: Algebra.DeleteIns
   if (results.type !== ResultType.BINDINGS) {
     throw new Error(`Unsupported result type "${results.type}"`);
   }
-  let oldQuads: Quad[] = emptyArray; // TODO: ugly use of unknown
-  let newQuads: Quad[] = emptyArray; // TODO: ugly use of unknown
+  let oldQuads: Quad[] = emptyArray;
+  let newQuads: Quad[] = emptyArray;
   if (operation.delete) {
     oldQuads = flatMap(results.items, (binding) => {
-      // TODO: why isn't the TS compiler figuring out that, if we're inside
-      //       this `if`, then `operation.delete` surely is not undefined?
       return (<Pattern[]>operation.delete).map(pattern => fillPatternWithBinding(pattern, binding));
     });
   }
   if (operation.insert) {
     newQuads = flatMap(results.items, (binding) => {
-      // TODO: why isn't the TS compiler figuring out that, if we're inside
-      //       this `if`, then `operation.delete` surely is not undefined?
       return (<Pattern[]>operation.insert).map(pattern => fillPatternWithBinding(pattern, binding));
     });
   }

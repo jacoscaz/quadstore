@@ -10,10 +10,11 @@ import {
 import * as xsd from './xsd';
 import {encode} from './fpstring';
 import {Pattern, Prefixes, TermName} from '../types';
+import {separator, boundary} from '../utils';
 import {copyBufferIntoBuffer, copyBuffer} from './utils';
 
 const patternLiteralWriter = {
-  write(separator: string, term: Literal) {
+  write(term: Literal) {
     if (term.language) {
       return langStringLiteralWriter.write(undefined, undefined, term, separator);
     }
@@ -50,8 +51,6 @@ const patternLiteralWriter = {
 export const writePattern = (
   pattern: Pattern,
   prefix: string,
-  separator: string,
-  boundary: string,
   termNames: TermName[],
   prefixes: Prefixes,
 ): ({ gt: string, gte: boolean, lt: string, lte: boolean }|false) => {
@@ -77,25 +76,25 @@ export const writePattern = (
       case 'Range':
         didRangeOrLiteral = true;
         if (term.gt) {
-          gt += patternLiteralWriter.write(separator, term.gt);
+          gt += patternLiteralWriter.write(term.gt);
           gte = false;
         } else if (term.gte) {
-          gt += patternLiteralWriter.write(separator, term.gte);
+          gt += patternLiteralWriter.write(term.gte);
           gte = true;
         }
         if (term.lt) {
-          lt += patternLiteralWriter.write(separator, term.lt);
+          lt += patternLiteralWriter.write(term.lt);
           lte = false;
         } else if (term.lte) {
-          lt += patternLiteralWriter.write(separator, term.lte);
+          lt += patternLiteralWriter.write(term.lte);
           lte = true;
         }
         break;
       case 'Literal':
         didRangeOrLiteral = true;
-        gt += patternLiteralWriter.write(separator, term);
+        gt += patternLiteralWriter.write(term);
         gte = true;
-        lt += patternLiteralWriter.write(separator, term);
+        lt += patternLiteralWriter.write(term);
         lte = true;
         break;
       case 'NamedNode':

@@ -1,9 +1,12 @@
+
 import {TSReadable, TermName} from '../types';
 import {EventEmitter} from 'events';
-import {nanoid} from './nanoid.js';
 import {TransformIterator} from 'asynciterator';
 import {flatMap} from './flatmap.js';
 import {pReduce} from './p-reduce';
+import { nanoid } from 'nanoid';
+
+export { nanoid };
 
 export const termNames: TermName[] = [
   'subject',
@@ -45,8 +48,6 @@ export const defaultIndexes: TermName[][] = [
   ['predicate', 'object', 'graph', 'subject'],
   ['graph', 'predicate', 'object', 'subject'],
 ];
-
-export { nanoid };
 
 class BatchingIterator<T> extends TransformIterator<T, T> {
 
@@ -137,3 +138,5 @@ export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) =
 export const emptyArray: any[] = [];
 export const emptyObject: { [key: string]: any } = {};
 
+export const boundary = '\uDBFF\uDFFF';
+export const separator = '\u0000\u0000';

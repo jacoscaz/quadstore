@@ -10,10 +10,11 @@ import {
 import * as xsd from './xsd';
 import {encode} from './fpstring';
 import {DataFactory} from 'rdf-js';
+import {separator} from '../utils';
 
 export const quadWriter = {
   writtenValueBytes: 0,
-  write(prefix: string, value: Buffer, separator: string, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
+  write(prefix: string, value: Buffer, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
     let ret = prefix;
     let valueOffset = 0;
     for (let t = 0, term; t < termNames.length; t += 1) {
@@ -102,7 +103,7 @@ export const quadReader = {
   predicate: null,
   object: null,
   graph: null,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, separator: string, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
+  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
     for (let t = 0, termName, termValue; t < termNames.length; t += 1) {
       termName = termNames[t];
       const encodedTermType = value.readUInt16LE(valueOffset);

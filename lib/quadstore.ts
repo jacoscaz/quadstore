@@ -10,9 +10,10 @@ import {
   termNames,
   defaultIndexes,
   pFromCallback,
+  separator,
 } from './utils';
 import {EventEmitter} from 'events';
-import {AsyncIterator, EmptyIterator, TransformIterator} from 'asynciterator';
+import {EmptyIterator, TransformIterator} from 'asynciterator';
 import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term} from 'rdf-js';
 import {
   DefaultGraphMode,
@@ -44,7 +45,7 @@ import {newEngine, ActorInitSparql} from 'quadstore-comunica';
 import {sparql, sparqlStream} from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 import {Scope} from './scope';
-import {quadWriter, copyBufferIntoBuffer, sliceBuffer, copyBuffer} from './serialization';
+import {quadWriter, copyBuffer} from './serialization';
 
 
 const __value = Buffer.alloc(32);
@@ -55,9 +56,6 @@ export class Quadstore implements Store {
 
   readonly indexes: InternalIndex[];
   readonly id: string;
-
-  readonly separator: string;
-  readonly boundary: string;
 
   readonly engine: ActorInitSparql;
   readonly prefixes: Prefixes;
@@ -72,8 +70,6 @@ export class Quadstore implements Store {
     this.db = opts.backend;
     this.indexes = [];
     this.id = nanoid();
-    this.boundary = '\uDBFF\uDFFF';
-    this.separator = '\u0000\u0000';
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
     this.engine = newEngine();
@@ -163,7 +159,7 @@ export class Quadstore implements Store {
     const name = terms.map(t => t.charAt(0).toUpperCase()).join('');
     this.indexes.push({
       terms,
-      prefix: name + this.separator,
+      prefix: name + separator,
     });
   }
 
@@ -230,7 +226,7 @@ export class Quadstore implements Store {
       quad = opts.scope.parseQuad(quad, batch);
     }
     batch = this.indexes.reduce((indexBatch, index) => {
-      const key = quadWriter.write(index.prefix, __value, this.separator, quad, index.terms, this.prefixes);
+      const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
       return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, batch);
     await this.writeBatch(batch, opts);
@@ -245,7 +241,7 @@ export class Quadstore implements Store {
         quad = opts.scope.parseQuad(quad, batch);
       }
       return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, this.separator, quad, index.terms, this.prefixes);
+        const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
         return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);
@@ -256,7 +252,7 @@ export class Quadstore implements Store {
   async del(quad: Quad, opts: DelOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const batch = this.indexes.reduce((indexBatch, index) => {
-      const key = quadWriter.write(index.prefix, __value, this.separator, quad, index.terms, this.prefixes);
+      const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
       return indexBatch.del(key);
     }, this.db.batch());
     await this.writeBatch(batch, opts);
@@ -267,7 +263,7 @@ export class Quadstore implements Store {
     this.ensureReady();
     const batch = quads.reduce((quadBatch, quad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, this.separator, quad, index.terms, this.prefixes);
+        const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
         return indexBatch.del(key);
       }, quadBatch);
     }, this.db.batch());
@@ -278,9 +274,9 @@ export class Quadstore implements Store {
   async patch(oldQuad: Quad, newQuad: Quad, opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const batch = this.indexes.reduce((indexBatch, index) => {
-      const oldKey = quadWriter.write(index.prefix, __value, this.separator, oldQuad, index.terms, this.prefixes);
+      const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
       indexBatch.del(oldKey);
-      const newKey = quadWriter.write(index.prefix, __value, this.separator, newQuad, index.terms, this.prefixes);
+      const newKey = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
       return indexBatch.put(newKey, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, this.db.batch());
     await this.writeBatch(batch, opts);
@@ -292,13 +288,13 @@ export class Quadstore implements Store {
     let batch = this.db.batch();
     batch = oldQuads.reduce((quadBatch, oldQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        const oldKey = quadWriter.write(index.prefix, __value, this.separator, oldQuad, index.terms, this.prefixes);
+        const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
         return indexBatch.del(oldKey);
       }, quadBatch);
     }, batch);
     batch = newQuads.reduce((quadBatch, newQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, this.separator, newQuad, index.terms, this.prefixes);
+        const key = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
         return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);

@@ -10,7 +10,7 @@ module.exports = () => {
 
     it('Should serialize and deserialize quads with named nodes', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -18,15 +18,15 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });
 
     it('Should serialize and deserialize quads in the default graph', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -34,15 +34,15 @@ module.exports = () => {
         factory.defaultGraph(),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });
 
     it('Should serialize and deserialize quads with generic literals', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -50,15 +50,15 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });
 
     it('Should serialize and deserialize quads with named nodes and language-tagged literals', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -66,15 +66,15 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });
 
     it('Should serialize and deserialize quads with named nodes and numeric literals', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -82,15 +82,15 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });
 
     it('Should serialize and deserialize quads with named nodes and simple string literals', function () {
       const { store } = this;
-      const { separator, boundary, indexes, prefixes, dataFactory: factory } = store;
+      const { indexes, prefixes, dataFactory: factory } = store;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
@@ -98,8 +98,8 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, separator, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, separator, index.terms, factory, prefixes);
+        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
     });

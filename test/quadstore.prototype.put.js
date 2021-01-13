@@ -19,7 +19,7 @@ module.exports = () => {
       );
       await store.put(newQuad);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray([newQuad], store);
+      should(foundQuads).be.equalToQuadArray([newQuad]);
     });
 
     it('should store multiple quads', async function () {
@@ -41,7 +41,7 @@ module.exports = () => {
       await store.put(newQuads[0]);
       await store.put(newQuads[1]);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray(newQuads, store);
+      should(foundQuads).be.equalToQuadArray(newQuads);
     });
 
     it('should not duplicate quads', async function () {
@@ -64,7 +64,7 @@ module.exports = () => {
       await store.put(newQuads[1]);
       await store.put(newQuads[1]);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray(newQuads, store);
+      should(foundQuads).be.equalToQuadArray(newQuads);
     });
 
   });

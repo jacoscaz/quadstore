@@ -19,6 +19,7 @@ export const handleQuery = async (store: Quadstore, query: Algebra.Operation): P
     case 'bindings':
       return {
         type: ResultType.BINDINGS,
+        // @ts-ignore
         items: (await results.bindings()).map(binding => binding.toObject()),
         variables: results.variables,
       };
@@ -43,6 +44,7 @@ export const handleQueryStream = async (store: Quadstore, query: Algebra.Operati
     case 'bindings':
       return {
         type: ResultType.BINDINGS,
+        // @ts-ignore
         iterator: results.bindingsStream.map(binding => binding.toObject()),
         variables: results.variables,
       };

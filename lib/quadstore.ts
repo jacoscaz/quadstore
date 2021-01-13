@@ -368,44 +368,4 @@ export class Quadstore implements Store {
     await Scope.delete(this);
   }
 
-  getTermComparator(): (a: Term, b: Term) => (-1 | 0 | 1) {
-    return (a: Term, b: Term): -1|0|1 => {
-      if (a.termType !== b.termType) {
-        return a.termType < b.termType ? -1 : 1;
-      }
-      if (a.termType !== 'Literal' || b.termType !== 'Literal') {
-        return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
-      }
-      if (a.datatype !== b.datatype) {
-        return a.datatype < b.datatype ? -1 : 1;
-      }
-      if (a.language !== b.language) {
-        return a.language < b.language ? -1 : 1;
-      }
-      return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
-    };
-  }
-
-  getQuadComparator(_termNames: TermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) {
-    const termComparator = this.getTermComparator();
-    return (a: Quad, b: Quad) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
-        r = termComparator(a[_termNames[i]], b[_termNames[i]]);
-        if (r !== 0) return r;
-      }
-      return 0;
-    };
-  }
-
-  getBindingComparator(_termNames: string[]): (a: Binding, b: Binding) => -1|0|1 {
-    const termComparator = this.getTermComparator();
-    return (a: Binding, b: Binding) => {
-      for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
-        r = termComparator(a[_termNames[i]], b[_termNames[i]]);
-        if (r !== 0) return r;
-      }
-      return 0;
-    };
-  }
-
 }

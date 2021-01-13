@@ -24,4 +24,4 @@ export {
   Range,
   Pattern,
 
-} from './lib/types'
+} from './lib/types';

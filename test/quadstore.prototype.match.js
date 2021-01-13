@@ -1,8 +1,6 @@
 
 'use strict';
 
-
-
 const _ = require('../dist/lib/utils');
 const utils = require('../dist/lib/utils');
 const should = require('should');
@@ -177,7 +175,7 @@ module.exports = () => {
         await utils.waitForEvent(store.import(source), 'end', true);
         const matchedQuads = await utils.streamToArray(store.match(null, null, null, null, { defaultGraphMode: DefaultGraphMode.UNION}));
         should(matchedQuads).have.length(2);
-        should(matchedQuads).be.equalToQuadArray(quads, store);
+        should(matchedQuads).be.equalToQuadArray(quads);
       });
 
     });

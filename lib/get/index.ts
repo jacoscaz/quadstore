@@ -3,14 +3,16 @@ import {
   DefaultGraphMode,
   GetOpts,
   InternalIndex,
+  Pattern,
+  Prefixes,
   QuadStreamResult,
   ResultType,
-  Pattern, Prefixes,
 } from '../types';
 import {Quadstore} from '../quadstore';
 import {emptyObject} from '../utils';
 import {LevelIterator} from './leveliterator';
-import {writePattern, quadReader} from '../serialization';
+import {quadReader, writePattern} from '../serialization';
+import {EmptyIterator} from 'asynciterator';
 
 type LevelOpts = {
   keys?: boolean,

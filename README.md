@@ -574,8 +574,8 @@ support for SPARQL queries against official test suites published by the W3C.
 
 We're currently testing against the following manifests:
 
-- [SPARQL 1.0][s1]: 269/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][s2]: 245/271 tests passing (`npm run test-rdf:sparql11`,
+- [SPARQL 1.0][s1]: 277/438 tests passing (`npm run test-rdf:sparql10`)
+- [SPARQL 1.1][s2]: 249/271 tests passing (`npm run test-rdf:sparql11`,
   limited to the [SPARQL 1.1 Query spec][s3])
 
 [s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl

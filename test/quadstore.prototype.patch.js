@@ -74,7 +74,7 @@ module.exports = () => {
       await store.multiPut(quadsArray);
       await store.multiPatch(oldQuads, newQuads);
       const { items: quads } = await store.get({});
-      should(quads).be.equalToQuadArray(expected, store);
+      should(quads).be.equalToQuadArray(expected);
     });
 
   });

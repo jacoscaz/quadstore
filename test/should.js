@@ -1,5 +1,6 @@
 
 const should = require('should');
+const {getQuadComparator, getBindingComparator} = require('../dist/lib/utils');
 
 const equalToItemArray = function (expected, comparator, message) {
   this.params = {
@@ -14,22 +15,21 @@ const equalToItemArray = function (expected, comparator, message) {
   should(expected.length).eql(actual.length);
   const sortedActual = actual.slice();
   sortedActual.sort(comparator);
-  const sortedExpected = actual.slice();
+  const sortedExpected = expected.slice();
   sortedExpected.sort(comparator);
   for (let i = 0; i < sortedExpected.length; i += 1) {
     should(comparator(sortedActual[i], sortedExpected[i])).eql(0);
   }
 };
 
-
-const equalToQuadArray = function (expected, store, message) {
-  return equalToItemArray.call(this, expected, store.getQuadComparator(), message);
+const equalToQuadArray = function (expected, message) {
+  return equalToItemArray.call(this, expected, getQuadComparator(), message);
 };
 
 should.Assertion.add('equalToQuadArray', equalToQuadArray, false);
 
-const equalToBindingArray = function (expected, store, variables, message) {
-  return equalToItemArray.call(this, expected, store.getBindingComparator(variables), message);
+const equalToBindingArray = function (expected, variables, message) {
+  return equalToItemArray.call(this, expected, getBindingComparator(variables), message);
 };
 
 should.Assertion.add('equalToBindingArray', equalToBindingArray, false);

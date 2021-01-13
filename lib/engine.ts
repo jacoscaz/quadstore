@@ -12,6 +12,7 @@ import {
 } from './types';
 import {DataFactory} from 'rdf-data-factory';
 import {parse} from './sparql';
+import {getQuadComparator, getBindingComparator} from './utils';
 
 class RdfStoreQueryEngine implements IQueryEngine {
 
@@ -70,7 +71,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
     variables: string[],
     laxCardinality?: boolean,
   ): boolean {
-    const comparator = store.getBindingComparator(variables);
+    const comparator = getBindingComparator(variables);
     actualBindings.sort(comparator);
     expectedBindings.sort(comparator);
     for (let i = 0, n = Math.min(actualBindings.length, expectedBindings.length); i < n; i += 1) {
@@ -100,7 +101,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
     expectedQuads: Quad[],
     laxCardinality?: boolean,
   ): boolean {
-    const comparator = store.getQuadComparator();
+    const comparator = getQuadComparator();
     actualQuads.sort(comparator);
     expectedQuads.sort(comparator);
     for (let i = 0, n = Math.min(actualQuads.length, expectedQuads.length); i < n; i += 1) {

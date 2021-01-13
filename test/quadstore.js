@@ -24,7 +24,6 @@ module.exports = () => {
 
     require('./quadstore.prototype.del')();
     require('./quadstore.prototype.get')();
-    require('./quadstore.prototype.get.literals')();
     require('./quadstore.prototype.patch')();
     require('./quadstore.prototype.put')();
     require('./quadstore.prototype.match')();

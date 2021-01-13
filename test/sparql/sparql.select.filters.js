@@ -50,7 +50,6 @@ module.exports = () => {
           { '?o': dataFactory.literal('7', dataFactory.namedNode(xsd.integer)) },
           { '?o': dataFactory.literal('7.0', dataFactory.namedNode(xsd.double)) },
         ],
-        store,
         results.variables,
       );
     });
@@ -65,7 +64,6 @@ module.exports = () => {
         [
           { '?o': dataFactory.literal('-1', dataFactory.namedNode(xsd.integer)) }
         ],
-        store,
         results.variables
       );
     });
@@ -81,7 +79,6 @@ module.exports = () => {
           { '?o': dataFactory.literal('3.14', dataFactory.namedNode(xsd.double)) },
           { '?o': dataFactory.literal('-1', dataFactory.namedNode(xsd.integer)) },
         ],
-        store,
         results.variables
       );
     });
@@ -98,7 +95,6 @@ module.exports = () => {
           { '?o': dataFactory.literal('7.0', dataFactory.namedNode(xsd.double)) },
           { '?o': dataFactory.literal('42', dataFactory.namedNode(xsd.integer)) },
         ],
-        store,
         results.variables
       );
     });
@@ -116,7 +112,6 @@ module.exports = () => {
           { '?o': dataFactory.literal('7', dataFactory.namedNode(xsd.integer)) },
           { '?o': dataFactory.literal('7.0', dataFactory.namedNode(xsd.double)) },
         ],
-        store,
         results.variables
       );
     });
@@ -132,7 +127,6 @@ module.exports = () => {
           { '?o': dataFactory.literal('3.14', dataFactory.namedNode(xsd.double)) },
           { '?o': dataFactory.literal('-1', dataFactory.namedNode(xsd.integer)) },
         ],
-        store,
         results.variables
       );
     });

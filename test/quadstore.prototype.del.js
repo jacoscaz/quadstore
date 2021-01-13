@@ -26,10 +26,10 @@ module.exports = () => {
       ]
       await store.multiPut(quads);
       const { items: quadsBefore } = await store.get({});
-      should(quadsBefore).be.equalToQuadArray(quads, store);
+      should(quadsBefore).be.equalToQuadArray(quads);
       await store.del(quadsBefore[0]);
       const { items: quadsAfter } = await store.get({});
-      should(quadsAfter).be.equalToQuadArray([quads[1]], store);
+      should(quadsAfter).be.equalToQuadArray([quads[1]]);
     });
 
   });

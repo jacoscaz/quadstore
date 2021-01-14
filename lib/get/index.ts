@@ -74,7 +74,7 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts?: GetOp
   const { dataFactory, prefixes, indexes } = store;
   const [index, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
   const iterator = new LevelIterator(store.db.iterator(levelOpts), (key: string, value: Buffer) => {
-    return quadReader.read(key, index.prefix.length, value, value.byteOffset, index.terms, dataFactory, prefixes);
+    return quadReader.read(key, index.prefix.length, value, 0, index.terms, dataFactory, prefixes);
   });
   return {type: ResultType.QUADS, iterator};
 };

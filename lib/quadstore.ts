@@ -238,7 +238,7 @@ export class Quadstore implements Store {
     }
     batch = this.indexes.reduce((indexBatch, index) => {
       const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-      return indexBatch.put(key, copyBuffer(__value, __value.byteOffset, quadWriter.writtenValueBytes));
+      return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -253,7 +253,7 @@ export class Quadstore implements Store {
       }
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyBuffer(__value, __value.byteOffset, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);
@@ -288,7 +288,7 @@ export class Quadstore implements Store {
       const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
       indexBatch.del(oldKey);
       const newKey = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-      return indexBatch.put(newKey, copyBuffer(__value, __value.byteOffset, quadWriter.writtenValueBytes));
+      return indexBatch.put(newKey, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, this.db.batch());
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -306,7 +306,7 @@ export class Quadstore implements Store {
     batch = newQuads.reduce((quadBatch, newQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyBuffer(__value, __value.byteOffset, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);

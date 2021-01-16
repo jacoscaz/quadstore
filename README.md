@@ -115,7 +115,8 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version: **v7.3.1** available on NPM under the tag `latest`.
+Current version(s): version `7.3.1` available on NPM under the tag `latest` and
+version `8.0.0-alpha.3` available under the tag `alpha`.
 
 ### Roadmap
 
@@ -238,6 +239,38 @@ are:
 
 The `opts.backend` option **must** be an instance of a leveldb backend.
 See [storage backends](#storage-backends).
+
+##### opts.comunica
+
+The `opts.comunica` option **must** be an implementation of [Comunica][c1]'s
+`ActorInitSparql` interface.
+
+> Comunica is a meta query engine using which query engines can be created. 
+> It does this by providing a set of modules that can be wired together in a
+> flexible manner. [...] Its primary goal is executing SPARQL queries over one
+> or more interfaces.
+
+The `Quadstore` instance will use the provided `ActorInitSparql` implementation
+to run most SPARQL queries. 
+
+A custom configuration of the Comunica framework optimized for bundle size and
+dependency count is available at [quadstore-comunica][c2] and can be used as 
+follows:
+
+```js
+import {newEngine} from 'quadstore-comunica';
+const store = new Quadstore({ 
+  /* other options... */ 
+  comunica: newEngine(), 
+});
+```
+
+Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
+project with the global community.
+
+[c1]: https://github.com/comunica/comunica
+[c2]: https://github.com/beautifulinteractions/node-quadstore-comunica
+[c3]: https://github.com/comunica/comunica/graphs/contributors
 
 ##### opts.dataFactory
 
@@ -583,23 +616,12 @@ We're currently testing against the following manifests:
 [s3]: http://www.w3.org/TR/sparql11-query/
 [s4]: https://www.npmjs.com/package/rdf-test-suite
 
-### Comunica
-
-`quadstore` runs most `SPARQL` queries through [a dedicated engine][c2] built
-on a custom configuration of the [Comunica meta-engine framework][c1].
-
-Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
-project with the global community.
-
-[c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/beautifulinteractions/node-quadstore-comunica
-[c3]: https://github.com/comunica/comunica/graphs/contributors
-  
 ### Quadstore.prototype.sparqlStream()
 
 The `sparqlStream()` method provides support for streaming SPARQL queries.
 Objects returned by `sparqlStream()` have their `type` property set to
 different values depending on each specific query, as for `sparql()`.
+`sparqlStream()` also accepts the same options as `sparql()`.
 
 ```js
 const { iterator } = await store.sparqlStream(`

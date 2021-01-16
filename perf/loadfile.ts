@@ -6,6 +6,7 @@ import { Quadstore } from '../lib/quadstore';
 import { DataFactory, StreamParser } from 'n3';
 import {disk, time} from './utils';
 import {AbstractLevelDOWN} from 'abstract-leveldown';
+import {newEngine} from 'quadstore-comunica';
 
 (async () => {
 
@@ -24,6 +25,7 @@ import {AbstractLevelDOWN} from 'abstract-leveldown';
     const store = new Quadstore({
       backend,
       dataFactory: DataFactory,
+      comunica: newEngine(),
     });
 
     await store.open();

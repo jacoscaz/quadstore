@@ -3,6 +3,7 @@
 'use strict';
 
 const {Quadstore} = require('..');
+const {newEngine} = require('quadstore-comunica');
 
 module.exports = () => {
 
@@ -14,6 +15,7 @@ module.exports = () => {
         backend: this.db,
         indexes: this.indexes,
         prefixes: this.prefixes,
+        comunica: newEngine(),
       });
       await this.store.open();
     });

@@ -41,11 +41,11 @@ import {
 import {AbstractChainedBatch, AbstractLevelDOWN} from 'abstract-leveldown';
 import {getApproximateSize, getStream} from './get';
 import {Algebra} from 'sparqlalgebrajs';
-import {newEngine, ActorInitSparql} from 'quadstore-comunica';
 import {sparql, sparqlStream} from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 import {Scope} from './scope';
 import {quadWriter, copyBuffer} from './serialization';
+import {ComunicaActorInitSparql} from './types/comunica';
 
 
 const __value = Buffer.alloc(32);
@@ -57,7 +57,7 @@ export class Quadstore implements Store {
   readonly indexes: InternalIndex[];
   readonly id: string;
 
-  readonly engine: ActorInitSparql;
+  readonly comunica: ComunicaActorInitSparql;
   readonly prefixes: Prefixes;
 
   readonly dataFactory: DataFactory;
@@ -72,7 +72,7 @@ export class Quadstore implements Store {
     this.id = nanoid();
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
-    this.engine = newEngine();
+    this.comunica = opts.comunica;
     this.prefixes = opts.prefixes || {
       expandTerm: term => term,
       compactIri: iri => iri,
@@ -178,7 +178,6 @@ export class Quadstore implements Store {
     // This is required due to the fact that Comunica may invoke the `.match()`
     // method in generalized RDF mode, under which the subject may be a literal
     // term.
-    // TODO: rework support for strict vs. generalized mode
     // @ts-ignore
     if (subject && subject.termType === 'Literal') {
       return new EmptyIterator();

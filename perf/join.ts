@@ -8,6 +8,7 @@ import {BindingStreamResult} from '../lib/types';
 import {disk, time} from './utils';
 import {waitForEvent} from '../lib/utils';
 import {DataFactory} from 'rdf-data-factory';
+import {newEngine} from 'quadstore-comunica';
 
 const dataFactory = new DataFactory();
 const qty = 200000;
@@ -49,6 +50,7 @@ disk(async (backend, checkDiskUsage) => {
   const store = new Quadstore({
     backend,
     dataFactory,
+    comunica: newEngine(),
   });
   await store.open();
   await doWrites(store);

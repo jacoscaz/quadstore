@@ -13,6 +13,7 @@ import {
 import {DataFactory} from 'rdf-data-factory';
 import {parse} from './sparql';
 import {getQuadComparator, getBindingComparator} from './utils';
+import {newEngine} from 'quadstore-comunica';
 
 class RdfStoreQueryEngine implements IQueryEngine {
 
@@ -22,6 +23,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
     const store = new Quadstore({
       dataFactory: new DataFactory(),
       backend: memdown(),
+      comunica: newEngine(),
     });
     await parse(store, queryString);
   }
@@ -30,6 +32,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
     const store = new Quadstore({
       dataFactory: new DataFactory(),
       backend: memdown(),
+      comunica: newEngine(),
     });
     await store.open();
     await store.multiPut(data);

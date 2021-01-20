@@ -189,6 +189,13 @@ export class Quadstore implements Store {
   }
 
   async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {
+    // This is required due to the fact that Comunica may invoke the `.match()`
+    // method in generalized RDF mode, under which the subject may be a literal
+    // term.
+    // @ts-ignore
+    if (subject && subject.termType === 'Literal') {
+      return 0;
+    }
     const pattern: Pattern = { subject, predicate, object, graph };
     const results = await this.getApproximateSize(pattern, opts);
     return results.approximateSize;

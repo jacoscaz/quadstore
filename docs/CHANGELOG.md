@@ -1,6 +1,20 @@
 
 # CHANGELOG
 
+## 8.0.0
+
+- **[breaking]** deep revision of the serialization mechanism to remove
+  duplicated quad serializations across indexes
+- **[breaking]** removes support for custom `separator` and `boundary`
+- **[breaking]** an instance of Comunica's `ActorInitSparql` must now be passed
+  to the `Quadstore` constructor via the `opts` argument, adding support for
+  Comunica configurations other than `quadstore-comunica`  
+  (https://github.com/beautifulinteractions/node-quadstore/issues/122)
+- *[fix]* fixes deep equality checks for literal terms in tests
+- *[fix]* re-enables the symmetric join actor in Comunica  
+  (https://github.com/joachimvh/asyncjoin/issues/7)
+- *[internal]* takes comparators out of the Quadstore class
+
 ## v7.3.1
 
 - *[fix]* fixes broken `JOIN` SPARQL queries when `approximateSize()` rounds to 0  

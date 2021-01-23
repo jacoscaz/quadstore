@@ -115,8 +115,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version(s): version `7.3.1` available on NPM under the tag `latest` and
-version `8.0.0-alpha.3` available under the tag `alpha`.
+Current version(s): version `8.0.0` available on NPM under the tag `latest`.
 
 ### Roadmap
 

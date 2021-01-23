@@ -1,7 +1,7 @@
 
 # CHANGELOG
 
-## 8.0.0 (currently 8.0.0-alpha.3)
+## 8.0.0
 
 - **[breaking]** deep revision of the serialization mechanism to remove 
   duplicated quad serializations across indexes

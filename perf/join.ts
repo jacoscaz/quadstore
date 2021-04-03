@@ -22,7 +22,7 @@ const doWrites = async (store: Quadstore) => {
       dataFactory.namedNode(`ex://${vertexes[0]}`),
       dataFactory.namedNode("ex://p"),
       dataFactory.namedNode(`ex://${vertexes[1]}`),
-      dataFactory.namedNode("ex://g"),
+      dataFactory.defaultGraph(),
     ));
   }
 };

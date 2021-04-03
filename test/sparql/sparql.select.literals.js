@@ -5,7 +5,7 @@ const {ResultType} = require('../../dist/lib/types');
 const xsd = require('../../dist/lib/serialization/xsd');
 
 module.exports = () => {
-  describe.skip('literals', () => {
+  describe('literals', () => {
 
     beforeEach(async function () {
       const { dataFactory, store } = this;
@@ -45,19 +45,22 @@ module.exports = () => {
     });
 
     it('should bind to the object of quads matched by an integer object literal', async function () {
-      this.timeout(0);
-      console.log('PRE');
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "7"^^<${xsd.integer}> . }
+        SELECT * { 
+          ?s ?p ?o . 
+          FILTER (?o = "7"^^<${xsd.integer}>) .
+        }
       `);
-      console.log('POST');
       should(results.type).equal(ResultType.BINDINGS);
       should(results.items).have.length(2);
     });
 
     it('should bind to the object of quads matched by a double object literal', async function () {
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "7.0"^^<${xsd.double}> . }
+        SELECT * { 
+          ?s ?p ?o . 
+          FILTER (?o = "7.0"^^<${xsd.double}>) . 
+        }
       `);
       should(results.type).equal(ResultType.BINDINGS);
       should(results.items).have.length(2);
@@ -65,7 +68,10 @@ module.exports = () => {
 
     it('should bind to the object of quads matched by a datetime object literal', async function () {
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "2020-01-01T00:00:00.000Z"^^<${xsd.dateTime}> . }
+        SELECT * { 
+          ?s ?p ?o .
+          FILTER (?o = "2020-01-01T00:00:00.000Z"^^<${xsd.dateTime}>) . 
+        }
       `);
       should(results.type).equal(ResultType.BINDINGS);
       should(results.items).have.length(1);
@@ -73,7 +79,11 @@ module.exports = () => {
 
     it('should bind to the object of a quad matched by a literal with a language tag', async function () {
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "hello, world"@en . }
+        SELECT * { 
+          ?s ?p ?o . 
+          FILTER (STR(?o) = "hello, world") .
+          FILTER (LANG(?o) = "en") .
+        }
       `);
       should(results.type).equal(ResultType.BINDINGS);
       should(results.items).have.length(1);
@@ -81,7 +91,10 @@ module.exports = () => {
 
     it('should not bind to the object of a quad matched by a literal without a language tag', async function () {
       const results = await this.store.sparql(`
-        SELECT * { ?s ?p "hello, world" . }
+        SELECT * { 
+          ?s ?p ?o .
+          FILTER (?o = "hello, world") .
+        }
       `);
       should(results.type).equal(ResultType.BINDINGS);
       should(results.items).have.length(0);

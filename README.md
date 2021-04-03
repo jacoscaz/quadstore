@@ -44,6 +44,7 @@ interfaces and SPARQL queries.
         - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
         - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
         - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
+- [SPARQL spec](#sparql-spec)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
@@ -115,7 +116,10 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version(s): version `8.0.0` available on NPM under the tag `latest`.
+Current version(s): 
+  
+- version `8.0.0` available on NPM under the tag `latest`
+- version `9.0.0-beta.0` available on NPM under the tag `beta` 
 
 ### Roadmap
 
@@ -239,18 +243,18 @@ are:
 The `opts.backend` option **must** be an instance of a leveldb backend.
 See [storage backends](#storage-backends).
 
-##### opts.comunica
+##### opts.comunica (optional)
 
-The `opts.comunica` option **must** be an implementation of [Comunica][c1]'s
-`ActorInitSparql` interface.
+The `opts.comunica` option, if provided, **must** be an implementation of 
+[Comunica][c1]'s `IQueryEngine` interface.
 
 > Comunica is a meta query engine using which query engines can be created. 
 > It does this by providing a set of modules that can be wired together in a
 > flexible manner. [...] Its primary goal is executing SPARQL queries over one
 > or more interfaces.
 
-The `Quadstore` instance will use the provided `ActorInitSparql` implementation
-to run most SPARQL queries. 
+`Quadstore` instances will use the provided `IQueryEngine` implementation to
+run SPARQL queries. 
 
 A custom configuration of the Comunica framework optimized for bundle size and
 dependency count is available at [quadstore-comunica][c2] and can be used as 
@@ -344,14 +348,6 @@ const { items } = await store.get(pattern);
 ```
 
 Returns an array of all quads within the store matching the specified terms.
-
-This method also accepts an optional `opts` parameter with the following
-properties:
-
-- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
-  and allows client to specify whether the default graph used in queries should
-  be the actual default graph or the union of all graphs present in the 
-  database.
 
 ### Range matching
 
@@ -539,14 +535,6 @@ const { iterator } = await store.getStream(pattern);
 This method supports [range matching](#range-matching),
 see [QuadStore.prototype.get()](#quadstoreprototypeget).
 
-This method also accepts an optional `opts` parameter with the following
-properties:
-
-- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
-  and allows client to specify whether the default graph used in queries should
-  be the actual default graph or the union of all graphs present in the 
-  database.
-
 ### Quadstore.prototype.putStream()
 
 ```js
@@ -572,7 +560,6 @@ await store.delStream(readableStream);
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
-
 ### Quadstore.prototype.sparql()
 
 The `sparql()` method provides support for non-streaming SPARQL queries.
@@ -593,27 +580,8 @@ const { type, items } = await store.sparql(`
 `);
 ```
 
-The `sparql()` also accepts an optional `opts` parameter with the following
-properties:
-
-- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
-  and allows client to specify whether the default graph used in queries should
-  be the actual default graph or the union of all graphs present in the 
-  database.
-  
-We're using the [`rdf-test-suite`][s4] package to validate our
-support for SPARQL queries against official test suites published by the W3C.
-
-We're currently testing against the following manifests:
-
-- [SPARQL 1.0][s1]: 277/438 tests passing (`npm run test-rdf:sparql10`)
-- [SPARQL 1.1][s2]: 249/271 tests passing (`npm run test-rdf:sparql11`,
-  limited to the [SPARQL 1.1 Query spec][s3])
-
-[s1]: https://w3c.github.io/rdf-tests/sparql11/data-r2/manifest.ttl
-[s2]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
-[s3]: http://www.w3.org/TR/sparql11-query/
-[s4]: https://www.npmjs.com/package/rdf-test-suite
+This method will throw an error if no instance of `IQueryEngine` is passed
+to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
 
 ### Quadstore.prototype.sparqlStream()
 
@@ -627,6 +595,9 @@ const { iterator } = await store.sparqlStream(`
   SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
 `);
 ```
+
+This method will throw an error if no instance of `IQueryEngine` is passed
+to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
 
 See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
 
@@ -643,14 +614,6 @@ See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
 
 Implementation of the [RDF/JS Source#match method][dm-2]. Supports 
 [range-based matching](#range-matching).
-
-This method also accepts an optional `opts` parameter with the following
-properties:
-
-- `opts.defaultGraphMode`: this can be set to either `"default"` or `"union"`
-  and allows client to specify whether the default graph used in queries should
-  be the actual default graph or the union of all graphs present in the 
-  database.
 
 ### Quadstore.prototype.import()
 
@@ -801,6 +764,21 @@ Deletes all mappings of all scopes from the store.
 ```js
 await store.deleteAllScopes();
 ```
+
+## SPARQL spec
+
+We're using the [`rdf-test-suite`][s4] package to validate our
+support for SPARQL queries against official test suites published by the W3C.
+
+We're currently testing against the following manifests:
+
+- [SPARQL 1.1][s2] / [QUERY][s3]: 289/290 tests passing (`npm run spec:query`)
+- [SPARQL 1.1][s2] / [UPDATE][s5]: 155/156 tests passing (`npm run spec:update`)
+
+[s2]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
+[s3]: http://www.w3.org/TR/sparql11-query/
+[s5]: http://www.w3.org/TR/sparql11-update/
+[s4]: https://www.npmjs.com/package/rdf-test-suite
 
 ## Browser usage
 

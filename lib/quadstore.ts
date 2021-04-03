@@ -12,9 +12,24 @@ import {
   pFromCallback,
   separator,
 } from './utils';
-import {EventEmitter} from 'events';
-import {EmptyIterator, TransformIterator} from 'asynciterator';
-import {DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream, Term} from 'rdf-js';
+import {
+  EventEmitter,
+} from 'events';
+import {
+  EmptyIterator,
+  TransformIterator,
+} from 'asynciterator';
+import {
+  DataFactory,
+  Quad,
+  Quad_Graph,
+  Quad_Object,
+  Quad_Predicate,
+  Quad_Subject,
+  Store,
+  Stream,
+  Term,
+} from 'rdf-js';
 import {
   DefaultGraphMode,
   DelStreamOpts,
@@ -38,14 +53,25 @@ import {
   SparqlOpts,
   TermName, Prefixes,
 } from './types';
-import {AbstractChainedBatch, AbstractLevelDOWN} from 'abstract-leveldown';
-import {getApproximateSize, getStream} from './get';
-import {Algebra} from 'sparqlalgebrajs';
-import {sparql, sparqlStream} from './sparql';
+import {
+  AbstractChainedBatch,
+  AbstractLevelDOWN,
+} from 'abstract-leveldown';
+import {
+  getApproximateSize,
+  getStream,
+} from './get';
+import {
+  Algebra,
+} from 'sparqlalgebrajs';
+import {
+  sparql,
+  sparqlStream,
+} from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 import {Scope} from './scope';
 import {quadWriter, copyBuffer} from './serialization';
-import {ComunicaActorInitSparql} from './types/comunica';
+import {IQueryEngine} from '@comunica/types';
 
 
 const __value = Buffer.alloc(32);
@@ -57,13 +83,10 @@ export class Quadstore implements Store {
   readonly indexes: InternalIndex[];
   readonly id: string;
 
-  readonly comunica: ComunicaActorInitSparql;
+  readonly comunica?: IQueryEngine;
   readonly prefixes: Prefixes;
 
   readonly dataFactory: DataFactory;
-
-  sparqlMode: boolean;
-  defaultGraphMode: DefaultGraphMode;
 
   constructor(opts: StoreOpts) {
     this.dataFactory = opts.dataFactory || new RdfDataFactory();
@@ -77,25 +100,19 @@ export class Quadstore implements Store {
       expandTerm: term => term,
       compactIri: iri => iri,
     };
-    this.sparqlMode = false;
-    this.defaultGraphMode = opts.defaultGraphMode || DefaultGraphMode.UNION;
-  }
-
-  fork(opts: { defaultGraphMode?: DefaultGraphMode, sparqlMode?: boolean } = {}): Quadstore {
-    const fork = <Quadstore>Object.create(this);
-    if (typeof opts.sparqlMode === 'boolean') {
-      fork.sparqlMode = opts.sparqlMode;
-    }
-    if (opts.defaultGraphMode) {
-      fork.defaultGraphMode = opts.defaultGraphMode;
-    }
-    return fork;
   }
 
   protected ensureReady() {
     if (this.db.status !== 'open') {
       throw new Error(`Store is not ready (status: "${this.db.status}"). Did you call store.open()?`);
     }
+  }
+
+  protected ensureComunica(): IQueryEngine {
+    if (!this.comunica) {
+      throw new Error('SPARQL feature are disabled as no Comunica engine was passed to the Quadstore() constructor');
+    }
+    return this.comunica;
   }
 
   protected waitForStatus(status: string, timeout: number = 200) {
@@ -233,7 +250,7 @@ export class Quadstore implements Store {
 
   async sparql(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadArrayResult|BindingArrayResult|VoidResult|BooleanResult> {
     this.ensureReady();
-    return sparql(this, query, opts);
+    return await sparql(this, this.ensureComunica(), query, opts);
   }
 
   async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
@@ -362,7 +379,7 @@ export class Quadstore implements Store {
 
   async sparqlStream(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadStreamResult|BindingStreamResult|VoidResult|BooleanResult> {
     this.ensureReady();
-    return await sparqlStream(this, query, opts);
+    return await sparqlStream(this, this.ensureComunica(), query, opts);
   }
 
   async initScope(): Promise<Scope> {

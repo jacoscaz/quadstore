@@ -4,7 +4,7 @@ import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
 import {AsyncIterator} from 'asynciterator';
 import {Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term} from 'rdf-js';
 import {Scope} from '../scope';
-import {ComunicaActorInitSparql} from './comunica';
+import {IQueryEngine} from '@comunica/types';
 
 export interface BatchOpts {
   /**
@@ -139,11 +139,12 @@ export interface StoreOpts {
   backend: AbstractLevelDOWN,
   prefixes?: Prefixes,
   indexes?: TermName[][],
-  comunica: ComunicaActorInitSparql,
+  comunica?: IQueryEngine,
   dataFactory: DataFactory,
   defaultGraphMode?: DefaultGraphMode,
 }
 
 export interface SparqlOpts {
+  baseIRI?: string,
   defaultGraphMode?: DefaultGraphMode,
 }

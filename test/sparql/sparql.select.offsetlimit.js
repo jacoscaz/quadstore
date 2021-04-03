@@ -60,7 +60,7 @@ module.exports = () => {
 
     it('should offset results by the desired qty', async function () {
       const { type, items } = await this.store.sparql(`
-        SELECT * { ?s <http://ex.com/p> ?o . }
+        SELECT * { GRAPH ?g { ?s <http://ex.com/p> ?o . } . }
         OFFSET 1
       `);
       should(type).equal(ResultType.BINDINGS);

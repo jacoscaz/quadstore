@@ -59,30 +59,6 @@ module.exports = () => {
       should(items).have.length(0);
     });
 
-    it('should bind to the terms of all quads in all graphs (default option)', async function () {
-      const { type, items } = await this.store.sparql(`
-        SELECT * { ?s ?p ?o . }
-      `);
-      should(type).equal(ResultType.BINDINGS);
-      should(items).have.length(5);
-    });
-
-    it('should bind to the terms of all quads in all graphs (explicit option)', async function () {
-      const { type, items } = await this.store.sparql(`
-        SELECT * { ?s ?p ?o . }
-      `, { defaultGraphMode: DefaultGraphMode.UNION });
-      should(type).equal(ResultType.BINDINGS);
-      should(items).have.length(5);
-    });
-
-    it('should bind to the terms of quads in the default graph (explicit option)', async function () {
-      const { type, items } = await this.store.sparql(`
-        SELECT * { ?s ?p ?o . }
-      `, { defaultGraphMode: DefaultGraphMode.DEFAULT });
-      should(type).equal(ResultType.BINDINGS);
-      should(items).have.length(1);
-    });
-
   });
 
 };

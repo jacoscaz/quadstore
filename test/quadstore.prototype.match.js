@@ -132,52 +132,6 @@ module.exports = () => {
         should(matchedQuads[0]).deepEqual(quads[0]);
       });
 
-      it('should match the default graph when using DEFAULT graph mode',  async function () {
-        const { dataFactory, store } = this;
-        const quads = [
-          dataFactory.quad(
-            dataFactory.namedNode('http://ex.com/s0'),
-            dataFactory.namedNode('http://ex.com/p0'),
-            dataFactory.literal('o0', 'en-gb'),
-            dataFactory.defaultGraph()
-          ),
-          dataFactory.quad(
-            dataFactory.namedNode('http://ex.com/s1'),
-            dataFactory.namedNode('http://ex.com/p1'),
-            dataFactory.literal('o1', 'en-gb'),
-            dataFactory.namedNode('http://ex.com/g1')
-          )
-        ];
-        const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
-        const matchedQuads = await utils.streamToArray(store.match(null, null, null, null, { defaultGraphMode: DefaultGraphMode.DEFAULT}));
-        should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[0]);
-      });
-
-      it('should match the union graph when using UNION graph mode',  async function () {
-        const { dataFactory, store } = this;
-        const quads = [
-          dataFactory.quad(
-            dataFactory.namedNode('http://ex.com/s0'),
-            dataFactory.namedNode('http://ex.com/p0'),
-            dataFactory.literal('o0', 'en-gb'),
-            dataFactory.defaultGraph()
-          ),
-          dataFactory.quad(
-            dataFactory.namedNode('http://ex.com/s1'),
-            dataFactory.namedNode('http://ex.com/p1'),
-            dataFactory.literal('o1', 'en-gb'),
-            dataFactory.namedNode('http://ex.com/g1')
-          )
-        ];
-        const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
-        const matchedQuads = await utils.streamToArray(store.match(null, null, null, null, { defaultGraphMode: DefaultGraphMode.UNION}));
-        should(matchedQuads).have.length(2);
-        should(matchedQuads).be.equalToQuadArray(quads);
-      });
-
     });
 
     describe('Match by range', () => {

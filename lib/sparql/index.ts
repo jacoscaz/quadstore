@@ -1,65 +1,76 @@
-import {Algebra, translate} from 'sparqlalgebrajs';
+import type {Algebra,} from 'sparqlalgebrajs';
 import {
   BindingArrayResult,
-  BindingStreamResult, BooleanResult, QuadArrayResult,
+  BindingStreamResult,
+  BooleanResult,
+  DefaultGraphMode,
+  QuadArrayResult,
   QuadStreamResult,
-  VoidResult,
+  ResultType,
   SparqlOpts,
+  VoidResult,
 } from '../types';
+import {Quadstore,} from '../quadstore';
+import {
+  IActorQueryOperationOutputBindings,
+  IActorQueryOperationOutputBoolean,
+  IActorQueryOperationOutputQuads,
+  IActorQueryOperationOutputUpdate,
+  IQueryEngine,
+} from "@comunica/types";
+import {emptyObject, streamToArray,} from "../utils";
 
-import * as comunica from './comunica';
-import * as deleteInsert from './deleteInsert';
-
-import {Quadstore} from '../quadstore';
-
-export const parse = (store: Quadstore, query: string): Algebra.Operation => {
-  return translate(query, {
-    quads: true,
-    dataFactory: store.dataFactory,
-  });
-};
-
-export const sparql = async (store: Quadstore, query: Algebra.Operation|string, opts?: SparqlOpts): Promise<BindingArrayResult|QuadArrayResult|VoidResult|BooleanResult> => {
-  const operation = typeof query === 'string'
-    ? parse(store, query)
-    : query;
-  const fork = store.fork({ sparqlMode: true, ...opts });
-  switch (operation.type) {
-    case Algebra.types.PROJECT:
-    case Algebra.types.BGP:
-    case Algebra.types.SLICE:
-    case Algebra.types.CONSTRUCT:
-    case Algebra.types.DESCRIBE:
-    case Algebra.types.ORDER_BY:
-      return await comunica.handleQuery(fork, operation);
-    case Algebra.types.DELETE_INSERT:
-      // TODO: why do we need to cast the operation into its sub-type?
-      //       shouldn't the ts compiler be able to figure out which type
-      //       we're dealing with, given that we are switch-ing on the property
-      //       that differentiates the various sub-types of the "Operation"
-      //       union type?
-      return await deleteInsert.handleQuery(fork, <Algebra.DeleteInsert>operation);
+export const sparql = async (store: Quadstore, engine: IQueryEngine, query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<BindingArrayResult|QuadArrayResult|VoidResult|BooleanResult> => {
+  const results = await sparqlStream(store, engine, query, opts);
+  switch (results.type) {
+    case ResultType.BINDINGS: {
+      const items = await streamToArray(results.iterator);
+      return {...results, items };
+    }
+    case ResultType.QUADS: {
+      const items = await streamToArray(results.iterator);
+      return {...results, items };
+    }
+    case ResultType.BOOLEAN:
+      return results;
+    case ResultType.VOID:
+      return results;
     default:
-      throw new Error(`Unsupported SPARQL operation "${operation.type}"`);
+      // @ts-ignore
+      throw new Error(`Unexpected result type "${results.type}"`);
   }
 };
 
-export const sparqlStream = async (store: Quadstore, query: Algebra.Operation|string, opts?: SparqlOpts): Promise<BindingStreamResult|QuadStreamResult|VoidResult|BooleanResult> => {
-  const operation = typeof query === 'string'
-    ? parse(store, query)
-    : query;
-  const fork = store.fork({ sparqlMode: true, ...opts });
-  switch (operation.type) {
-    case Algebra.types.PROJECT:
-    case Algebra.types.BGP:
-    case Algebra.types.SLICE:
-    case Algebra.types.DESCRIBE:
-    case Algebra.types.CONSTRUCT:
-    case Algebra.types.ORDER_BY:
-      return await comunica.handleQueryStream(fork, operation);
-    case Algebra.types.DELETE_INSERT:
-      throw new Error(`SPARQL DELETE/INSERT queries must use the "sparql()" method`);
+export const sparqlStream = async (store: Quadstore, engine: IQueryEngine, query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<BindingStreamResult|QuadStreamResult|VoidResult|BooleanResult> => {
+  const results = await engine.query(query, {
+    sources: [store],
+    source: store,
+    baseIRI: opts.baseIRI,
+    destination: store,
+  });
+  switch (results.type) {
+    case 'boolean':
+      return {
+        type: ResultType.BOOLEAN,
+        value: await (<IActorQueryOperationOutputBoolean>results).booleanResult,
+      };
+    case 'bindings':
+      return {
+        type: ResultType.BINDINGS,
+        iterator: (<IActorQueryOperationOutputBindings>results).bindingsStream.map(binding => binding.toObject()),
+        variables: (<IActorQueryOperationOutputBindings>results).variables,
+      };
+    case 'quads':
+      return {
+        type: ResultType.QUADS,
+        iterator: (<IActorQueryOperationOutputQuads>results).quadStream,
+      };
+    case 'update':
+      await (<IActorQueryOperationOutputUpdate>results).updateResult;
+      return {
+        type: ResultType.VOID,
+      };
     default:
-      throw new Error(`Unsupported SPARQL operation "${operation.type}"`);
+      throw new Error(`The Comunica engine returned results of unsupported type "${results.type}"`);
   }
 };

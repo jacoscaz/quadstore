@@ -32,7 +32,7 @@ module.exports = () => {
           dataFactory.namedNode('http://ex.com/s2'),
           dataFactory.namedNode('http://ex.com/p'),
           dataFactory.literal('42', dataFactory.namedNode(xsd.integer)),
-          dataFactory.defaultGraph(),
+          dataFactory.namedNode('http://ex.com/g2')
         ),
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s2'),
@@ -46,7 +46,7 @@ module.exports = () => {
 
     it('should bind to the subject of a quad matched by predicate and object', async function () {
       const {type, items} = await this.store.sparql(`
-        SELECT * { ?s <http://ex.com/p> "42"^^<${xsd.integer}> . }
+        SELECT * { GRAPH ?g { ?s <http://ex.com/p> "42"^^<${xsd.integer}> . } . }
       `);
       should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
@@ -57,7 +57,7 @@ module.exports = () => {
 
     it('should bind to the object of a quad matched by subject and predicate', async function () {
       const {type, items} = await this.store.sparql(`
-        SELECT * { <http://ex.com/s2> <http://ex.com/p> ?o . }
+        SELECT * { GRAPH ?g { <http://ex.com/s2> <http://ex.com/p> ?o . } . }
       `);
       should(type).equal(ResultType.BINDINGS);
       should(items).have.length(1);
@@ -77,12 +77,12 @@ module.exports = () => {
       should(items).have.length(1);
       should(items[0]).have.property('?g');
       should(items[0]['?g']).have.property('value');
-      should(items[0]['?g']['value']).equal(dataFactory.defaultGraph().value);
+      should(items[0]['?g']['value']).equal('http://ex.com/g2');
     });
 
     it('should bind to the subject and object of two quads matched by predicate', async function () {
       const {type, items} = await this.store.sparql(`
-        SELECT * { ?s <http://ex.com/p> ?o . }
+        SELECT * { GRAPH ?g { ?s <http://ex.com/p> ?o . } . }
       `);
       should(type).equal(ResultType.BINDINGS);
       should(items).have.length(2);

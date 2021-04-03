@@ -23,18 +23,39 @@ export const isObject = (o: any): boolean => {
 export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
   return new Promise((resolve, reject) => {
     const chunks: T[] = [];
-    readStream
-      .on('data', (chunk) => { chunks.push(chunk); })
-      .on('end', () => { resolve(chunks); })
-      .on('error', (err) => { reject(err); });
+    const onData = (chunk: T) => {
+      chunks.push(chunk);
+    };
+    const onceEnd = () => {
+      readStream.removeListener('data', onData);
+      readStream.removeListener('error', onceError);
+      resolve(chunks);
+    };
+    const onceError = (err: Error) => {
+      readStream.removeListener('data', onData);
+      readStream.removeListener('end', onceEnd);
+      readStream.destroy();
+      reject(err);
+    };
+    readStream.once('error', onceError);
+    readStream.once('end', onceEnd);
+    readStream.on('data', onData);
   });
 }
 
 export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnError?: boolean): Promise<any> => {
   return new Promise((resolve, reject) => {
-    emitter.on(event, resolve);
+    const onceEvent = (arg: any) => {
+      emitter.removeListener('error', onceError);
+      resolve(arg);
+    };
+    const onceError = (err: Error) => {
+      emitter.removeListener(event, onceEvent);
+      reject(err);
+    };
+    emitter.once(event, onceEvent);
     if (rejectOnError) {
-      emitter.on('error', reject);
+      emitter.once('error', onceError);
     }
   });
 }

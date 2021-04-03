@@ -28,24 +28,6 @@ type LevelOpts = {
   reverse?: boolean,
 };
 
-const reconcilePatternWithDefaultGraphMode = (pattern: Pattern, store: Quadstore, opts: GetOpts = emptyObject): Pattern => {
-  const defaultGraphMode = opts.defaultGraphMode || store.defaultGraphMode;
-  if (defaultGraphMode === DefaultGraphMode.DEFAULT && !pattern.graph) {
-    return {
-      ...pattern,
-      graph: store.dataFactory.defaultGraph(),
-    };
-  }
-  if (store.sparqlMode && defaultGraphMode === DefaultGraphMode.UNION && pattern.graph && pattern.graph.termType === 'DefaultGraph') {
-    return {
-      subject: pattern.subject,
-      predicate: pattern.predicate,
-      object: pattern.object,
-    };
-  }
-  return pattern;
-};
-
 const getLevelOptsForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes): LevelOpts|false => {
     const res = writePattern(pattern, index.prefix, index.terms, prefixes);
     return res ? {
@@ -70,7 +52,6 @@ const selectIndexAndGetLevelOpts = (pattern: Pattern, indexes: InternalIndex[], 
 };
 
 export const getStream = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<QuadStreamResult> => {
-  pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   const { dataFactory, prefixes, indexes } = store;
   const [index, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
   const iterator = new LevelIterator(store.db.iterator(levelOpts), (key: string, value: Buffer) => {
@@ -80,7 +61,6 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts?: GetOp
 };
 
 export const getApproximateSize = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<ApproximateSizeResult> => {
-  pattern = reconcilePatternWithDefaultGraphMode(pattern, store, opts);
   if (!store.db.approximateSize) {
     return { type: ResultType.APPROXIMATE_SIZE, approximateSize: Infinity };
   }

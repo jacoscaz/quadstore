@@ -12,31 +12,31 @@ module.exports = () => {
           dataFactory.namedNode('http://ex.com/s'),
           dataFactory.namedNode('http://ex.com/p'),
           dataFactory.namedNode('http://ex.com/o'),
-          dataFactory.namedNode('http://ex.com/g')
+          dataFactory.defaultGraph(),
         ),
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s'),
           dataFactory.namedNode('http://ex.com/p2'),
           dataFactory.namedNode('http://ex.com/o2'),
-          dataFactory.namedNode('http://ex.com/g2')
+          dataFactory.defaultGraph(),
         ),
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s2'),
           dataFactory.namedNode('http://ex.com/p'),
           dataFactory.namedNode('http://ex.com/o'),
-          dataFactory.namedNode('http://ex.com/g')
+          dataFactory.defaultGraph(),
         ),
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s2'),
           dataFactory.namedNode('http://ex.com/p'),
           dataFactory.namedNode('http://ex.com/o2'),
-          dataFactory.namedNode('http://ex.com/g')
+          dataFactory.defaultGraph(),
         ),
         dataFactory.quad(
           dataFactory.namedNode('http://ex.com/s2'),
           dataFactory.namedNode('http://ex.com/p2'),
           dataFactory.namedNode('http://ex.com/o2'),
-          dataFactory.namedNode('http://ex.com/g2')
+          dataFactory.defaultGraph(),
         ),
       ];
       await store.multiPut(quads);

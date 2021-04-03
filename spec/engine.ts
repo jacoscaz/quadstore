@@ -2,30 +2,40 @@
 // https://github.com/rubensworks/rdf-test-suite.js/blob/master/lib/testcase/sparql/IQueryEngine.ts
 
 import {Quad, Term} from 'rdf-js';
-import {IQueryEngine, IQueryResult, IQueryResultBindings, IQueryResultQuads} from 'rdf-test-suite';
-import {Quadstore} from './quadstore';
-import memdown from 'memdown';
 import {
-  BindingArrayResult,
-  QuadArrayResult,
-  ResultType
-} from './types';
+  IQueryEngine,
+  IQueryResult,
+  IUpdateEngine,
+  IQueryResultBindings,
+  IQueryResultBoolean,
+  IQueryResultQuads,
+} from 'rdf-test-suite';
+import {Quadstore} from '../lib/quadstore';
+import memdown from 'memdown';
+import {BindingArrayResult, BooleanResult, QuadArrayResult, ResultType, TermName, VoidResult} from '../lib/types';
 import {DataFactory} from 'rdf-data-factory';
-import {parse} from './sparql';
-import {getQuadComparator, getBindingComparator} from './utils';
+import {getBindingComparator, getQuadComparator,} from '../lib/utils';
 import {newEngine} from 'quadstore-comunica';
 
-class RdfStoreQueryEngine implements IQueryEngine {
+class RdfStoreQueryEngine implements IQueryEngine, IUpdateEngine {
 
-  public store?: Quadstore;
+  async parse(query: string, options: Record<string, any>) {
+    // @ts-ignore
+    return newEngine().mediatorSparqlParse.mediate({ query, baseIRI: options.baseIRI });
+  }
 
-  async parse(queryString: string, options: Record<string, any>): Promise<void> {
+  async update(data: Quad[], queryString: string, options: Record<string, any>): Promise<Quad[]> {
     const store = new Quadstore({
       dataFactory: new DataFactory(),
       backend: memdown(),
       comunica: newEngine(),
     });
-    await parse(store, queryString);
+    await store.open();
+    await store.multiPut(data);
+    await store.sparql(queryString, options);
+    const results = (await store.get({}));
+    await store.close();
+    return results.items;
   }
 
   async query(data: Quad[], queryString: string, options: Record<string, any>): Promise<IQueryResult> {
@@ -36,14 +46,17 @@ class RdfStoreQueryEngine implements IQueryEngine {
     });
     await store.open();
     await store.multiPut(data);
-    const results = await store.sparql(queryString);
+    const results = await store.sparql(queryString, options);
     let preparedResults: IQueryResult;
     switch (results.type) {
       case ResultType.BINDINGS:
-        preparedResults = await this.prepareBindingResult(store, results);
+        preparedResults = await this.prepareBindingResult(results);
         break;
       case ResultType.QUADS:
-        preparedResults = await this.prepareQuadResult(store, results);
+        preparedResults = await this.prepareQuadResult(results);
+        break;
+      case ResultType.BOOLEAN:
+        preparedResults = await this.prepareBooleanResult(results);
         break;
       default:
         throw new Error(`Unsupported`);
@@ -52,7 +65,17 @@ class RdfStoreQueryEngine implements IQueryEngine {
     return preparedResults;
   }
 
-  async prepareBindingResult(store: Quadstore, result: BindingArrayResult): Promise<IQueryResultBindings> {
+  async prepareBooleanResult(result: BooleanResult): Promise<IQueryResultBoolean> {
+    return {
+      type: 'boolean',
+      value: result.value,
+      equals(that: IQueryResult, laxCardinality?: boolean): boolean {
+        return that.type === 'boolean' && that.value === result.value;
+      },
+    };
+  }
+
+  async prepareBindingResult(result: BindingArrayResult): Promise<IQueryResultBindings> {
     return {
       type: 'bindings',
       value: result.items,
@@ -62,13 +85,12 @@ class RdfStoreQueryEngine implements IQueryEngine {
         if (that.type !== 'bindings') {
           return false;
         }
-        return this.compareBindingResult(store, result.items, that.value, result.variables, laxCardinality);
+        return this.compareBindingResult(result.items, that.value, result.variables, laxCardinality);
       },
     };
   }
 
   compareBindingResult(
-    store: Quadstore,
     actualBindings: {[variable: string]: Term}[],
     expectedBindings: {[variable: string]: Term}[],
     variables: string[],
@@ -85,7 +107,7 @@ class RdfStoreQueryEngine implements IQueryEngine {
     return true;
   }
 
-  async prepareQuadResult(store: Quadstore, result: QuadArrayResult): Promise<IQueryResultQuads> {
+  async prepareQuadResult(result: QuadArrayResult): Promise<IQueryResultQuads> {
     return {
       type: 'quads',
       value: result.items,
@@ -93,13 +115,12 @@ class RdfStoreQueryEngine implements IQueryEngine {
         if (that.type !== 'quads') {
           return false;
         }
-        return this.compareQuadResult(store, result.items, that.value, laxCardinality);
+        return this.compareQuadResult(result.items, that.value, laxCardinality);
       },
     };
   }
 
   compareQuadResult(
-    store: Quadstore,
     actualQuads: Quad[],
     expectedQuads: Quad[],
     laxCardinality?: boolean,

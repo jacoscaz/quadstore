@@ -8,11 +8,13 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
 
   level: AbstractIterator<K, V>;
   mapFn: MapFn<K, V, T>;
+  private levelEnded: boolean;
 
   constructor(levelIterator: AbstractIterator<K, V>, mapper: MapFn<K, V, T>) {
     super();
     this.mapFn = mapper;
     this.level = levelIterator;
+    this.levelEnded = false;
   }
 
   _read(qty: number, done: (err?: Error) => void) {
@@ -42,6 +44,7 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
     }
     if (key === undefined && value === undefined) {
       this.close();
+      this.levelEnded = true;
       done();
       return;
     }
@@ -49,27 +52,46 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
     loop(remaining - 1);
   };
 
+  /**
+   * Ends the internal AbstractIterator instance.
+   */
+  protected endLevel(cb: (err?: Error) => void) {
+    if (this.levelEnded) {
+      cb();
+      return;
+    }
+    this.level.end((err?: Error) => {
+      if (!err) {
+        this.levelEnded = true;
+      }
+      cb(err);
+    });
+  }
+
 
   protected _end(destroy?: boolean) {
-    if (!this.ended) {
-      super._end(destroy);
-      if (!destroy) {
-        this.level.end((endErr?: Error) => {
-          if (endErr) {
-            this.emit('error', endErr);
-          }
-        });
-      }
+    if (this.ended) {
+      return;
     }
+    super._end(destroy);
+    this.endLevel((endErr) => {
+      if (endErr) {
+        this.emit('error', endErr);
+      }
+    });
   }
 
   protected _destroy(cause: Error|undefined, cb: (err?: Error) => void) {
-    super._destroy(cause, (destroyErr?: Error) => {
-      if (destroyErr) {
-        cb(destroyErr);
+    if (this.destroyed) {
+      cb();
+      return;
+    }
+    this.endLevel((endErr?: Error) => {
+      if (endErr) {
+        cb(endErr);
         return;
       }
-      this.level.end(cb);
+      super._destroy(cause, cb);
     });
   }
 

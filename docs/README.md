@@ -3,47 +3,47 @@
 
 # QUADSTORE
 
-Quadstore is a LevelDB-backed RDF graph database for Node.js and the browser
-with native support for quads and querying across named graphs, RDF/JS
+Quadstore is a LevelDB-backed RDF graph database for Node.js and the browser 
+with native support for quads and querying across named graphs, RDF/JS 
 interfaces and SPARQL queries.
 
 ## Table of contents
 
 - [Introduction](#introduction)
 - [Status](#status)
-  - [Roadmap](#roadmap)
-  - [Changelog](#changelog)
-  - [Current version and features](#current-version)
-  - [Notes](#notes)
+    - [Roadmap](#roadmap)
+    - [Changelog](#changelog)
+    - [Current version and features](#current-version)
+    - [Notes](#notes)
 - [Usage](#usage)
-  - [Storage](#storage-backends)
-  - [Data model and return Values](#data-model-and-return-values)
-  - [Quadstore class](#quadstore-class)
-  - [Custom indexes](#custom-indexes)
-  - [Quadstore.prototype.open](#quadstoreprototypeopen)
-  - [Quadstore.prototype.close](#quadstoreprototypeclose)
-  - [Quadstore.prototype.get](#quadstoreprototypeget)
-  - [Range matching](#range-matching)
-  - [Quadstore.prototype.put](#quadstoreprototypeput)
-  - [Quadstore.prototype.multiPut](#quadstoreprototypemultiput)
-  - [Quadstore.prototype.del](#quadstoreprototypedel)
-  - [Quadstore.prototype.multiDel](#quadstoreprototypemultidel)
-  - [Quadstore.prototype.patch](#quadstoreprototypepatch)
-  - [Quadstore.prototype.multiPatch](#quadstoreprototypemultipatch)
-  - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
-  - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
-  - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
-  - [Quadstore.prototype.sparql](#quadstoreprototypesparql)
-  - [Quadstore.prototype.sparqlStream](#quadstoreprototypesparqlstream)
-  - [Quadstore.prototype.match](#quadstoreprototypematch)
-  - [Quadstore.prototype.import](#quadstoreprototypeimport)
-  - [Quadstore.prototype.remove](#quadstoreprototyperemove)
-  - [Quadstore.prototype.removeMatches](#quadstoreprototyperemovematches)
-  - [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping)
-    - [Quadstore.prototype.initScope](#quadstoreprototypeinitscope)
-    - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
-    - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
-    - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
+    - [Storage](#storage-backends)
+    - [Data model and return Values](#data-model-and-return-values)
+    - [Quadstore class](#quadstore-class)
+    - [Custom indexes](#custom-indexes)
+    - [Quadstore.prototype.open](#quadstoreprototypeopen)
+    - [Quadstore.prototype.close](#quadstoreprototypeclose)
+    - [Quadstore.prototype.get](#quadstoreprototypeget)
+    - [Range matching](#range-matching)
+    - [Quadstore.prototype.put](#quadstoreprototypeput)
+    - [Quadstore.prototype.multiPut](#quadstoreprototypemultiput)
+    - [Quadstore.prototype.del](#quadstoreprototypedel)
+    - [Quadstore.prototype.multiDel](#quadstoreprototypemultidel)
+    - [Quadstore.prototype.patch](#quadstoreprototypepatch)
+    - [Quadstore.prototype.multiPatch](#quadstoreprototypemultipatch)
+    - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
+    - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
+    - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
+    - [Quadstore.prototype.sparql](#quadstoreprototypesparql)
+    - [Quadstore.prototype.sparqlStream](#quadstoreprototypesparqlstream)
+    - [Quadstore.prototype.match](#quadstoreprototypematch)
+    - [Quadstore.prototype.import](#quadstoreprototypeimport)
+    - [Quadstore.prototype.remove](#quadstoreprototyperemove)
+    - [Quadstore.prototype.removeMatches](#quadstoreprototyperemovematches)
+    - [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping)
+        - [Quadstore.prototype.initScope](#quadstoreprototypeinitscope)
+        - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
+        - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
+        - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
 - [SPARQL spec](#sparql-spec)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
@@ -51,7 +51,7 @@ interfaces and SPARQL queries.
 
 ## Introduction
 
-In the context of knowledge representation, a statement can often be
+In the context of knowledge representation, a statement can often be 
 represented as a 3-dimensional `(subject, predicate, object)` tuple,
 normally referred to as a `triple`.
 
@@ -82,10 +82,10 @@ A `quad` is a triple with an additional term, usually called `graph` or
 
     (subject, predicate, object, graph)
 
-On a semantic level, the `graph` term identifies the graph to which a triple
-belongs. Each identifier can then be used as the `subject` or `object` of
-additional triples, facilitating the representation of metadata such as
-provenance and temporal validity.
+On a semantic level, the `graph` term identifies the graph to which a triple 
+belongs. Each identifier can then be used as the `subject` or `object` of 
+additional triples, facilitating the representation of metadata such as 
+provenance and temporal validity. 
 
 ```
 subject             predicate           object          graph
@@ -97,10 +97,10 @@ GRAPH-2             SOURCE              LINKEDIN
 
 Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
 maintaining multiple indexes each of which deals with a different permutation
-of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3]
-that strikes a different compromise between expressiveness and performance,
-opting to natively supporting quads while working towards minimizing
-[the performance penalty][i4] that comes with the fourth term.
+of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
+that strikes a different compromise between expressiveness and performance, 
+opting to natively supporting quads while working towards minimizing 
+[the performance penalty][i4] that comes with the fourth term. 
 
 [i1]: http://nodejsconfit.levelgraph.io
 [i3]: https://github.com/levelgraph/levelgraph
@@ -116,10 +116,9 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version
 
-Current version(s):
+Current version(s): 
 
-- version `8.0.0` available on NPM under the tag `latest`
-- version `9.0.0-beta.0` available on NPM under the tag `beta`
+- version `9.0.0` available on NPM under the tag `latest` 
 
 ### Roadmap
 
@@ -147,7 +146,7 @@ We're also evaluating the following features for future developments:
 
 ### Storage backends
 
-`quadstore` can work with any storage backend that implements the
+`quadstore` can work with any storage backend that implements the 
 [AbstractLevelDOWN interface][db1]. An incomplete list of available backends
 is available at [level/awesome#stores][db6].
 
@@ -184,8 +183,8 @@ the following values:
 
 For those methods that return objects with the `type` property set to either
 `"QUADS"` or `"BINDINGS"`, `quadstore` provides query results either in streaming
-mode or in non-streaming mode.
-
+mode or in non-streaming mode. 
+  
 Streaming methods such as `getStream` and `searchStream` return objects with
 the `iterator` property set to an instance of [`AsyncIterator`][dm-4],
 an implementation of a subset of the `stream.Readable` interface. This instance
@@ -196,14 +195,14 @@ Non-streaming methods such as `get` and `search` return objects with the
 value of the `type` property.
 
 Quads are returned as and expected to be instances of the
-[RDF/JS `Quad` interface][dm-1] as produced by the implementation of the
-[RDF/JS `DataFactory` interface][dm-1] passed to the `Quadstore` constructor.
+ [RDF/JS `Quad` interface][dm-1] as produced by the implementation of the 
+ [RDF/JS `DataFactory` interface][dm-1] passed to the `Quadstore` constructor.
 
 Bindings are returned as and expected to be maps of variable names
 (including `?`) to instances of the [RDF/JS Term interface][dm-1] as produced
 by the same implementation of the [RDF/JS DataFactory interface][dm-1].
 
-Matching patterns, such as those used in the `get` and `getStream` methods,
+Matching patterns, such as those used in the `get` and `getStream` methods, 
 are expected to be maps of term names to instances of the
 [RDF/JS Term interface][dm-1].
 
@@ -235,7 +234,7 @@ const Quadstore = require('quadstore').Quadstore;
 const store = new Quadstore(opts);
 ```
 
-Instantiates a new store. Supported properties for the `opts` argument
+Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
 ##### opts.backend
@@ -245,19 +244,19 @@ See [storage backends](#storage-backends).
 
 ##### opts.comunica (optional)
 
-The `opts.comunica` option, if provided, **must** be an implementation of
+The `opts.comunica` option, if provided, **must** be an implementation of 
 [Comunica][c1]'s `IQueryEngine` interface.
 
-> Comunica is a meta query engine using which query engines can be created.
+> Comunica is a meta query engine using which query engines can be created. 
 > It does this by providing a set of modules that can be wired together in a
 > flexible manner. [...] Its primary goal is executing SPARQL queries over one
 > or more interfaces.
 
 `Quadstore` instances will use the provided `IQueryEngine` implementation to
-run SPARQL queries.
+run SPARQL queries. 
 
 A custom configuration of the Comunica framework optimized for bundle size and
-dependency count is available at [quadstore-comunica][c2] and can be used as
+dependency count is available at [quadstore-comunica][c2] and can be used as 
 follows:
 
 ```js
@@ -268,6 +267,9 @@ const store = new Quadstore({
 });
 ```
 
+The version of `comunica-quadstore` to be used with the current version of 
+`quadstore` is version `1.0.0`.
+
 Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
 project with the global community.
 
@@ -277,15 +279,15 @@ project with the global community.
 
 ##### opts.dataFactory
 
-The `dataFactory` option *must* be an implementation of the
+The `dataFactory` option *must* be an implementation of the 
 [RDF/JS DataFactory interface][dm-1]. Some of the available
-implementations:
+implementations: 
 
 - [rdf-data-factory](https://www.npmjs.com/package/rdf-data-factory) (default)
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
 - [N3.DataFactory](https://www.npmjs.com/package/n3)
 
-If left undefined, `quadstore` will automatically instantiate
+If left undefined, `quadstore` will automatically instantiate 
 one using `rdf-data-factory`.
 
 ##### opts.indexes
@@ -304,12 +306,12 @@ by the store. If not set, the store will default to the following indexes:
 ]; 
 ```
 
-This option, if present, **must** be set to an array of term arrays, each of
-which **must** represent one of the 24 possible permutations of the four terms
-`subject`, `predicate`, `object` and `graph`. Partial indexes are not
+This option, if present, **must** be set to an array of term arrays, each of 
+which **must** represent one of the 24 possible permutations of the four terms 
+`subject`, `predicate`, `object` and `graph`. Partial indexes are not 
 supported.
 
-The store will automatically select which index(es) to use for a given query
+The store will automatically select which index(es) to use for a given query 
 based on the available indexes and the query itself. **If no suitable index is
 found for a given query, the store will throw an error**.
 
@@ -351,8 +353,8 @@ Returns an array of all quads within the store matching the specified terms.
 
 ### Range matching
 
-`quadstore` supports range-based matching in addition to value-based matching.
-Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties:
+`quadstore` supports range-based matching in addition to value-based matching. 
+Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
 ```js
 const pattern = {
@@ -363,7 +365,7 @@ const pattern = {
 };
 const { items } = await store.get(matchTerms);
 ```
-
+    
 Values for literal terms with the following numeric datatypes are matched
 against their numerical values rather than their literal representations:
 
@@ -407,9 +409,9 @@ properties:
   performs additional backend operations atomically with the `put` operation.
   See [Access to the backend](#access-to-the-backend) for more information.
 - `opts.scope`: this can be set to a `Scope` instance as returned by
-  [`initScope()`](#quadstoreprototypeinitscope) and
+  [`initScope()`](#quadstoreprototypeinitscope) and 
   [`loadScope()`](#quadstoreprototypeloadscope). If set, blank node labels will
-  be changed to prevent blank node collisions. See
+  be changed to prevent blank node collisions. See 
   [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping).
 
 ### Quadstore.prototype.multiPut()
@@ -438,7 +440,7 @@ properties:
 
 ### Quadstore.prototype.del()
 
-This method deletes a single quad. It Does *not* throw or return an error if the
+This method deletes a single quad. It Does *not* throw or return an error if the 
 specified quad is not present in the store.
 
 ```js
@@ -496,8 +498,8 @@ properties:
 
 ### Quadstore.prototype.multiPatch()
 
-This method deletes and inserts quads in a single operation. It Does *not*
-throw or return an error if the specified quads are not present in the store
+This method deletes and inserts quads in a single operation. It Does *not* 
+throw or return an error if the specified quads are not present in the store 
 (delete) or already present in the store (update).
 
 ```js
@@ -566,14 +568,14 @@ The `sparql()` method provides support for non-streaming SPARQL queries.
 Objects returned by `sparql()` have their `type` property set to different
 values depending on each specific query:
 
-- `SELECT` queries will result in objects having their `type` property
+- `SELECT` queries will result in objects having their `type` property 
   set to `"BINDINGS"`;
 - `CONSTRUCT` queries will result in objects objects having their `type`
   property set to `"QUADS"`;
-- `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and
+- `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and 
   `INSERT/DELETE WHERE` will result in objects having their `type` property set
   to either `"VOID"` or `"BOOLEAN"`.
-
+  
 ```js
 const { type, items } = await store.sparql(`
   SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
@@ -612,7 +614,7 @@ See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
       })
       .on('end', () => {});
 
-Implementation of the [RDF/JS Source#match method][dm-2]. Supports
+Implementation of the [RDF/JS Source#match method][dm-2]. Supports 
 [range-based matching](#range-matching).
 
 ### Quadstore.prototype.import()
@@ -649,7 +651,7 @@ Blank nodes are defined as _existential_ variables in that they merely indicate
 the existence of an entity rather than act as references to the entity itself.
 
 While the semantics of blank nodes [can][bnode-disc-1] [be][bnode-disc-2]
-[rather][bnode-disc-3] [confusing][bnode-disc-4], one of the most practical
+[rather][bnode-disc-3] [confusing][bnode-disc-4], one of the most practical 
 consequences of their definition is that two blank nodes having the same label
 may not refer to the same entity unless both nodes come from the same logical
 set of quads.
@@ -691,27 +693,27 @@ indicate the existence of two different entities. Intuitively, we can say that
 a blank node is scoped to the logical grouping of quads that contains it, be it
 a single quad, a document or a stream.
 
-As quadstore treats all write operations as if they were happening within the
-same scope, importing these two sets of quads would result in a collision of
-two unrelated blank nodes, leading to a corrupted dataset.
+As quadstore treats all write operations as if they were happening within the 
+same scope, importing these two sets of quads would result in a collision of 
+two unrelated blank nodes, leading to a corrupted dataset. 
 
-A good way to address these issues is to skolemize [skolemize][skolem-def] all
+A good way to address these issues is to skolemize [skolemize][skolem-def] all 
 blank nodes into IRIs / named nodes. However, this is not always possible and
 / or practical.
 
 The [`initScope()`](#quadstoreprototypeinitscope) method returns a `Scope`
-instance which can be passed to the `put`, `multiPut` and `putStream` methods.
-When doing so, quadstore will replace each occurrence of a given blank node
+instance which can be passed to the `put`, `multiPut` and `putStream` methods. 
+When doing so, quadstore will replace each occurrence of a given blank node 
 with a different blank node having a randomly-generated label, preventing blank
 node collisions.
 
 Each `Scope` instance keeps an internal cache of mappings between previously
-encountered blank nodes and their replacements, so that it is able to always
+encountered blank nodes and their replacements, so that it is able to always 
 return the same replacement blank node for a given label. Each new mapping is
 atomically persisted to the store together with its originating quad, leading
-each scope to be incrementally persisted to the store consistently with each
+each scope to be incrementally persisted to the store consistently with each 
 successful `put` and `multiPut` operation. This allows scopes to be re-used
-even across process restarts via the
+even across process restarts via the 
 [`loadScope()`](#quadstoreprototypeloadscope) method.
 
 [jsonld-plg]: https://json-ld.org/playground/
@@ -735,7 +737,7 @@ await store.putStream(stream, { scope });
 ### Quadstore.prototype.loadScope()
 
 Each `Scope` instance has an `.id` property that acts as its unique identifier.
-The `loadScope()` method can be used to re-hydrate a scope through its `.id`:
+The `loadScope()` method can be used to re-hydrate a scope through its `.id`: 
 
 ```js
 const scope = await store.initScope();
@@ -783,7 +785,7 @@ We're currently testing against the following manifests:
 ## Browser usage
 
 The [`level-js`][b1] backend for levelDB offers support for browser-side
-persistent storage.
+persistent storage. 
 
 `quadstore` can be bundled for browser-side usage via Webpack, preferably using
 version 4.x. The [reference repository][b0] is meant to help in getting to a
@@ -791,22 +793,22 @@ working Webpack configuration and also hosts a pre-built bundle with everything
 that is required to use `quadstore` in the browser.
 
 Rollup, ES modules and tree-shaking are not supported (yet).
-
+ 
 [b0]: https://github.com/beautifulinteractions/node-quadstore-webpack-bundle
 [b1]: https://github.com/Level/level-js
 
 ## Performance
 
 The performance profile of `quadstore` is strongly influenced by its design
-choices in terms of atomicity. As all update operations are implemented
-through [AbstractLevelDOWN#batch][perf-1] operations that atomically update
+choices in terms of atomicity. As all update operations are implemented 
+through [AbstractLevelDOWN#batch][perf-1] operations that atomically update 
 all indexes, they are performed in a manner that closely approximates batch
 random updates.
 
 [perf-1]: https://github.com/Level/abstract-leveldown#dbbatch
 [perf-2]: https://github.com/Level/bench
 
-The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage)
+The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
 running Node v14.0.0.
 
 ### Reading quads
@@ -828,7 +830,7 @@ node level-bench.js run batch-put leveldown --concurrency 1 --chained true --bat
 ```
 
 We test import performance by importing the [`21million.rdf`][21mil-rdf] file
-or a subset of it.
+or a subset of it. 
 
 ```
 node dist/perf/loadfile.js /path/to/21million.rdf
@@ -836,8 +838,8 @@ node dist/perf/loadfile.js /path/to/21million.rdf
 
 With the default six indexes and the `leveldown` backend, import performance
 clocks at **~20k quads per second** when importing quads one-by-one, with a
-density of **~6.5k quads per MB**. Due to the six indexes, this translates to
-~120k batched update operations per second, ~0.6 times the reference
+density of **~6.5k quads per MB**. Due to the six indexes, this translates to 
+~120k batched update operations per second, ~0.6 times the reference 
 target.
 
 [21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz

@@ -1,6 +1,17 @@
 
 # CHANGELOG
 
+## 9.0.0
+
+- **[breaking]** removes support for DEFAULT vs. UNION default graph modes
+- *[fix]* fixes breaking blank node correlations     
+  (https://github.com/beautifulinteractions/node-quadstore/issues/134)
+- *[fix]* fixes repeated calls to `AbstractIterator#end()`   
+- *[internal]* fixes duplicated typings for the comunica engine
+  (https://github.com/beautifulinteractions/node-quadstore/issues/129)
+- *[internal]* offloads SPARQL UPDATE queries to Comunica
+- *[internal]* brings SPARQL spec compliance tests close to 100% passing
+
 ## 8.0.0
 
 - **[breaking]** deep revision of the serialization mechanism to remove 

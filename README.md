@@ -117,9 +117,8 @@ See [CHANGELOG.md](./CHANGELOG.md).
 ### Current version
 
 Current version(s): 
-  
-- version `8.0.0` available on NPM under the tag `latest`
-- version `9.0.0-beta.0` available on NPM under the tag `beta` 
+
+- version `9.0.0` available on NPM under the tag `latest` 
 
 ### Roadmap
 
@@ -267,6 +266,9 @@ const store = new Quadstore({
   comunica: newEngine(), 
 });
 ```
+
+The version of `comunica-quadstore` to be used with the current version of 
+`quadstore` is version `1.0.0`.
 
 Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
 project with the global community.

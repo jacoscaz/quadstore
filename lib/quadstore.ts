@@ -31,7 +31,6 @@ import {
   Term,
 } from 'rdf-js';
 import {
-  DefaultGraphMode,
   DelStreamOpts,
   BatchOpts,
   DelOpts,

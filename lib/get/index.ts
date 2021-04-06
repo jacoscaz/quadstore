@@ -1,6 +1,5 @@
 import {
   ApproximateSizeResult,
-  DefaultGraphMode,
   GetOpts,
   InternalIndex,
   Pattern,
@@ -9,10 +8,8 @@ import {
   ResultType,
 } from '../types';
 import {Quadstore} from '../quadstore';
-import {emptyObject} from '../utils';
 import {LevelIterator} from './leveliterator';
 import {quadReader, writePattern} from '../serialization';
-import {EmptyIterator} from 'asynciterator';
 
 type LevelOpts = {
   keys?: boolean,

@@ -49,7 +49,6 @@ export interface ApproximateSizeResult {
 export interface GetOpts {
   limit?: number,
   offset?: number,
-  defaultGraphMode?: DefaultGraphMode,
 }
 
 export interface PutStreamOpts {
@@ -59,23 +58,6 @@ export interface PutStreamOpts {
 
 export interface DelStreamOpts {
   batchSize?: number,
-}
-
-export enum DefaultGraphMode {
-
-  /**
-   * In "DEFAULT" mode, the default graph is considered to be the actual
-   * default graph as referenced by the `store.defaultGraph` property and
-   * the RDF/JS `dataFactory.defaultGraph()` method.
-   */
-  DEFAULT = 'default',
-
-  /**
-   * In "UNION" mode, the default graph is considered to be the union of all
-   * named graphs.
-   */
-  UNION = 'union',
-
 }
 
 export { Quad };
@@ -141,10 +123,8 @@ export interface StoreOpts {
   indexes?: TermName[][],
   comunica?: IQueryEngine,
   dataFactory: DataFactory,
-  defaultGraphMode?: DefaultGraphMode,
 }
 
 export interface SparqlOpts {
   baseIRI?: string,
-  defaultGraphMode?: DefaultGraphMode,
 }

@@ -3,7 +3,6 @@ import {
   BindingArrayResult,
   BindingStreamResult,
   BooleanResult,
-  DefaultGraphMode,
   QuadArrayResult,
   QuadStreamResult,
   ResultType,

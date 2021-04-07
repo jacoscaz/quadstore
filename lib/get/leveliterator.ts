@@ -1,6 +1,7 @@
 
+import type { AbstractIterator } from 'abstract-leveldown';
+
 import {BufferedIterator} from 'asynciterator';
-import {AbstractIterator} from 'abstract-leveldown';
 
 type MapFn<K, V, T> = (key: K, value: V) => T;
 

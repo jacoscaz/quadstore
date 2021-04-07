@@ -1,13 +1,13 @@
 
-import {TSReadable, TermName, Binding} from '../types';
-import {EventEmitter} from 'events';
-import {TransformIterator} from 'asynciterator';
-import {flatMap} from './flatmap.js';
-import {pReduce} from './p-reduce';
-import { nanoid } from 'nanoid';
-import {Quad, Term} from 'rdf-js';
+import type { EventEmitter } from 'events';
+import type { TSReadable, TermName, Binding } from '../types';
 
-export { nanoid };
+import { TransformIterator } from 'asynciterator';
+import { Quad, Term } from 'rdf-js';
+
+export { flatMap } from './flatmap.js';
+export { pReduce } from './p-reduce';
+export { nanoid } from 'nanoid';
 
 export const termNames: TermName[] = [
   'subject',
@@ -145,9 +145,6 @@ export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (i
     loop();
   });
 };
-
-export { flatMap };
-export { pReduce };
 
 export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) => void) => void): Promise<T|undefined> => {
   return new Promise((resolve, reject) => {

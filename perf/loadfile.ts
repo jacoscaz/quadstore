@@ -1,12 +1,12 @@
 
+import type { AbstractLevelDOWN } from 'abstract-leveldown';
+
 import fs from 'fs-extra';
 import path from 'path';
-import * as utils from '../lib/utils';
 import { Quadstore } from '../lib/quadstore';
 import { DataFactory, StreamParser } from 'n3';
-import {disk, time} from './utils';
-import {AbstractLevelDOWN} from 'abstract-leveldown';
-import {newEngine} from 'quadstore-comunica';
+import { disk, time } from './utils';
+import { newEngine } from 'quadstore-comunica';
 
 (async () => {
 

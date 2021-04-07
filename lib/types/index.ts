@@ -1,10 +1,10 @@
 
-import { Readable } from 'stream';
-import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
-import {AsyncIterator} from 'asynciterator';
-import {Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term} from 'rdf-js';
-import {Scope} from '../scope';
-import {IQueryEngine} from '@comunica/types';
+import type { Readable } from 'stream';
+import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
+import type { AsyncIterator } from 'asynciterator';
+import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
+import type { Scope } from '../scope';
+import type { IQueryEngine } from '@comunica/types';
 
 export interface BatchOpts {
   /**

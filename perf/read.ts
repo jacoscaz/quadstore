@@ -3,12 +3,11 @@
  * https://github.com/levelgraph/levelgraph/tree/d918ff445e78e22410b4b5388e33af4a4cbcec8c/benchmarks
  */
 
-import {Quadstore} from '../lib/quadstore';
-import {BindingStreamResult} from '../lib/types';
-import {disk, time} from './utils';
-import {waitForEvent} from '../lib/utils';
-import {DataFactory} from 'rdf-data-factory';
-import {newEngine} from 'quadstore-comunica';
+import { Quadstore } from '../lib/quadstore';
+import { disk, time } from './utils';
+import { waitForEvent } from '../lib/utils';
+import { DataFactory } from 'rdf-data-factory';
+import { newEngine } from 'quadstore-comunica';
 
 const dataFactory = new DataFactory();
 const qty = 200000;

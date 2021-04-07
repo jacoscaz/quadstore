@@ -1,77 +1,23 @@
 
 'use strict';
 
-import {
-  consumeInBatches,
-  consumeOneByOne,
-  emptyObject,
-  nanoid,
-  streamToArray,
-  termNames,
-  defaultIndexes,
-  pFromCallback,
-  separator,
-} from './utils';
-import {
-  EventEmitter,
-} from 'events';
-import {
-  EmptyIterator,
-  TransformIterator,
-} from 'asynciterator';
-import {
-  DataFactory,
-  Quad,
-  Quad_Graph,
-  Quad_Object,
-  Quad_Predicate,
-  Quad_Subject,
-  Store,
-  Stream,
-  Term,
-} from 'rdf-js';
-import {
-  DelStreamOpts,
-  BatchOpts,
-  DelOpts,
-  PutOpts,
-  PatchOpts,
-  GetOpts,
-  InternalIndex,
-  PutStreamOpts,
-  Binding,
-  BindingArrayResult,
-  BindingStreamResult, BooleanResult,
-  Pattern,
-  QuadArrayResult,
-  QuadStreamResult,
-  StoreOpts,
-  VoidResult,
-  TSReadable,
-  ResultType,
-  SparqlOpts,
-  TermName, Prefixes,
-} from './types';
-import {
-  AbstractChainedBatch,
-  AbstractLevelDOWN,
-} from 'abstract-leveldown';
-import {
-  getApproximateSize,
-  getStream,
-} from './get';
-import {
-  Algebra,
-} from 'sparqlalgebrajs';
-import {
-  sparql,
-  sparqlStream,
-} from './sparql';
+import type { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream } from 'rdf-js';
+import type { DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts, BindingArrayResult,
+  BindingStreamResult, BooleanResult, Pattern, QuadArrayResult, QuadStreamResult, StoreOpts, VoidResult, TSReadable,
+  SparqlOpts, TermName, Prefixes } from './types';
+import type {IQueryEngine} from '@comunica/types';
+import type { Algebra } from 'sparqlalgebrajs';
+
+import { ResultType } from './types';
+import { EventEmitter } from 'events';
+import { EmptyIterator, TransformIterator } from 'asynciterator';
+import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown';
+import { consumeInBatches, consumeOneByOne, emptyObject, nanoid, streamToArray, defaultIndexes, pFromCallback, separator } from './utils';
+import { getApproximateSize, getStream } from './get';
+import { sparql, sparqlStream } from './sparql';
 import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 import {Scope} from './scope';
 import {quadWriter, copyBuffer} from './serialization';
-import {IQueryEngine} from '@comunica/types';
-
 
 const __value = Buffer.alloc(32);
 

@@ -1,16 +1,13 @@
-import {Prefixes, Quad, TermName} from '../types';
-import {
-  blankNodeReader,
-  blankNodeWriter, defaultGraphReader,
-  defaultGraphWriter, genericLiteralReader, genericLiteralWriter, langStringLiteralReader,
-  langStringLiteralWriter, namedNodeReader,
-  namedNodeWriter, numericLiteralReader, numericLiteralWriter, stringLiteralReader,
-  stringLiteralWriter
-} from './terms';
+
+import type {DataFactory} from 'rdf-js';
+import type { Prefixes, Quad, TermName } from '../types';
+
 import * as xsd from './xsd';
-import {encode} from './fpstring';
-import {DataFactory} from 'rdf-js';
-import {separator} from '../utils';
+import { encode } from './fpstring';
+import { separator } from '../utils';
+import { blankNodeReader, blankNodeWriter, defaultGraphReader, defaultGraphWriter, genericLiteralReader,
+         genericLiteralWriter, langStringLiteralReader, langStringLiteralWriter, namedNodeReader, namedNodeWriter,
+         numericLiteralReader, numericLiteralWriter, stringLiteralReader, stringLiteralWriter } from './terms';
 
 export const quadWriter = {
   writtenValueBytes: 0,

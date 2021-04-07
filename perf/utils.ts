@@ -1,10 +1,11 @@
 
+import type { AbstractLevelDOWN } from 'abstract-leveldown';
+
 import path from 'path';
 import os from 'os';
 import * as utils from '../lib/utils';
 import fs from 'fs-extra';
 import leveldown from 'leveldown';
-import {AbstractLevelDOWN} from 'abstract-leveldown';
 import childProcess from 'child_process';
 
 const du = (absPath: string): Promise<number> => {

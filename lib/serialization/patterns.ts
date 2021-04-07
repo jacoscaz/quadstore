@@ -1,17 +1,13 @@
-import {Literal} from 'rdf-js';
-import {
-  blankNodeWriter, defaultGraphWriter,
-  genericLiteralWriter,
-  langStringLiteralWriter,
-  namedNodeWriter,
-  numericLiteralWriter,
-  stringLiteralWriter
-} from './terms';
+
+import type { Literal } from 'rdf-js';
+import type { Pattern, Prefixes, TermName } from '../types';
+
 import * as xsd from './xsd';
-import {encode} from './fpstring';
-import {Pattern, Prefixes, TermName} from '../types';
-import {separator, boundary} from '../utils';
-import {copyBufferIntoBuffer, copyBuffer} from './utils';
+import { encode } from './fpstring';
+import { separator, boundary } from '../utils';
+import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLiteralWriter, namedNodeWriter,
+         numericLiteralWriter, stringLiteralWriter } from './terms';
+
 
 const patternLiteralWriter = {
   write(term: Literal) {

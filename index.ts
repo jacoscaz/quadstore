@@ -1,4 +1,4 @@
 
-export {Quadstore} from './lib/quadstore';
 export * from './lib/types';
-export {getTermComparator, getBindingComparator, getQuadComparator} from './lib/utils';
+export { Quadstore } from './lib/quadstore';
+export { getTermComparator, getBindingComparator, getQuadComparator } from './lib/utils';

@@ -1,21 +1,16 @@
 
 // https://github.com/rubensworks/rdf-test-suite.js/blob/master/lib/testcase/sparql/IQueryEngine.ts
 
-import {Quad, Term} from 'rdf-js';
-import {
-  IQueryEngine,
-  IQueryResult,
-  IUpdateEngine,
-  IQueryResultBindings,
-  IQueryResultBoolean,
-  IQueryResultQuads,
-} from 'rdf-test-suite';
-import {Quadstore} from '../lib/quadstore';
+import type { Quad, Term } from 'rdf-js';
+import type { IQueryEngine, IQueryResult, IUpdateEngine, IQueryResultBindings, IQueryResultBoolean, IQueryResultQuads } from 'rdf-test-suite';
+import type {BindingArrayResult, BooleanResult, QuadArrayResult } from '../lib/types';
+
 import memdown from 'memdown';
-import {BindingArrayResult, BooleanResult, QuadArrayResult, ResultType, TermName, VoidResult} from '../lib/types';
-import {DataFactory} from 'rdf-data-factory';
-import {getBindingComparator, getQuadComparator,} from '../lib/utils';
-import {newEngine} from 'quadstore-comunica';
+import { ResultType } from '../lib/types';
+import { Quadstore } from '../lib/quadstore';
+import { DataFactory } from 'rdf-data-factory';
+import { getBindingComparator, getQuadComparator } from '../lib/utils';
+import { newEngine } from 'quadstore-comunica';
 
 class RdfStoreQueryEngine implements IQueryEngine, IUpdateEngine {
 

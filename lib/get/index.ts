@@ -1,15 +1,10 @@
-import {
-  ApproximateSizeResult,
-  GetOpts,
-  InternalIndex,
-  Pattern,
-  Prefixes,
-  QuadStreamResult,
-  ResultType,
-} from '../types';
-import {Quadstore} from '../quadstore';
-import {LevelIterator} from './leveliterator';
-import {quadReader, writePattern} from '../serialization';
+
+import type { Quadstore } from '../quadstore';
+import type { ApproximateSizeResult, GetOpts, InternalIndex, Pattern, Prefixes, QuadStreamResult } from '../types';
+
+import { ResultType } from '../types';
+import { LevelIterator } from './leveliterator';
+import { quadReader, writePattern } from '../serialization';
 
 type LevelOpts = {
   keys?: boolean,

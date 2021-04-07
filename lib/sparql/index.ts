@@ -1,23 +1,12 @@
-import type {Algebra,} from 'sparqlalgebrajs';
-import {
-  BindingArrayResult,
-  BindingStreamResult,
-  BooleanResult,
-  QuadArrayResult,
-  QuadStreamResult,
-  ResultType,
-  SparqlOpts,
-  VoidResult,
-} from '../types';
-import {Quadstore,} from '../quadstore';
-import {
-  IActorQueryOperationOutputBindings,
-  IActorQueryOperationOutputBoolean,
-  IActorQueryOperationOutputQuads,
-  IActorQueryOperationOutputUpdate,
-  IQueryEngine,
-} from "@comunica/types";
-import {emptyObject, streamToArray,} from "../utils";
+
+import type { Algebra } from 'sparqlalgebrajs';
+import type { BindingArrayResult, BindingStreamResult, BooleanResult, QuadArrayResult, QuadStreamResult, SparqlOpts, VoidResult } from '../types';
+import type { Quadstore } from '../quadstore';
+import type { IActorQueryOperationOutputBindings, IActorQueryOperationOutputBoolean, IActorQueryOperationOutputQuads,
+              IActorQueryOperationOutputUpdate, IQueryEngine } from '@comunica/types';
+
+import { ResultType } from '../types';
+import { emptyObject, streamToArray } from "../utils";
 
 export const sparql = async (store: Quadstore, engine: IQueryEngine, query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<BindingArrayResult|QuadArrayResult|VoidResult|BooleanResult> => {
   const results = await sparqlStream(store, engine, query, opts);

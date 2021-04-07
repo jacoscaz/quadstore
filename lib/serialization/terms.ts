@@ -1,7 +1,8 @@
 
-import {BlankNode, DataFactory, DefaultGraph, Literal, NamedNode} from 'rdf-js';
-import {copyBufferIntoBuffer, sliceBuffer, sliceString} from './utils';
-import {Prefixes} from '../types';
+import type { Prefixes } from '../types';
+import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'rdf-js';
+
+import { sliceString } from './utils';
 
 export const namedNodeWriter = {
   writtenValueBytes: 2,

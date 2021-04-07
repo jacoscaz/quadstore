@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## 9.1.0
+
+- *[fix]* fixes missing dependencies used for type declarations   
+  (https://github.com/beautifulinteractions/node-quadstore/issues/136)
+
 ## 9.0.0
 
 - **[breaking]** removes support for DEFAULT vs. UNION default graph modes

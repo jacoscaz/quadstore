@@ -119,6 +119,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 Current version(s): 
 
 - version `9.1.0` available on NPM under the tag `latest` 
+- version `9.2.0-alpha.0` available on NPM under the tag `alpha`
 
 ### Roadmap
 
@@ -255,7 +256,7 @@ The `opts.comunica` option, if provided, **must** be an implementation of
 `Quadstore` instances will use the provided `IQueryEngine` implementation to
 run SPARQL queries. 
 
-A custom configuration of the Comunica framework optimized for bundle size and
+A custom distribution of the Comunica framework optimized for bundle size and
 dependency count is available at [quadstore-comunica][c2] and can be used as 
 follows:
 
@@ -267,8 +268,12 @@ const store = new Quadstore({
 });
 ```
 
-The version of `comunica-quadstore` to be used with the current version of 
-`quadstore` is version `1.1.0`.
+Versions of `comunica-quadstore` to be used with `quadstore`:
+
+|quadstore|quadstore-comunica|
+|---|---|
+|`quadstore@latest`|`quadstore-comunica@latest`|
+|`quadstore@alpha`|`quadstore-comunica@alpha`|
 
 Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
 project with the global community.

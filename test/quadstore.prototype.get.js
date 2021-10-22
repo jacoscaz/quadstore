@@ -279,11 +279,11 @@ module.exports = () => {
       const subject = dataFactory.namedNode('ex://s');
       const graph = dataFactory.namedNode('ex://g');
       const decimal = dataFactory.namedNode(xsd.decimal);
-      for (let i = 0; i < 100; i += 1) {
+      for (let i = 10; i < 100; i += 1) {
         await this.store.put(dataFactory.quad(
           subject,
-          dataFactory.namedNode(`ex://p${i}`),
-          dataFactory.literal(`${99 - i}`, decimal),
+          dataFactory.namedNode(`ex://p${99 - i}`),
+          dataFactory.literal(`${i}`, decimal),
           graph,
         ));
       }
@@ -303,10 +303,10 @@ module.exports = () => {
       should(idxResults.resorted).eql(false);
       should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
       should(_.arrStartsWith(memResults.order, ['object'])).be.true();
-      should(idxResults.items).have.length(100);
+      should(idxResults.items).have.length(90);
       should(idxResults.items).be.equalToQuadArray(memResults.items);
-      should(idxResults.items[0].object.value).eql('0');
-      should(idxResults.items[99].object.value).eql('99');
+      should(idxResults.items[0].object.value).eql('10');
+      should(idxResults.items[89].object.value).eql('99');
     });
 
     it('should produce the same results whether sorting in-memory or not, in reverse', async function () {
@@ -323,10 +323,10 @@ module.exports = () => {
       should(idxResults.resorted).eql(false);
       should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
       should(_.arrStartsWith(memResults.order, ['object'])).be.true();
-      should(idxResults.items).have.length(100);
+      should(idxResults.items).have.length(90);
       should(idxResults.items).be.equalToQuadArray(memResults.items);
       should(idxResults.items[0].object.value).eql('99');
-      should(idxResults.items[99].object.value).eql('0');
+      should(idxResults.items[89].object.value).eql('10');
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory', async function () {
@@ -341,9 +341,9 @@ module.exports = () => {
         { order: ['predicate'] },
       );
       should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(20);
+      should(memResults.items).have.length(10);
       should(memResults.items[0].predicate.value).eql(`ex://p80`);
-      should(memResults.items[19].predicate.value).eql(`ex://p99`);
+      should(memResults.items[9].predicate.value).eql(`ex://p89`);
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse', async function () {
@@ -358,9 +358,9 @@ module.exports = () => {
         { order: ['predicate'], reverse: true },
       );
       should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(20);
-      should(memResults.items[0].predicate.value).eql(`ex://p99`);
-      should(memResults.items[19].predicate.value).eql(`ex://p80`);
+      should(memResults.items).have.length(10);
+      should(memResults.items[0].predicate.value).eql(`ex://p89`);
+      should(memResults.items[9].predicate.value).eql(`ex://p80`);
     });
 
     it('should order by object while querying for a range of object literals without sorting in memory', async function () {
@@ -375,9 +375,9 @@ module.exports = () => {
         { order: ['object'] },
       );
       should(memResults.resorted).eql(false);
-      should(memResults.items).have.length(20);
-      should(memResults.items[0].object.value).eql(`0`);
-      should(memResults.items[19].object.value).eql(`19`);
+      should(memResults.items).have.length(10);
+      should(memResults.items[0].object.value).eql(`10`);
+      should(memResults.items[9].object.value).eql(`19`);
     });
 
     it('should order by object while querying for a range of object literals without sorting in memory, in reverse', async function () {
@@ -392,9 +392,9 @@ module.exports = () => {
         { order: ['object'], reverse: true },
       );
       should(memResults.resorted).eql(false);
-      should(memResults.items).have.length(20);
+      should(memResults.items).have.length(10);
       should(memResults.items[0].object.value).eql(`19`);
-      should(memResults.items[19].object.value).eql(`0`);
+      should(memResults.items[9].object.value).eql(`10`);
     });
 
   });

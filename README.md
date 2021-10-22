@@ -356,6 +356,18 @@ const { items } = await store.get(pattern);
 
 Returns an array of all quads within the store matching the specified terms.
 
+This method also accepts an optional `opts` parameter with the following 
+optional properties:
+
+- `opts.order`: array of term names (e.g. `['object']`) that represents the
+  desired ordering criteria of returned quads. Equivalent to the `ORDER BY`
+  clause in `SQL`.
+- `opts.reverse`: boolean value that indicates whether to return quads in 
+  ascending or descending order. Equivalent to `ASC` / `DESC` modifiers in
+  `SQL`.
+- `opts.limit`: limit the number of returned quads to the specified value.
+  Equivalent to `LIMIT` clause in `SQL`.
+
 ### Range matching
 
 `quadstore` supports range-based matching in addition to value-based matching. 
@@ -539,8 +551,9 @@ const pattern = {graph: dataFactory.namedNode('ex://g')};
 const { iterator } = await store.getStream(pattern);
 ```
 
-This method supports [range matching](#range-matching),
-see [QuadStore.prototype.get()](#quadstoreprototypeget).
+Just as [QuadStore.prototype.get()](#quadstoreprototypeget), this method
+supports [range matching](#range-matching) and the `order`, `reverse` and 
+`limit` options. 
 
 ### Quadstore.prototype.putStream()
 

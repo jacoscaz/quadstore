@@ -1,6 +1,6 @@
 
 import type { Literal } from 'rdf-js';
-import type { Pattern, Prefixes, TermName } from '../types';
+import type { InternalIndex, Pattern, Prefixes, IndexQuery } from '../types';
 
 import * as xsd from './xsd';
 import { encode } from './fpstring';
@@ -44,33 +44,30 @@ const patternLiteralWriter = {
   }
 };
 
-export const writePattern = (
-  pattern: Pattern,
-  prefix: string,
-  termNames: TermName[],
-  prefixes: Prefixes,
-): ({ gt: string, gte: boolean, lt: string, lte: boolean }|false) => {
-  let gt = prefix;
-  let lt = prefix;
+export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes): IndexQuery|null => {
+  let gt = index.prefix;
+  let lt = index.prefix;
   let gte = true;
   let lte = true;
-  let didRangeOrLiteral = false;
+  let didRange = false;
+  let didLiteral = false;
   let remaining = Object.entries(pattern).filter(([termName, term]) => term).length;
   if (remaining === 0) {
     lt += boundary;
-    return { gt, lt, gte, lte };
+    return { gt, lt, gte, lte, order: index.terms, index };
   }
-  for (let t = 0; t < termNames.length && remaining > 0; t += 1) {
-    const term = pattern[termNames[t]];
+  let t = 0;
+  for (; t < index.terms.length && remaining > 0; t += 1) {
+    const term = pattern[index.terms[t]];
     if (!term) {
-      return false;
+      return null;
     }
-    if (didRangeOrLiteral) {
-      return false;
+    if (didRange || didLiteral) {
+      return null;
     }
     switch (term.termType) {
       case 'Range':
-        didRangeOrLiteral = true;
+        didRange = true;
         if (term.gt) {
           gt += patternLiteralWriter.write(term.gt);
           gte = false;
@@ -87,7 +84,7 @@ export const writePattern = (
         }
         break;
       case 'Literal':
-        didRangeOrLiteral = true;
+        didLiteral = true;
         gt += patternLiteralWriter.write(term);
         gte = true;
         lt += patternLiteralWriter.write(term);
@@ -113,14 +110,13 @@ export const writePattern = (
         break;
     }
     remaining -= 1;
-    if (remaining > 0 && t < termNames.length - 1) {
+    if (remaining > 0 && t < index.terms.length - 1) {
       gt += separator;
       lt += separator;
     }
   }
-
   if (lte) {
-    if (didRangeOrLiteral) {
+    if (didRange || didLiteral) {
       lt += boundary;
     } else {
       lt += separator + boundary;
@@ -129,15 +125,15 @@ export const writePattern = (
     lt += separator;
   }
   if (gte) {
-    if (!didRangeOrLiteral) {
+    if (!didRange && !didLiteral) {
       gt += separator;
     }
   } else {
-    if (didRangeOrLiteral) {
+    if (didRange || didLiteral) {
       gt += boundary;
     } else {
       gt += separator + boundary;
     }
   }
-  return { gt, lt, gte, lte };
+  return { gt, lt, gte, lte, order: index.terms.slice(didRange ? t - 1 : 1), index };
 };

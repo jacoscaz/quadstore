@@ -1,6 +1,6 @@
 {
   // "include": ["src/**/*"],
-  "exclude": ["dist", "test", "test-rdf", "lib/search", "lib/sparql/old", "node_modules", "lib/search"],
+  "exclude": ["dist", "test", "node_modules"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 

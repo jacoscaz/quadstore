@@ -2,16 +2,19 @@
 'use strict';
 
 import type { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream } from 'rdf-js';
-import type { DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts, BindingArrayResult,
+import type {
+  DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts, BindingArrayResult,
   BindingStreamResult, BooleanResult, Pattern, QuadArrayResult, QuadStreamResult, StoreOpts, VoidResult, TSReadable,
-  SparqlOpts, TermName, Prefixes } from './types';
+  SparqlOpts, TermName, Prefixes, QuadArrayResultWithinternals, QuadStreamResultWithInternals
+} from './types';
 import type {IQueryEngine} from '@comunica/types';
 import type { Algebra } from 'sparqlalgebrajs';
+import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown';
 
 import { ResultType } from './types';
 import { EventEmitter } from 'events';
 import { EmptyIterator, TransformIterator } from 'asynciterator';
-import { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown';
+
 import { consumeInBatches, consumeOneByOne, emptyObject, nanoid, streamToArray, defaultIndexes, pFromCallback, separator } from './utils';
 import { getApproximateSize, getStream } from './get';
 import { sparql, sparqlStream } from './sparql';
@@ -288,14 +291,20 @@ export class Quadstore implements Store {
     await pFromCallback((cb) => { batch.write(cb); });
   }
 
-  async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResult> {
+  async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResultWithinternals> {
     this.ensureReady();
     const results = await this.getStream(pattern, opts);
     const items: Quad[] = await streamToArray(results.iterator);
-    return { type: results.type, items };
+    return {
+      items,
+      type: results.type,
+      order: results.order,
+      index: results.index,
+      resorted: results.resorted,
+    };
   }
 
-  async getStream(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadStreamResult> {
+  async getStream(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadStreamResultWithInternals> {
     this.ensureReady();
     return await getStream(this, pattern, opts);
   }

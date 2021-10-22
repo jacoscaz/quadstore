@@ -1,11 +1,11 @@
 
 import type { EventEmitter } from 'events';
-import type { TSReadable, TermName, Binding } from '../types';
+import type { TSReadable, TermName, Binding, InternalIndex, Pattern } from '../types';
 
 import { TransformIterator } from 'asynciterator';
 import { Quad, Term } from 'rdf-js';
 
-export { flatMap } from './flatmap.js';
+export { flatMap } from './flatmap';
 export { pReduce } from './p-reduce';
 export { nanoid } from 'nanoid';
 
@@ -190,7 +190,7 @@ export const getTermComparator = (): (a: Term, b: Term) => (-1 | 0 | 1) => {
     }
     return a.value < b.value ? -1 : (a.value === b.value ? 0 : 1);
   };
-}
+};
 
 export const getQuadComparator = (_termNames: TermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) => {
   const termComparator = getTermComparator();
@@ -201,7 +201,7 @@ export const getQuadComparator = (_termNames: TermName[] = termNames): (a: Quad,
     }
     return 0;
   };
-}
+};
 
 export const getBindingComparator = (_termNames: string[] = termNames): (a: Binding, b: Binding) => -1|0|1 => {
   const termComparator = getTermComparator();
@@ -212,4 +212,13 @@ export const getBindingComparator = (_termNames: string[] = termNames): (a: Bind
     }
     return 0;
   };
-}
+};
+
+export const arrStartsWith = (arr: TermName[], prefix: TermName[]): boolean => {
+  for (let i = 0; i < prefix.length; i += 1) {
+    if (prefix[i] !== arr[i]) {
+      return false;
+    }
+  }
+  return true;
+};

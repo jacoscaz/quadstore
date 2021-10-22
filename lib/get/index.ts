@@ -1,65 +1,115 @@
 
 import type { Quadstore } from '../quadstore';
-import type { ApproximateSizeResult, GetOpts, InternalIndex, Pattern, Prefixes, QuadStreamResult } from '../types';
+import type { AsyncIterator } from 'asynciterator';
+import type {
+  ApproximateSizeResult,
+  GetOpts,
+  InternalIndex,
+  Pattern,
+  Prefixes,
+  Quad,
+  QuadStreamResultWithInternals
+} from '../types';
+import type { AbstractIteratorOptions } from 'abstract-leveldown';
 
-import { ResultType } from '../types';
+import { ResultType, LevelQuery } from '../types';
+import { arrStartsWith, emptyObject, separator } from '../utils';
 import { LevelIterator } from './leveliterator';
-import { quadReader, writePattern } from '../serialization';
+import { quadReader, quadWriter, writePattern } from '../serialization';
+import { SortingIterator } from './sortingIterator';
 
-type LevelOpts = {
-  keys?: boolean,
-  values?: boolean,
-  keyAsBuffer?: boolean,
-  valueAsBuffer?: boolean,
-  lt?: string|Buffer,
-  lte?: string|Buffer,
-  gt?: string|Buffer,
-  gte?: string|Buffer,
-  limit?: number,
-  offset?: number,
-  reverse?: boolean,
+
+
+const __value = Buffer.alloc(32);
+
+const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery|null => {
+  const indexQuery = writePattern(pattern, index, prefixes);
+  if (indexQuery === null) {
+    return null;
+  }
+  const levelOpts: AbstractIteratorOptions = {
+    [indexQuery.gte ? 'gte' : 'gt']: indexQuery.gt,
+    [indexQuery.lte ? 'lte' : 'lt']: indexQuery.lt,
+    keys: true,
+    values: true,
+    keyAsBuffer: false,
+    valueAsBuffer: true,
+  };
+  if (typeof opts.limit === 'number') {
+    levelOpts.limit = opts.limit;
+  }
+  if (typeof opts.reverse === 'boolean') {
+    levelOpts.reverse = opts.reverse;
+  }
+  return { level: levelOpts, order: indexQuery.order, index: indexQuery.index };
 };
 
-const getLevelOptsForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes): LevelOpts|false => {
-    const res = writePattern(pattern, index.prefix, index.terms, prefixes);
-    return res ? {
-      [res.gte ? 'gte' : 'gt']: res.gt,
-      [res.lte ? 'lte' : 'lt']: res.lt,
-      keys: true,
-      values: true,
-      keyAsBuffer: false,
-      valueAsBuffer: true,
-    } : false;
-};
-
-const selectIndexAndGetLevelOpts = (pattern: Pattern, indexes: InternalIndex[], prefixes: Prefixes): [InternalIndex, LevelOpts] => {
-  for (let i = 0, index, levelOpts; i < indexes.length; i += 1) {
+const getLevelQuery = (pattern: Pattern, indexes: InternalIndex[], prefixes: Prefixes, opts: GetOpts): LevelQuery|null => {
+  for (let i = 0, index; i < indexes.length; i += 1) {
     index = indexes[i];
-    levelOpts = getLevelOptsForIndex(pattern, index, prefixes);
-    if (levelOpts) {
-      return [index, levelOpts];
+    const levelQuery = getLevelQueryForIndex(pattern, index, prefixes, opts);
+    if (levelQuery !== null && (!opts.order || arrStartsWith(levelQuery.order, opts.order))) {
+      return levelQuery;
     }
   }
-  throw new Error(`No index found for pattern ${JSON.stringify(pattern, null, 2)}`);
+  return null;
 };
 
-export const getStream = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<QuadStreamResult> => {
+export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpts): Promise<QuadStreamResultWithInternals> => {
   const { dataFactory, prefixes, indexes } = store;
-  const [index, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
-  const iterator = new LevelIterator(store.db.iterator(levelOpts), (key: string, value: Buffer) => {
-    return quadReader.read(key, index.prefix.length, value, 0, index.terms, dataFactory, prefixes);
-  });
-  return {type: ResultType.QUADS, iterator};
+
+  const levelQueryFull = getLevelQuery(pattern, indexes, prefixes, opts);
+
+  if (levelQueryFull !== null) {
+    const { index, level, order } = levelQueryFull;
+    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Buffer) => {
+      return quadReader.read(key, index.prefix.length, value, 0, index.terms, dataFactory, prefixes);
+    });
+    return { type: ResultType.QUADS, order, iterator, index: index.terms, resorted: false };
+  }
+
+  const levelQueryNoOpts = getLevelQuery(pattern, indexes, prefixes, emptyObject);
+
+  if (levelQueryNoOpts !== null) {
+    const { index, level, order } = levelQueryNoOpts;
+    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Buffer) => {
+      return quadReader.read(key, index.prefix.length, value, 0, index.terms, dataFactory, prefixes);
+    });
+    if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
+      const compare = opts.reverse === true
+        // @ts-ignore
+        ? (left: Quad, right: Quad) => left.__raw > right.__raw ? -1 : 1
+        // @ts-ignore
+        : (left: Quad, right: Quad) => left.__raw > right.__raw ? 1 : -1
+      ;
+      const prepare = (item: Quad) => {
+        // @ts-ignore
+        item.__raw = quadWriter.write('', __value, item, opts.order, prefixes) + separator;
+        return item;
+      };
+      iterator = new SortingIterator<Quad>(iterator, compare, prepare);
+      if (typeof opts.limit !== 'undefined') {
+        iterator = iterator.take(opts.limit);
+      }
+    }
+    return {type: ResultType.QUADS, order: opts.order || order, iterator, index: index.terms, resorted: true };
+  }
+
+  throw new Error(`No index compatible with pattern ${JSON.stringify(pattern)} and options ${JSON.stringify(opts)}`);
 };
 
-export const getApproximateSize = async (store: Quadstore, pattern: Pattern, opts?: GetOpts): Promise<ApproximateSizeResult> => {
+export const getApproximateSize = async (store: Quadstore, pattern: Pattern, opts: GetOpts): Promise<ApproximateSizeResult> => {
   if (!store.db.approximateSize) {
     return { type: ResultType.APPROXIMATE_SIZE, approximateSize: Infinity };
   }
   const { indexes, prefixes } = store;
-  const [, levelOpts] = selectIndexAndGetLevelOpts(pattern, indexes, prefixes);
-  const start = levelOpts.gte || levelOpts.gt;
-  const end = levelOpts.lte || levelOpts.lt;
+  const levelQuery = getLevelQuery(pattern, indexes, prefixes, opts);
+  if (levelQuery === null) {
+    throw new Error(`No index compatible with pattern ${JSON.stringify(pattern)} and options ${JSON.stringify(opts)}`);
+  }
+  const { level } = levelQuery;
+  const start = level.gte || level.gt;
+  const end = level.lte || level.lt;
   return new Promise((resolve, reject) => {
     store.db.approximateSize(start, end, (err: Error|null, approximateSize: number) => {
       if (err) {

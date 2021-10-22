@@ -34,7 +34,7 @@ module.exports = () => {
         const subject = dataFactory.namedNode('http://ex.com/s2');
         const matchedQuads = await utils.streamToArray(store.match(subject));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should match quads by predicate',  async function () {
@@ -58,7 +58,7 @@ module.exports = () => {
         const predicate = dataFactory.namedNode('http://ex.com/p2');
         const matchedQuads = await utils.streamToArray(store.match(null, predicate));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should match quads by object',  async function () {
@@ -82,7 +82,7 @@ module.exports = () => {
         const object = dataFactory.literal('o2', 'en-gb');
         const matchedQuads = await utils.streamToArray(store.match(null, null, object));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should match quads by graph',  async function () {
@@ -106,7 +106,7 @@ module.exports = () => {
         const graph = dataFactory.namedNode('http://ex.com/g2');
         const matchedQuads = await utils.streamToArray(store.match(null, null, null, graph));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should match the default graph when explicitly passed',  async function () {
@@ -129,7 +129,7 @@ module.exports = () => {
         await utils.waitForEvent(store.import(source), 'end', true);
         const matchedQuads = await utils.streamToArray(store.match(null, null, null, dataFactory.defaultGraph()));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[0]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[0]]);
       });
 
     });
@@ -159,7 +159,7 @@ module.exports = () => {
           gt: dataFactory.literal('6', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer')) };
         const matchedQuads = await utils.streamToArray(store.match(null, null, match, null));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should match quads by object (literal) [GTE]', async function () {
@@ -184,7 +184,7 @@ module.exports = () => {
           gte: dataFactory.literal('7.0', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#double')) };
         const matchedQuads = await utils.streamToArray(store.match(null, null, match, null));
         should(matchedQuads).have.length(1);
-        should(matchedQuads[0]).deepEqual(quads[1]);
+        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
 
       it('should not match quads by object (literal) if out of range [GT]', async function () {

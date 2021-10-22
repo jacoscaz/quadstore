@@ -177,16 +177,6 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[1], this.quads[4]]);
     });
 
-    // This test fails with the default set of indexes.
-    // it('should match quads by object and context where object is a numeric literal', async function () {
-    //   const { dataFactory, store } = this;
-    //   const { items: quads } = await store.get({
-    //     object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
-    //     graph: dataFactory.namedNode('ex://c3'),
-    //   });
-    //   should(quads).be.equalToQuadArray([this.quads[5]]);
-    // });
-
     it('should match quads by subject, predicate and object', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
@@ -226,17 +216,6 @@ module.exports = () => {
       });
       should(quads).be.equalToQuadArray([this.quads[1]]);
     });
-
-    // This test fails with the default set of indexes.
-    // it('should match quads by subject, object and context where object is a numeric literal', async function () {
-    //   const { dataFactory, store } = this;
-    //   const { items: quads } = await store.get({
-    //     subject: dataFactory.namedNode('ex://s3'),
-    //     object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
-    //     graph: dataFactory.namedNode('ex://c3'),
-    //   });
-    //   should(quads).be.equalToQuadArray([this.quads[5]]);
-    // });
 
     it('should match quads by predicate, object and context', async function () {
       const { dataFactory, store } = this;
@@ -278,6 +257,144 @@ module.exports = () => {
         graph: dataFactory.namedNode('ex://c3'),
       });
       should(quads).be.equalToQuadArray([this.quads[5]]);
+    });
+
+    it('should match quads by subject, predicate, object and context where object is a numeric literal', async function () {
+      const { dataFactory, store } = this;
+      const { items: quads } = await store.get({
+        subject: dataFactory.namedNode('ex://s3'),
+        predicate: dataFactory.namedNode('ex://p3'),
+        object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
+        graph: dataFactory.namedNode('ex://c3'),
+      });
+      should(quads).be.equalToQuadArray([this.quads[5]]);
+    });
+
+  });
+
+  describe.only('Quadstore.prototype.get() w/ order', () => {
+
+    beforeEach(async function () {
+      const { dataFactory } = this;
+      const subject = dataFactory.namedNode('ex://s');
+      const graph = dataFactory.namedNode('ex://g');
+      const decimal = dataFactory.namedNode(xsd.decimal);
+      for (let i = 0; i < 100; i += 1) {
+        await this.store.put(dataFactory.quad(
+          subject,
+          dataFactory.namedNode(`ex://p${i}`),
+          dataFactory.literal(`${99 - i}`, decimal),
+          graph,
+        ));
+      }
+    });
+    
+    it('should produce the same results whether sorting in-memory or not', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        { graph: dataFactory.namedNode('ex://g') },
+        { order: ['object'] },
+      );
+      should(memResults.resorted).eql(true);
+      const idxResults = await store.get(
+        { subject: dataFactory.namedNode('ex://s') },
+        { order: ['object'] },
+      );
+      should(idxResults.resorted).eql(false);
+      should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
+      should(_.arrStartsWith(memResults.order, ['object'])).be.true();
+      should(idxResults.items).have.length(100);
+      should(idxResults.items).be.equalToQuadArray(memResults.items);
+      should(idxResults.items[0].object.value).eql('0');
+      should(idxResults.items[99].object.value).eql('99');
+    });
+
+    it('should produce the same results whether sorting in-memory or not, in reverse', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        { graph: dataFactory.namedNode('ex://g') },
+        { order: ['object'], reverse: true },
+      );
+      should(memResults.resorted).eql(true);
+      const idxResults = await store.get(
+        { subject: dataFactory.namedNode('ex://s') },
+        { order: ['object'], reverse: true },
+      );
+      should(idxResults.resorted).eql(false);
+      should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
+      should(_.arrStartsWith(memResults.order, ['object'])).be.true();
+      should(idxResults.items).have.length(100);
+      should(idxResults.items).be.equalToQuadArray(memResults.items);
+      should(idxResults.items[0].object.value).eql('99');
+      should(idxResults.items[99].object.value).eql('0');
+    });
+
+    it('should order by predicate while querying for a range of object literals, sorting in memory', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['predicate'] },
+      );
+      should(memResults.resorted).eql(true);
+      should(memResults.items).have.length(20);
+      should(memResults.items[0].predicate.value).eql(`ex://p80`);
+      should(memResults.items[19].predicate.value).eql(`ex://p99`);
+    });
+
+    it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['predicate'], reverse: true },
+      );
+      should(memResults.resorted).eql(true);
+      should(memResults.items).have.length(20);
+      should(memResults.items[0].predicate.value).eql(`ex://p99`);
+      should(memResults.items[19].predicate.value).eql(`ex://p80`);
+    });
+
+    it('should order by object while querying for a range of object literals without sorting in memory', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['object'] },
+      );
+      should(memResults.resorted).eql(false);
+      should(memResults.items).have.length(20);
+      should(memResults.items[0].object.value).eql(`0`);
+      should(memResults.items[19].object.value).eql(`19`);
+    });
+
+    it('should order by object while querying for a range of object literals without sorting in memory, in reverse', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['object'], reverse: true },
+      );
+      should(memResults.resorted).eql(false);
+      should(memResults.items).have.length(20);
+      should(memResults.items[0].object.value).eql(`19`);
+      should(memResults.items[19].object.value).eql(`0`);
     });
 
   });

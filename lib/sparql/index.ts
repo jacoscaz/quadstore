@@ -13,11 +13,11 @@ export const sparql = async (store: Quadstore, engine: IQueryEngine, query: Alge
   switch (results.type) {
     case ResultType.BINDINGS: {
       const items = await streamToArray(results.iterator);
-      return {...results, items };
+      return { type: results.type, order: results.order, variables: results.variables, items };
     }
     case ResultType.QUADS: {
       const items = await streamToArray(results.iterator);
-      return {...results, items };
+      return { type: results.type, order: results.order, items };
     }
     case ResultType.BOOLEAN:
       return results;
@@ -45,12 +45,14 @@ export const sparqlStream = async (store: Quadstore, engine: IQueryEngine, query
     case 'bindings':
       return {
         type: ResultType.BINDINGS,
+        order: [],
         iterator: (<IActorQueryOperationOutputBindings>results).bindingsStream.map(binding => binding.toObject()),
         variables: (<IActorQueryOperationOutputBindings>results).variables,
       };
     case 'quads':
       return {
         type: ResultType.QUADS,
+        order: [],
         iterator: (<IActorQueryOperationOutputQuads>results).quadStream,
       };
     case 'update':

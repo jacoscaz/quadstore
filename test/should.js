@@ -34,4 +34,15 @@ const equalToBindingArray = function (expected, variables, message) {
 
 should.Assertion.add('equalToBindingArray', equalToBindingArray, false);
 
+const prefixOfArray = function (expected, variables, message) {
+  const actual = this.obj;
+  should(actual).be.an.Array();
+  should(expected).be.an.Array();
+  for (let i = 0; i < actual.length; i += 1) {
+    should(actual[i]).eql(expected[i]);
+  }
+};
+
+should.Assertion.add('prefixOfArray', prefixOfArray, false);
+
 module.exports = should;

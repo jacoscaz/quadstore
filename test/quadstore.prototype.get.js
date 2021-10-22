@@ -272,7 +272,7 @@ module.exports = () => {
 
   });
 
-  describe.only('Quadstore.prototype.get() w/ order', () => {
+  describe('Quadstore.prototype.get() w/ order', () => {
 
     beforeEach(async function () {
       const { dataFactory } = this;

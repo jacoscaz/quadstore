@@ -19,8 +19,6 @@ import { LevelIterator } from './leveliterator';
 import { quadReader, quadWriter, writePattern } from '../serialization';
 import { SortingIterator } from './sortingIterator';
 
-
-const __raw = Symbol('raw')
 const __value = Buffer.alloc(32);
 
 const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery|null => {
@@ -78,14 +76,16 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
     });
     if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
       const compare = opts.reverse === true
-        ? (left: Quad & { [__raw]: string }, right: Quad & { [__raw]: string }) => left[__raw] > right[__raw] ? -1 : 1
-        : (left: Quad & { [__raw]: string }, right: Quad & { [__raw]: string }) => left[__raw] > right[__raw] ? 1 : -1
+        ? (left: [Quad, string], right: [Quad, string]) => left[1] > right[1] ? -1 : 1
+        : (left: [Quad, string], right: [Quad, string]) => left[1] > right[1] ? 1 : -1
       ;
-      const prepare = (item: Quad): Quad & { [__raw]: string } => {
-        (<Quad & { [__raw]: string }>item)[__raw] = quadWriter.write('', __value, item, <TermName[]>opts.order, prefixes) + separator;
-        return <Quad & { [__raw]: string }>item;
+      const digest = (item: Quad): [Quad, string] => {
+        return [item, quadWriter.write('', __value, item, <TermName[]>opts.order, prefixes) + separator];
       };
-      iterator = <AsyncIterator<Quad>><unknown>new SortingIterator<Quad, Quad & { [__raw]: string }>(iterator, compare, prepare);
+      const emit = (item: [Quad, string]): Quad => {
+        return item[0];
+      }
+      iterator = new SortingIterator<Quad, [Quad, string], Quad>(iterator, compare, digest, emit);
       if (typeof opts.limit !== 'undefined') {
         iterator = iterator.take(opts.limit);
       }

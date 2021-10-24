@@ -8,25 +8,35 @@ const SortedSet = require('js-sorted-set');
  * Buffers all items emitted from `source` and sorts them according to
  * `compare`.
  */
-export class SortingIterator<I, O> extends BufferedIterator<O> {
+export class SortingIterator<In, Int, Out> extends BufferedIterator<Out> {
 
+  private publish: (item: Int) => Out;
   private iterator?: any;
 
   /**
    *
    * @param source
    * @param compare
-   * @param prepare
+   * @param digest
+   * @param emit
    * @param options
    */
-  public constructor(source: AsyncIterator<I>, compare: (left: O, right: O) => number, prepare: (item: I) => O, options?: any) {
+  public constructor(
+    source: AsyncIterator<In>,
+    compare: (left: Int, right: Int) => number,
+    digest: (item: In) => Int,
+    emit: (item: Int) => Out,
+    options?: any,
+  ) {
 
     super(options);
 
+    this.publish = emit;
+
     this._read = (count: number, done: () => void): void => {
       const set = new SortedSet({ comparator: compare });
-      const onData = (item: I) => {
-        set.insert(prepare(item));
+      const onData = (item: In) => {
+        set.insert(digest(item));
       };
       const onEnd = () => {
         source.removeListener('data', onData);
@@ -43,6 +53,7 @@ export class SortingIterator<I, O> extends BufferedIterator<O> {
 
   public _read(count: number, done: () => void): void {
     let iterator = this.iterator;
+    let publish = this.publish!;
     let value;
     while (count >= 0) {
       if ((value = iterator.value()) === null) {
@@ -50,7 +61,7 @@ export class SortingIterator<I, O> extends BufferedIterator<O> {
         this.close();
         return;
       }
-      this._push(value);
+      this._push(publish(value));
       iterator = iterator.next();
       count -= 1;
     }

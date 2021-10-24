@@ -8,7 +8,7 @@ const SortedSet = require('js-sorted-set');
  * Buffers all items emitted from `source` and sorts them according to
  * `compare`.
  */
-export class SortingIterator<T> extends BufferedIterator<T> {
+export class SortingIterator<I, O> extends BufferedIterator<O> {
 
   private iterator?: any;
 
@@ -19,13 +19,13 @@ export class SortingIterator<T> extends BufferedIterator<T> {
    * @param prepare
    * @param options
    */
-  public constructor(source: AsyncIterator<T>, compare: (left: T, right: T) => number, prepare: (item: T) => T, options?: any) {
+  public constructor(source: AsyncIterator<I>, compare: (left: O, right: O) => number, prepare: (item: I) => O, options?: any) {
 
     super(options);
 
     this._read = (count: number, done: () => void): void => {
       const set = new SortedSet({ comparator: compare });
-      const onData = (item: T) => {
+      const onData = (item: I) => {
         set.insert(prepare(item));
       };
       const onEnd = () => {

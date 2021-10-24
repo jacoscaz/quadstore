@@ -12,7 +12,7 @@ import assert from 'assert';
 import * as xsd from '../lib/serialization/xsd';
 
 const dataFactory = new DataFactory();
-const qty = 1e6;
+const qty = 2e6;
 
 const doWrites = async (store: Quadstore) => {
   for (let i = 0; i < qty; i += 1) {

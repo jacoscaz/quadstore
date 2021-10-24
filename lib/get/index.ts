@@ -8,7 +8,8 @@ import type {
   Pattern,
   Prefixes,
   Quad,
-  QuadStreamResultWithInternals
+  QuadStreamResultWithInternals,
+  TermName,
 } from '../types';
 import type { AbstractIteratorOptions } from 'abstract-leveldown';
 
@@ -19,7 +20,7 @@ import { quadReader, quadWriter, writePattern } from '../serialization';
 import { SortingIterator } from './sortingIterator';
 
 
-
+const __raw = Symbol('raw')
 const __value = Buffer.alloc(32);
 
 const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery|null => {
@@ -77,17 +78,14 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
     });
     if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
       const compare = opts.reverse === true
-        // @ts-ignore
-        ? (left: Quad, right: Quad) => left.__raw > right.__raw ? -1 : 1
-        // @ts-ignore
-        : (left: Quad, right: Quad) => left.__raw > right.__raw ? 1 : -1
+        ? (left: Quad & { [__raw]: string }, right: Quad & { [__raw]: string }) => left[__raw] > right[__raw] ? -1 : 1
+        : (left: Quad & { [__raw]: string }, right: Quad & { [__raw]: string }) => left[__raw] > right[__raw] ? 1 : -1
       ;
-      const prepare = (item: Quad) => {
-        // @ts-ignore
-        item.__raw = quadWriter.write('', __value, item, opts.order, prefixes) + separator;
-        return item;
+      const prepare = (item: Quad): Quad & { [__raw]: string } => {
+        (<Quad & { [__raw]: string }>item)[__raw] = quadWriter.write('', __value, item, <TermName[]>opts.order, prefixes) + separator;
+        return <Quad & { [__raw]: string }>item;
       };
-      iterator = new SortingIterator<Quad>(iterator, compare, prepare);
+      iterator = <AsyncIterator<Quad>><unknown>new SortingIterator<Quad, Quad & { [__raw]: string }>(iterator, compare, prepare);
       if (typeof opts.limit !== 'undefined') {
         iterator = iterator.take(opts.limit);
       }

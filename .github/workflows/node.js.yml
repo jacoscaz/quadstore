@@ -19,7 +19,7 @@ jobs:
         arch: [x64]
 
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} / Node ${{ matrix.node }} ${{ matrix.arch }}
+    name: ${{ matrix.os }} / Node ${{ matrix.node-version }} ${{ matrix.arch }}
 
     steps:
     - uses: actions/checkout@v2

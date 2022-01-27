@@ -100,11 +100,15 @@ maintaining multiple indexes each of which deals with a different permutation
 of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
 that strikes a different compromise between expressiveness and performance, 
 opting to natively supporting quads while working towards minimizing 
-[the performance penalty][i4] that comes with the fourth term. 
+[the performance penalty][i4] that comes with the fourth term.
+
+Quadstore's development is supported by [Belay Engineering][i5]. <br>
+[<img src="https://belayeng.com/assets/images/logo/logo-positivo-rgb.svg" alt="Belay Engineerin's logo, the letter B made out of a continuous line" height="70">][i5]
 
 [i1]: http://nodejsconfit.levelgraph.io
 [i3]: https://github.com/levelgraph/levelgraph
 [i4]: https://github.com/levelgraph/levelgraph/issues/43#issuecomment-29519727
+[i5]: https://belayeng.com/en
 
 ## Status
 

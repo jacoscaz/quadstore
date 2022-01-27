@@ -1,5 +1,5 @@
 
-![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
+![Logo](https://github.com/belayeng/quadstore/blob/master/logo.png?raw=true)
 
 # QUADSTORE
 
@@ -268,7 +268,7 @@ const store = new Quadstore({
 });
 ```
 
-Versions of `comunica-quadstore` to be used with `quadstore`:
+Versions of `quadstore-comunica` to be used with `quadstore`:
 
 |quadstore|quadstore-comunica|
 |---|---|
@@ -279,7 +279,7 @@ Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
 project with the global community.
 
 [c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/beautifulinteractions/node-quadstore-comunica
+[c2]: https://github.com/belayeng/quadstore-comunica
 [c3]: https://github.com/comunica/comunica/graphs/contributors
 
 ##### opts.dataFactory
@@ -812,7 +812,7 @@ that is required to use `quadstore` in the browser.
 
 Rollup, ES modules and tree-shaking are not supported (yet).
  
-[b0]: https://github.com/beautifulinteractions/node-quadstore-webpack-bundle
+[b0]: https://github.com/belayeng/quadstore-webpack-bundle
 [b1]: https://github.com/Level/level-js
 
 ## Performance

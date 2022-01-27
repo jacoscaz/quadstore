@@ -1,7 +1,7 @@
 
 /*
  * License: MIT
- * Author: Jacopo Scazzosi <jacopo@beautifulinteractions.com>
+ * Author: Jacopo Scazzosi <jacopo@scazzosi.com>
  *
  * The content of this file is an implementation of an encoding
  * technique for floating point numbers. Given a set of floating

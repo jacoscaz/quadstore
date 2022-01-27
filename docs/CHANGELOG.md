@@ -4,16 +4,16 @@
 ## 9.1.0
 
 - *[fix]* fixes missing dependencies used for type declarations   
-  (https://github.com/beautifulinteractions/node-quadstore/issues/136)
+  (https://github.com/belayeng/quadstore/issues/136)
 
 ## 9.0.0
 
 - **[breaking]** removes support for DEFAULT vs. UNION default graph modes
 - *[fix]* fixes breaking blank node correlations     
-  (https://github.com/beautifulinteractions/node-quadstore/issues/134)
+  (https://github.com/belayeng/quadstore/issues/134)
 - *[fix]* fixes repeated calls to `AbstractIterator#end()`   
 - *[internal]* fixes duplicated typings for the comunica engine
-  (https://github.com/beautifulinteractions/node-quadstore/issues/129)
+  (https://github.com/belayeng/quadstore/issues/129)
 - *[internal]* offloads SPARQL UPDATE queries to Comunica
 - *[internal]* brings SPARQL spec compliance tests close to 100% passing
 
@@ -25,7 +25,7 @@
 - **[breaking]** an instance of Comunica's `ActorInitSparql` must now be passed
   to the `Quadstore` constructor via the `opts` argument, adding support for 
   Comunica configurations other than `quadstore-comunica`  
-  (https://github.com/beautifulinteractions/node-quadstore/issues/122)
+  (https://github.com/belayeng/quadstore/issues/122)
 - *[fix]* fixes deep equality checks for literal terms in tests
 - *[fix]* re-enables the symmetric join actor in Comunica  
   (https://github.com/joachimvh/asyncjoin/issues/7)
@@ -34,17 +34,17 @@
 ## v7.3.1
 
 - *[fix]* fixes broken `JOIN` SPARQL queries when `approximateSize()` rounds to 0  
-  (https://github.com/beautifulinteractions/node-quadstore/pull/127)
+  (https://github.com/belayeng/quadstore/pull/127)
 - *[fix]* fixes broken SPARQL queries due to Comunica operating in generalized
   RDF mode which can lead to literals being passed as the `subject` arg to
   `match()`  
-  (https://github.com/beautifulinteractions/node-quadstore/pull/127)
+  (https://github.com/belayeng/quadstore/pull/127)
 
 ## v7.3.0
 
 - *[new]* quad scoping support via `initScope()`, `loadScope()`,
   `deleteScope()` and `deleteAllScopes()` methods   
-  (https://github.com/beautifulinteractions/node-quadstore/issues/124)
+  (https://github.com/belayeng/quadstore/issues/124)
 - *[new]* added [`rocksdb`](https://github.com/level/rocksdb) to the list of
   tested backends
 
@@ -52,12 +52,12 @@
 
 - *[fix]* fixes broken browser builds due to naming collisions between nested
   webpack bundles  
-  (https://github.com/beautifulinteractions/node-quadstore-comunica/blob/5cfc803cb0864f089b07d3cf9850c0e377373e58/README.md#build)
+  (https://github.com/belayeng/quadstore-comunica/blob/5cfc803cb0864f089b07d3cf9850c0e377373e58/README.md#build)
 
 ## v7.2.0
 
 - *[fix]* fixes race condition within the `AsyncIterator` wrapper around `AbstractLevelIterator`  
-  (https://github.com/beautifulinteractions/node-quadstore/pull/125)
+  (https://github.com/belayeng/quadstore/pull/125)
 - *[internal]* updates to `quadstore-comunica@0.2.0` (non-minified bundle)
 - *[internal]* updates third-party dependencies to their latest versions
 
@@ -70,21 +70,21 @@
 
 - *[new]* `preWrite` hook to support atomic writes of quads plus custom
   key-value pairs  
-  (https://github.com/beautifulinteractions/node-quadstore/pull/120)
+  (https://github.com/belayeng/quadstore/pull/120)
 - *[fix]* prefix-based compaction/expansion of literal datatype IRIs  
-  (https://github.com/beautifulinteractions/node-quadstore/issues/118)
+  (https://github.com/belayeng/quadstore/issues/118)
 - *[fix]* quadstore can now be bundles using browserify without the
   `ignoreMissing` configuration param  
-  (https://github.com/beautifulinteractions/node-quadstore/issues/117)
+  (https://github.com/belayeng/quadstore/issues/117)
 - *[fix]* dropped indirect dev dependency on `@comunica/actor-init-sparql`  
-  (https://github.com/beautifulinteractions/node-quadstore/issues/116)
+  (https://github.com/belayeng/quadstore/issues/116)
 
 ## v7.0.1
 
 - *[new]* added support for range queries
 - *[new]* added support for user-defined indexes
 - *[new]* added support for SPARQL queries via
-  [quadstore-comunica](https://github.com/beautifulinteractions/node-quadstore-comunica)
+  [quadstore-comunica](https://github.com/belayeng/quadstore-comunica)
 - **[breaking]** moved to using `master` as the development branch
 - **[breaking]** dropped support for matching terms in `del()` and `patch()`
   methods

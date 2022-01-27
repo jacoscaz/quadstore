@@ -5,6 +5,7 @@ import path from 'path';
 import os from 'os';
 import * as utils from '../lib/utils';
 import fs from 'fs-extra';
+import rocksdb from 'rocksdb';
 import leveldown from 'leveldown';
 import childProcess from 'child_process';
 
@@ -21,6 +22,7 @@ export const disk = async (fn: (backend: AbstractLevelDOWN, checkDiskUsage: () =
   const dir = path.join(os.tmpdir(), `node-quadstore-${utils.nanoid()}`);
   const checkDiskUsage = () => du(dir);
   const backend = leveldown(dir);
+  // const backend = rocksdb(dir);
   await fn(backend, checkDiskUsage);
   await fs.remove(dir);
 };

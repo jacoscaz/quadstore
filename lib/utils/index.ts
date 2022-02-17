@@ -1,6 +1,7 @@
 
 import type { EventEmitter } from 'events';
 import type { TSReadable, TermName, Binding, InternalIndex, Pattern } from '../types';
+import type { AbstractLevelDOWN } from 'abstract-leveldown';
 
 import { TransformIterator } from 'asynciterator';
 import { Quad, Term } from 'rdf-js';
@@ -18,6 +19,19 @@ export const termNames: TermName[] = [
 
 export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;
+};
+
+export const isAbstractLevelDOWN = (o: any): o is AbstractLevelDOWN => {
+  return isObject(o)
+    && typeof(o.open) === 'function'
+    && typeof(o.batch) === 'function'
+  ;
+};
+
+export const ensureAbstractLevelDOWN = (o: any, key: string) => {
+  if (!isAbstractLevelDOWN(o)) {
+    throw new Error(`${key} is not an AbstractLevelDOWN instance`);
+  }
 };
 
 export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {

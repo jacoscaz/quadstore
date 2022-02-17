@@ -13,7 +13,17 @@ import { ResultType } from './types';
 import { EventEmitter } from 'events';
 import { EmptyIterator, TransformIterator } from 'asynciterator';
 
-import { consumeInBatches, consumeOneByOne, emptyObject, nanoid, streamToArray, defaultIndexes, pFromCallback, separator } from './utils';
+import {
+  consumeInBatches,
+  consumeOneByOne,
+  emptyObject,
+  nanoid,
+  streamToArray,
+  defaultIndexes,
+  pFromCallback,
+  separator,
+  ensureAbstractLevelDOWN,
+} from './utils';
 import { getApproximateSize, getStream } from './get';
 import {Scope} from './scope';
 import {quadWriter, copyBuffer} from './serialization';
@@ -32,6 +42,7 @@ export class Quadstore implements Store {
   readonly dataFactory: DataFactory;
 
   constructor(opts: StoreOpts) {
+    ensureAbstractLevelDOWN(opts.backend, '"opts.backend"');
     this.dataFactory = opts.dataFactory;
     this.db = opts.backend;
     this.indexes = [];

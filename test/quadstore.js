@@ -6,6 +6,20 @@ const {Quadstore} = require('..');
 
 module.exports = () => {
 
+  describe('Constructor', () => {
+    it('should throw if backend is not an instance of AbstractLevelDOWN', (done) => {
+      try {
+        new Quadstore({
+          dataFactory: this.dataFactory,
+          backend: 5,
+        });
+      } catch (err) {
+        console.log(err);
+        done();
+      }
+    });
+  });
+
   describe('Quadstore', () => {
 
     beforeEach(async function () {

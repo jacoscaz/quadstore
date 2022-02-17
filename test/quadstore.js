@@ -3,7 +3,6 @@
 'use strict';
 
 const {Quadstore} = require('..');
-const {newEngine} = require('quadstore-comunica');
 
 module.exports = () => {
 
@@ -15,7 +14,6 @@ module.exports = () => {
         backend: this.db,
         indexes: this.indexes,
         prefixes: this.prefixes,
-        comunica: newEngine(),
       });
       await this.store.open();
     });
@@ -29,7 +27,6 @@ module.exports = () => {
     require('./quadstore.prototype.patch')();
     require('./quadstore.prototype.put')();
     require('./quadstore.prototype.match')();
-    require('./quadstore.prototype.sparql')();
     require('./quadstore.prototype.remove')();
     require('./quadstore.prototype.import')();
     require('./quadstore.prototype.removematches')();

@@ -4,7 +4,6 @@ import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown
 import type { AsyncIterator } from 'asynciterator';
 import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
 import type { Scope } from '../scope';
-import type { IQueryEngine } from '@comunica/types';
 import {AbstractIteratorOptions} from 'abstract-leveldown';
 
 export interface BatchOpts {
@@ -50,7 +49,7 @@ export interface ApproximateSizeResult {
 export interface GetOpts {
   limit?: number,
   order?: TermName[],
-  reverse?: boolean, 
+  reverse?: boolean,
 }
 
 export interface PutStreamOpts {
@@ -105,27 +104,9 @@ export interface QuadStreamResultWithInternals extends QuadStreamResult {
   resorted: boolean,
 }
 
-export interface BindingArrayResult {
-  type: ResultType.BINDINGS,
-  items: Binding[],
-  order: string[],
-  variables: string[],
-}
-
-export interface BindingStreamResult {
-  type: ResultType.BINDINGS,
-  order: string[],
-  iterator: AsyncIterator<Binding>,
-  variables: string[],
-}
 
 export interface VoidResult {
   type: ResultType.VOID,
-}
-
-export interface BooleanResult {
-  type: ResultType.BOOLEAN;
-  value: boolean;
 }
 
 export interface Prefixes {
@@ -137,12 +118,7 @@ export interface StoreOpts {
   backend: AbstractLevelDOWN,
   prefixes?: Prefixes,
   indexes?: TermName[][],
-  comunica?: IQueryEngine,
   dataFactory: DataFactory,
-}
-
-export interface SparqlOpts {
-  baseIRI?: string,
 }
 
 export interface IndexQuery {

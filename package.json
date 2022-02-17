@@ -18,8 +18,6 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "mocha ./test",
-    "spec:query": "rdf-test-suite -c .rdf-test-suite-cache/ dist/spec/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-query/ -o summary",
-    "spec:update": "rdf-test-suite -c .rdf-test-suite-cache/ dist/spec/engine.js https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -s http://www.w3.org/TR/sparql11-update/ -o summary",
     "ts:build": "tsc --project ./tsconfig.json",
     "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
     "build": "npm run ts:build",
@@ -37,33 +35,28 @@
     "url": "https://github.com/belayeng/quadstore.git"
   },
   "devDependencies": {
+    "@types/abstract-leveldown": "^7.2.0",
     "@types/fs-extra": "^9.0.13",
     "@types/leveldown": "^4.0.3",
     "@types/memdown": "^3.0.0",
+    "@types/n3": "^1.10.4",
+    "@types/rdf-js": "^4.0.1",
     "@types/rocksdb": "^3.0.1",
-    "@types/sparqljs": "^3.1.3",
     "abstract-leveldown": "^7.2.0",
     "fs-extra": "^10.0.0",
     "leveldown": "^6.1.0",
     "memdown": "^6.1.1",
-    "mocha": "^9.1.2",
-    "n3": "^1.11.1",
-    "quadstore-comunica": "^1.2.0-alpha.0",
-    "rdf-test-suite": "^1.18.0",
-    "rocksdb": "^5.1.1",
+    "mocha": "^9.2.0",
+    "n3": "^1.13.0",
+    "rdf-data-factory": "^1.1.0",
+    "rocksdb": "^5.2.0",
     "should": "^13.2.3",
-    "typescript": "^4.4.3"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@comunica/types": "^1.22.0",
-    "@types/abstract-leveldown": "^5.0.2",
-    "@types/rdf-js": "^4.0.1",
-    "asynciterator": "^3.2.0",
+    "asynciterator": "^3.2.1",
     "js-sorted-set": "^0.7.0",
-    "nanoid": "^3.1.29",
-    "rdf-data-factory": "^1.1.0",
-    "sparqlalgebrajs": "^3.0.3",
-    "sparqljs": "^3.5.1"
+    "nanoid": "^3.3.1"
   },
   "author": "Jacopo Scazzosi <jacopo@scazzosi.com>",
   "contributors": [

@@ -3,12 +3,10 @@
 
 import type { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream } from 'rdf-js';
 import type {
-  DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts, BindingArrayResult,
-  BindingStreamResult, BooleanResult, Pattern, QuadArrayResult, QuadStreamResult, StoreOpts, VoidResult, TSReadable,
-  SparqlOpts, TermName, Prefixes, QuadArrayResultWithinternals, QuadStreamResultWithInternals
+  DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts,
+  Pattern, StoreOpts, VoidResult, TSReadable,
+  TermName, Prefixes, QuadArrayResultWithinternals, QuadStreamResultWithInternals
 } from './types';
-import type {IQueryEngine} from '@comunica/types';
-import type { Algebra } from 'sparqlalgebrajs';
 import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown';
 
 import { ResultType } from './types';
@@ -17,8 +15,6 @@ import { EmptyIterator, TransformIterator } from 'asynciterator';
 
 import { consumeInBatches, consumeOneByOne, emptyObject, nanoid, streamToArray, defaultIndexes, pFromCallback, separator } from './utils';
 import { getApproximateSize, getStream } from './get';
-import { sparql, sparqlStream } from './sparql';
-import {DataFactory as RdfDataFactory} from 'rdf-data-factory';
 import {Scope} from './scope';
 import {quadWriter, copyBuffer} from './serialization';
 
@@ -31,19 +27,17 @@ export class Quadstore implements Store {
   readonly indexes: InternalIndex[];
   readonly id: string;
 
-  readonly comunica?: IQueryEngine;
   readonly prefixes: Prefixes;
 
   readonly dataFactory: DataFactory;
 
   constructor(opts: StoreOpts) {
-    this.dataFactory = opts.dataFactory || new RdfDataFactory();
+    this.dataFactory = opts.dataFactory;
     this.db = opts.backend;
     this.indexes = [];
     this.id = nanoid();
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
-    this.comunica = opts.comunica;
     this.prefixes = opts.prefixes || {
       expandTerm: term => term,
       compactIri: iri => iri,
@@ -54,13 +48,6 @@ export class Quadstore implements Store {
     if (this.db.status !== 'open') {
       throw new Error(`Store is not ready (status: "${this.db.status}"). Did you call store.open()?`);
     }
-  }
-
-  protected ensureComunica(): IQueryEngine {
-    if (!this.comunica) {
-      throw new Error('SPARQL feature are disabled as no Comunica engine was passed to the Quadstore() constructor');
-    }
-    return this.comunica;
   }
 
   protected waitForStatus(status: string, timeout: number = 200) {
@@ -196,11 +183,6 @@ export class Quadstore implements Store {
     return await getApproximateSize(this, pattern, opts);
   }
 
-  async sparql(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadArrayResult|BindingArrayResult|VoidResult|BooleanResult> {
-    this.ensureReady();
-    return await sparql(this, this.ensureComunica(), query, opts);
-  }
-
   async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     let batch = this.db.batch();
@@ -329,11 +311,6 @@ export class Quadstore implements Store {
       await consumeInBatches<Quad>(source, batchSize, quads => this.multiDel(quads));
     }
     return { type: ResultType.VOID };
-  }
-
-  async sparqlStream(query: Algebra.Operation|string, opts: SparqlOpts = emptyObject): Promise<QuadStreamResult|BindingStreamResult|VoidResult|BooleanResult> {
-    this.ensureReady();
-    return await sparqlStream(this, this.ensureComunica(), query, opts);
   }
 
   async initScope(): Promise<Scope> {

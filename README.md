@@ -33,8 +33,6 @@ interfaces and SPARQL queries.
     - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
     - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
     - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
-    - [Quadstore.prototype.sparql](#quadstoreprototypesparql)
-    - [Quadstore.prototype.sparqlStream](#quadstoreprototypesparqlstream)
     - [Quadstore.prototype.match](#quadstoreprototypematch)
     - [Quadstore.prototype.import](#quadstoreprototypeimport)
     - [Quadstore.prototype.remove](#quadstoreprototyperemove)
@@ -44,7 +42,7 @@ interfaces and SPARQL queries.
         - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
         - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
         - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
-- [SPARQL spec](#sparql-spec)
+- [SPARQL](#sparql)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
@@ -246,45 +244,6 @@ are:
 
 The `opts.backend` option **must** be an instance of a leveldb backend.
 See [storage backends](#storage-backends).
-
-##### opts.comunica (optional)
-
-The `opts.comunica` option, if provided, **must** be an implementation of 
-[Comunica][c1]'s `IQueryEngine` interface.
-
-> Comunica is a meta query engine using which query engines can be created. 
-> It does this by providing a set of modules that can be wired together in a
-> flexible manner. [...] Its primary goal is executing SPARQL queries over one
-> or more interfaces.
-
-`Quadstore` instances will use the provided `IQueryEngine` implementation to
-run SPARQL queries. 
-
-A custom distribution of the Comunica framework optimized for bundle size and
-dependency count is available at [quadstore-comunica][c2] and can be used as 
-follows:
-
-```js
-import {newEngine} from 'quadstore-comunica';
-const store = new Quadstore({ 
-  /* other options... */ 
-  comunica: newEngine(), 
-});
-```
-
-Versions of `quadstore-comunica` to be used with `quadstore`:
-
-|quadstore|quadstore-comunica|
-|---|---|
-|`quadstore@latest`|`quadstore-comunica@latest`|
-|`quadstore@alpha`|`quadstore-comunica@alpha`|
-
-Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
-project with the global community.
-
-[c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/belayeng/quadstore-comunica
-[c3]: https://github.com/comunica/comunica/graphs/contributors
 
 ##### opts.dataFactory
 
@@ -584,47 +543,6 @@ await store.delStream(readableStream);
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
-### Quadstore.prototype.sparql()
-
-The `sparql()` method provides support for non-streaming SPARQL queries.
-Objects returned by `sparql()` have their `type` property set to different
-values depending on each specific query:
-
-- `SELECT` queries will result in objects having their `type` property 
-  set to `"BINDINGS"`;
-- `CONSTRUCT` queries will result in objects objects having their `type`
-  property set to `"QUADS"`;
-- `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and 
-  `INSERT/DELETE WHERE` will result in objects having their `type` property set
-  to either `"VOID"` or `"BOOLEAN"`.
-  
-```js
-const { type, items } = await store.sparql(`
-  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
-`);
-```
-
-This method will throw an error if no instance of `IQueryEngine` is passed
-to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
-
-### Quadstore.prototype.sparqlStream()
-
-The `sparqlStream()` method provides support for streaming SPARQL queries.
-Objects returned by `sparqlStream()` have their `type` property set to
-different values depending on each specific query, as for `sparql()`.
-`sparqlStream()` also accepts the same options as `sparql()`.
-
-```js
-const { iterator } = await store.sparqlStream(`
-  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
-`);
-```
-
-This method will throw an error if no instance of `IQueryEngine` is passed
-to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
-
-See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
-
 ### Quadstore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
@@ -789,20 +707,36 @@ Deletes all mappings of all scopes from the store.
 await store.deleteAllScopes();
 ```
 
-## SPARQL spec
+## SPARQL
 
-We're using the [`rdf-test-suite`][s4] package to validate our
-support for SPARQL queries against official test suites published by the W3C.
+SPARQL queries can be executed against a `Quadstore` instance using any query
+engine capable of querying across data sources implementing the relevant RDF/JS
+interfaces.
 
-We're currently testing against the following manifests:
+An example of one such engine is [quadstore-comunica][c2], an engine built as
+a custom distribution and configuration of [Comunica][c1]:
 
-- [SPARQL 1.1][s2] / [QUERY][s3]: 289/290 tests passing (`npm run spec:query`)
-- [SPARQL 1.1][s2] / [UPDATE][s5]: 155/156 tests passing (`npm run spec:update`)
+> Comunica is a knowledge graph querying framework. [...] Comunica is a meta
+> query engine using which query engines can be created. It does this by
+> providing a set of modules that can be wired together in a flexible manner.
+> [...] Its primary goal is executing SPARQL queries over one or more
+> interfaces.
 
-[s2]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
-[s3]: http://www.w3.org/TR/sparql11-query/
-[s5]: http://www.w3.org/TR/sparql11-update/
-[s4]: https://www.npmjs.com/package/rdf-test-suite
+Instantiating `quadstore-comunica` is easy:
+
+```typescript
+import { Quadstore } from 'quadstore';
+import { Engine } from 'quadstore-comunica';
+
+const store = new Quadstore({ /* ... */ });
+const engine = new Engine({ store });
+
+// TODO
+```
+
+[c1]: https://github.com/comunica/comunica
+[c2]: https://github.com/belayeng/quadstore-comunica
+[c3]: https://github.com/comunica/comunica/graphs/contributors
 
 ## Browser usage
 

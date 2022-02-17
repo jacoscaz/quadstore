@@ -1,6 +1,12 @@
 
 # CHANGELOG
 
+## 10.0.0
+
+- **[breaking]** moves SPARQL support all into `quadstore-comunica`
+- **[breaking]** does not include a default `DataFactory` implementation
+  anymore
+
 ## 9.1.0
 
 - *[fix]* fixes missing dependencies used for type declarations   

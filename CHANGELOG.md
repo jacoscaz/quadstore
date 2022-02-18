@@ -3,9 +3,20 @@
 
 ## 10.0.0
 
-- **[breaking]** moves SPARQL support all into `quadstore-comunica`
-- **[breaking]** does not include a default `DataFactory` implementation
-  anymore
+- **[breaking]** drops all SPARQL-related features in favor of
+  `quadstore-comunica`, for greater separation of concerns
+- **[breaking]** stops shipping `rdf-data-factory` as the default
+  implementation of RDF/JS's `DataFactory` interface
+- *[fix]* throws when `backend` is not an instance of `AbstractLevelDOWN`    
+  (https://github.com/belayeng/quadstore/issues/140)
+- *[fix]* lands upstream fix to variable seletion in SPARQL OPTIONAL clauses
+  (https://github.com/belayeng/quadstore/issues/142)
+- *[internal]* replaces `immutable` and `decimal.js` with smaller
+  alternatives in `quadstore-comunica`, dropping ~60 kB from the 
+  final bundle size     
+  (https://github.com/belayeng/quadstore/issues/143)
+- *[docs]* adds basic example to `README`     
+  (https://github.com/belayeng/quadstore/issues/145)
 
 ## 9.1.0
 

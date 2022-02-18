@@ -9,6 +9,7 @@ interfaces and SPARQL queries.
 
 ## Table of contents
 
+- [Example of basic usage](#example-of-basic-usage)
 - [Introduction](#introduction)
 - [Status](#status)
   - [Roadmap](#roadmap)
@@ -33,8 +34,6 @@ interfaces and SPARQL queries.
   - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
   - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
   - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
-  - [Quadstore.prototype.sparql](#quadstoreprototypesparql)
-  - [Quadstore.prototype.sparqlStream](#quadstoreprototypesparqlstream)
   - [Quadstore.prototype.match](#quadstoreprototypematch)
   - [Quadstore.prototype.import](#quadstoreprototypeimport)
   - [Quadstore.prototype.remove](#quadstoreprototyperemove)
@@ -44,10 +43,48 @@ interfaces and SPARQL queries.
     - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
     - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
     - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
-- [SPARQL spec](#sparql-spec)
+- [SPARQL](#sparql)
 - [Browser usage](#browser-usage)
 - [Performance](#performance)
 - [License](#license)
+
+## Example of basic usage
+
+```typescript
+import memdown from 'memdown';
+import {DataFactory} from 'rdf-data-factory';
+import {Quadstore} from 'quadstore';
+import {Engine} from 'quadstore-comunica';
+
+// Any implementation of AbstractLevelDOWN can be used.
+// For server-side persistence, use `leveldown` or `rocksdb`.
+const backend = memdown();
+
+// Implementation of the RDF/JS DataFactory interface
+const df = new DataFactory();           
+
+// Store and query engine are separate modules
+const store = new Quadstore({backend, dataFactory: df});
+const engine = new Engine(store);
+
+// Put a single quad into the store using Quadstore's API
+store.put(df.quad(                      
+  df.namedNode('http://example.com/subject'),
+  df.namedNode('http://example.com/predicate'),
+  df.namedNode('http://example.com/object'),
+  df.defaultGraph(),
+));
+
+// Retrieves all quads using Quadstore's API  
+const { items } = await store.get({});
+
+// Retrieves all quads using RDF/JS Stream interfaces
+const quadsStream = store.match(undefined, undefined, undefined, undefined);
+
+// Queries the store via RDF/JS Query interfaces
+const query = await engine.query('SELECT * {?s ?p ?o}');
+const bindingsStream = await query.execute();
+```
 
 ## Introduction
 
@@ -122,15 +159,14 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 Current version(s):
 
-- version `9.1.0` available on NPM under the tag `latest`
-- version `9.2.0-alpha.0` available on NPM under the tag `alpha`
+- version `10.0.0-beta.0` available on NPM under the tag `latest`
 
 ### Roadmap
 
 We're currently working on the following features:
 
-- expanding support for SPARQL queries;
-- general performance improvements.
+- optimizing SPARQL performance by pushing filters down from the engine
+  to the persistence layer
 
 We're also evaluating the following features for future developments:
 
@@ -246,45 +282,6 @@ are:
 
 The `opts.backend` option **must** be an instance of a leveldb backend.
 See [storage backends](#storage-backends).
-
-##### opts.comunica (optional)
-
-The `opts.comunica` option, if provided, **must** be an implementation of
-[Comunica][c1]'s `IQueryEngine` interface.
-
-> Comunica is a meta query engine using which query engines can be created.
-> It does this by providing a set of modules that can be wired together in a
-> flexible manner. [...] Its primary goal is executing SPARQL queries over one
-> or more interfaces.
-
-`Quadstore` instances will use the provided `IQueryEngine` implementation to
-run SPARQL queries.
-
-A custom distribution of the Comunica framework optimized for bundle size and
-dependency count is available at [quadstore-comunica][c2] and can be used as
-follows:
-
-```js
-import {newEngine} from 'quadstore-comunica';
-const store = new Quadstore({ 
-  /* other options... */ 
-  comunica: newEngine(), 
-});
-```
-
-Versions of `quadstore-comunica` to be used with `quadstore`:
-
-|quadstore|quadstore-comunica|
-|---|---|
-|`quadstore@latest`|`quadstore-comunica@latest`|
-|`quadstore@alpha`|`quadstore-comunica@alpha`|
-
-Many thanks to [Comunica's contributors][c3] for sharing such a wonderful
-project with the global community.
-
-[c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/belayeng/quadstore-comunica
-[c3]: https://github.com/comunica/comunica/graphs/contributors
 
 ##### opts.dataFactory
 
@@ -584,47 +581,6 @@ await store.delStream(readableStream);
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
 
-### Quadstore.prototype.sparql()
-
-The `sparql()` method provides support for non-streaming SPARQL queries.
-Objects returned by `sparql()` have their `type` property set to different
-values depending on each specific query:
-
-- `SELECT` queries will result in objects having their `type` property
-  set to `"BINDINGS"`;
-- `CONSTRUCT` queries will result in objects objects having their `type`
-  property set to `"QUADS"`;
-- `UPDATE` queries such as `INSERT DATA`, `DELETE DATA` and
-  `INSERT/DELETE WHERE` will result in objects having their `type` property set
-  to either `"VOID"` or `"BOOLEAN"`.
-
-```js
-const { type, items } = await store.sparql(`
-  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
-`);
-```
-
-This method will throw an error if no instance of `IQueryEngine` is passed
-to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
-
-### Quadstore.prototype.sparqlStream()
-
-The `sparqlStream()` method provides support for streaming SPARQL queries.
-Objects returned by `sparqlStream()` have their `type` property set to
-different values depending on each specific query, as for `sparql()`.
-`sparqlStream()` also accepts the same options as `sparql()`.
-
-```js
-const { iterator } = await store.sparqlStream(`
-  SELECT * WHERE { ?s <ex://knows> <ex://alice> . }
-`);
-```
-
-This method will throw an error if no instance of `IQueryEngine` is passed
-to the `Quadstore()` constructor (see [opts.comunica](#optscomunica-optional)).
-
-See [Quadstore.prototype.sparql()](#quadstoreprototypesparql).
-
 ### Quadstore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
@@ -789,20 +745,46 @@ Deletes all mappings of all scopes from the store.
 await store.deleteAllScopes();
 ```
 
-## SPARQL spec
+## SPARQL
 
-We're using the [`rdf-test-suite`][s4] package to validate our
-support for SPARQL queries against official test suites published by the W3C.
+SPARQL queries can be executed against a `Quadstore` instance using any query
+engine capable of querying across RDF/JS data sources.
 
-We're currently testing against the following manifests:
+An example of one such engine is [quadstore-comunica][c2], an engine built as
+a custom distribution and configuration of [Comunica][c1] that implements the
+[RDF/JS Query spec][c4].:
 
-- [SPARQL 1.1][s2] / [QUERY][s3]: 289/290 tests passing (`npm run spec:query`)
-- [SPARQL 1.1][s2] / [UPDATE][s5]: 155/156 tests passing (`npm run spec:update`)
+> Comunica is a knowledge graph querying framework. [...] Comunica is a meta
+> query engine using which query engines can be created. It does this by
+> providing a set of modules that can be wired together in a flexible manner.
+> [...] Its primary goal is executing SPARQL queries over one or more
+> interfaces.
 
-[s2]: https://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl
-[s3]: http://www.w3.org/TR/sparql11-query/
-[s5]: http://www.w3.org/TR/sparql11-update/
-[s4]: https://www.npmjs.com/package/rdf-test-suite
+In time, [quadstore-comunica][c2] will be extended with custom query modules
+that will optimize query performance by pushing some matching and ordering
+operations down to quadstore itself.
+
+```typescript
+import memdown from 'memdown';
+import {DataFactory} from 'rdf-data-factory';
+import {Quadstore} from 'quadstore';
+import {Engine} from 'quadstore-comunica';
+
+const backend = memdown();
+const df = new DataFactory();
+const store = new Quadstore({backend, dataFactory: df});
+const engine = new Engine(store);
+
+const query = await engine.query('SELECT * {?s ?p ?o}');
+const bindingsStream = await query.execute();
+```
+
+More information on [quadstore-comunica][c2]'s repository.
+
+[c1]: https://github.com/comunica/comunica
+[c2]: https://github.com/belayeng/quadstore-comunica
+[c3]: https://github.com/comunica/comunica/graphs/contributors
+[c4]: https://rdf.js.org/query-spec/
 
 ## Browser usage
 

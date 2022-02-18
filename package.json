@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "10.0.0-alpha.0",
+  "version": "10.0.0-beta.0",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",

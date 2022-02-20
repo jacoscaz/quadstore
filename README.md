@@ -215,33 +215,25 @@ Objects returned by `quadstore`'s APIs have the `type` property set to one of
 the following values:
 
 - `"VOID"` - when there's no data returned by the database, such as with the
-  `put` method or `INSERT DATA` SPARQL queries;
+  `put` method;
 - `"QUADS"` - when a query returns a collection of quads;
-- `"BOOLEAN"` - when a query returns a boolean result;
-- `"BINDINGS"` - when a query returns a collection of bindings;
 - `"APPROXIMATE_SIZE"` - when a query returns an approximate count of how many
   matching items are present.
 
-For those methods that return objects with the `type` property set to either
-`"QUADS"` or `"BINDINGS"`, `quadstore` provides query results either in streaming
-mode or in non-streaming mode. 
+For those methods that return objects with the `type` property set to
+`"QUADS"`, `quadstore` provides query results either in streaming mode or in
+non-streaming mode. 
   
-Streaming methods such as `getStream` and `searchStream` return objects with
-the `iterator` property set to an instance of [`AsyncIterator`][dm-4],
-an implementation of a subset of the `stream.Readable` interface. This instance
-emits either quads or bindings, depending on the value of the `type` property.
+Streaming methods such as `getStream` return objects with the `iterator`
+property set to an instance of [`AsyncIterator`][dm-4], an implementation of a
+subset of the `stream.Readable` interface.
 
-Non-streaming methods such as `get` and `search` return objects with the
-`items` property set to an array of either quads or bindings, depending on the
-value of the `type` property.
+Non-streaming methods such as `get` return objects with the `items` property
+set to an array of quads.
 
 Quads are returned as and expected to be instances of the
  [RDF/JS `Quad` interface][dm-1] as produced by the implementation of the 
  [RDF/JS `DataFactory` interface][dm-1] passed to the `Quadstore` constructor.
-
-Bindings are returned as and expected to be maps of variable names
-(including `?`) to instances of the [RDF/JS Term interface][dm-1] as produced
-by the same implementation of the [RDF/JS DataFactory interface][dm-1].
 
 Matching patterns, such as those used in the `get` and `getStream` methods, 
 are expected to be maps of term names to instances of the
@@ -289,12 +281,9 @@ The `dataFactory` option *must* be an implementation of the
 [RDF/JS DataFactory interface][dm-1]. Some of the available
 implementations: 
 
-- [rdf-data-factory](https://www.npmjs.com/package/rdf-data-factory) (default)
+- [rdf-data-factory](https://www.npmjs.com/package/rdf-data-factory)
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)
 - [N3.DataFactory](https://www.npmjs.com/package/n3)
-
-If left undefined, `quadstore` will automatically instantiate 
-one using `rdf-data-factory`.
 
 ##### opts.indexes
 
@@ -792,7 +781,7 @@ The [`level-js`][b1] backend for levelDB offers support for browser-side
 persistent storage. 
 
 `quadstore` can be bundled for browser-side usage via Webpack, preferably using
-version 4.x. The [reference repository][b0] is meant to help in getting to a
+version 5.x. The [reference repository][b0] is meant to help in getting to a
 working Webpack configuration and also hosts a pre-built bundle with everything
 that is required to use `quadstore` in the browser.
 
@@ -847,19 +836,6 @@ density of **~6.5k quads per MB**. Due to the six indexes, this translates to
 target.
 
 [21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz
-
-### Join queries
-
-We track the computational cost of handling `get()` and `getStream()` queries
-(setting up iterators, etc...) by running a benchmark based on a SPARQL query
-that results in a high number of concatenated join operations, each producing
-a single quad.
-
-```
-node dist/perf/search.js
-```
-
-Quadstore is currently able to process **~5k join operations per second**.
 
 ## LICENSE
 

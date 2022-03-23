@@ -9,10 +9,10 @@
   implementation of RDF/JS's `DataFactory` interface
 - *[fix]* throws when `backend` is not an instance of `AbstractLevelDOWN`    
   (https://github.com/belayeng/quadstore/issues/140)
-- *[fix]* lands upstream fix to variable seletion in SPARQL OPTIONAL clauses
+- *[fix]* lands upstream fix to variable selection in SPARQL OPTIONAL clauses
   (https://github.com/belayeng/quadstore/issues/142)
 - *[internal]* replaces `immutable` and `decimal.js` with smaller
-  alternatives in `quadstore-comunica`, dropping ~60 kB from the
+  alternatives in `quadstore-comunica`, dropping ~60 kB from the 
   final bundle size     
   (https://github.com/belayeng/quadstore/issues/143)
 - *[docs]* adds basic example to `README`     
@@ -28,7 +28,7 @@
 - **[breaking]** removes support for DEFAULT vs. UNION default graph modes
 - *[fix]* fixes breaking blank node correlations     
   (https://github.com/belayeng/quadstore/issues/134)
-- *[fix]* fixes repeated calls to `AbstractIterator#end()`
+- *[fix]* fixes repeated calls to `AbstractIterator#end()`   
 - *[internal]* fixes duplicated typings for the comunica engine
   (https://github.com/belayeng/quadstore/issues/129)
 - *[internal]* offloads SPARQL UPDATE queries to Comunica
@@ -36,11 +36,11 @@
 
 ## 8.0.0
 
-- **[breaking]** deep revision of the serialization mechanism to remove
+- **[breaking]** deep revision of the serialization mechanism to remove 
   duplicated quad serializations across indexes
 - **[breaking]** removes support for custom `separator` and `boundary`
 - **[breaking]** an instance of Comunica's `ActorInitSparql` must now be passed
-  to the `Quadstore` constructor via the `opts` argument, adding support for
+  to the `Quadstore` constructor via the `opts` argument, adding support for 
   Comunica configurations other than `quadstore-comunica`  
   (https://github.com/belayeng/quadstore/issues/122)
 - *[fix]* fixes deep equality checks for literal terms in tests

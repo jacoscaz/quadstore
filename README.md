@@ -155,12 +155,6 @@ Active, under development.
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-### Current version
-
-Current version(s): 
-
-- version `10.0.0-beta.0` available on NPM under the tag `latest`
-
 ### Roadmap
 
 We're currently working on the following features:

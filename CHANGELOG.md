@@ -9,7 +9,7 @@
   implementation of RDF/JS's `DataFactory` interface
 - *[fix]* throws when `backend` is not an instance of `AbstractLevelDOWN`    
   (https://github.com/belayeng/quadstore/issues/140)
-- *[fix]* lands upstream fix to variable seletion in SPARQL OPTIONAL clauses
+- *[fix]* lands upstream fix to variable selection in SPARQL OPTIONAL clauses
   (https://github.com/belayeng/quadstore/issues/142)
 - *[internal]* replaces `immutable` and `decimal.js` with smaller
   alternatives in `quadstore-comunica`, dropping ~60 kB from the 

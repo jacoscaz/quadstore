@@ -14,7 +14,6 @@ module.exports = () => {
           backend: 5,
         });
       } catch (err) {
-        console.log(err);
         done();
       }
     });

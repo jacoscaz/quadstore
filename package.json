@@ -43,20 +43,19 @@
     "@types/rdf-js": "^4.0.1",
     "@types/rocksdb": "^3.0.1",
     "abstract-leveldown": "^7.2.0",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^10.0.1",
     "leveldown": "^6.1.0",
     "memdown": "^6.1.1",
-    "mocha": "^9.2.0",
-    "n3": "^1.13.0",
+    "mocha": "^9.2.2",
+    "n3": "^1.15.0",
     "rdf-data-factory": "^1.1.0",
     "rocksdb": "^5.2.0",
     "should": "^13.2.3",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.2"
   },
   "dependencies": {
-    "asynciterator": "^3.2.1",
-    "js-sorted-set": "^0.7.0",
-    "nanoid": "^3.3.1"
+    "asynciterator": "^3.3.0",
+    "js-sorted-set": "^0.7.0"
   },
   "author": "Jacopo Scazzosi <jacopo@scazzosi.com>",
   "contributors": [

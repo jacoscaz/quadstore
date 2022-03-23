@@ -1,6 +1,6 @@
 
 import type { EventEmitter } from 'events';
-import type { TSReadable, TermName, Binding, InternalIndex, Pattern } from '../types';
+import type { TSReadable, TermName, Binding } from '../types';
 import type { AbstractLevelDOWN } from 'abstract-leveldown';
 
 import { TransformIterator } from 'asynciterator';
@@ -8,7 +8,7 @@ import { Quad, Term } from 'rdf-js';
 
 export { flatMap } from './flatmap';
 export { pReduce } from './p-reduce';
-export { nanoid } from 'nanoid';
+export { nanoid } from './nanoid';
 
 export const termNames: TermName[] = [
   'subject',

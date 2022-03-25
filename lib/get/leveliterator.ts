@@ -1,9 +1,10 @@
 
 import type { AbstractIterator } from 'abstract-leveldown';
-
-import {BufferedIterator} from 'asynciterator';
+import { BufferedIterator } from 'asynciterator';
 
 type MapFn<K, V, T> = (key: K, value: V) => T;
+type OnNextValue<K, V> = (err: Error | undefined, key: K, value: V) => any;
+type ReadState<K, V> = { remaining: number, next: OnNextValue<K, V> };
 
 export class LevelIterator<K, V, T> extends BufferedIterator<T> {
 
@@ -12,32 +13,24 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
   private levelEnded: boolean;
 
   constructor(levelIterator: AbstractIterator<K, V>, mapper: MapFn<K, V, T>) {
-    super();
+    super({ maxBufferSize: 64 });
     this.mapFn = mapper;
     this.level = levelIterator;
     this.levelEnded = false;
   }
 
   _read(qty: number, done: (err?: Error) => void) {
-    const loop = (remaining: number) => {
-      if (remaining === 0) {
-        done();
-        return;
-      }
-      this.level.next((err, key: K, value: V) => {
-        this.onNextValue(err, key, value, remaining, loop, done);
-      });
-    };
-    loop(qty);
+    const state: Partial<ReadState<K, V>> = { remaining: qty };
+    state.next = this._onNextValue.bind(this, state as ReadState<K, V>, done);
+    this.level.next(state.next);
   }
 
-  protected onNextValue(
+  protected _onNextValue(
+    state: ReadState<K, V>,
+    done: (err?: Error) => void,
     err: Error|undefined,
     key: K,
     value: V,
-    remaining: number,
-    loop: (remaining: number) => void,
-    done: (err?: Error) => void,
   ) {
     if (err) {
       done(err);
@@ -50,13 +43,18 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
       return;
     }
     this._push(this.mapFn(key, value));
-    loop(remaining - 1);
+    state.remaining -= 1;
+    if (state.remaining === 0) {
+      done();
+      return;
+    }
+    this.level.next(state.next);
   };
 
   /**
    * Ends the internal AbstractIterator instance.
    */
-  protected endLevel(cb: (err?: Error) => void) {
+  protected _endLevel(cb: (err?: Error) => void) {
     if (this.levelEnded) {
       cb();
       return;
@@ -75,7 +73,7 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
       return;
     }
     super._end(destroy);
-    this.endLevel((endErr) => {
+    this._endLevel((endErr) => {
       if (endErr) {
         this.emit('error', endErr);
       }
@@ -87,7 +85,7 @@ export class LevelIterator<K, V, T> extends BufferedIterator<T> {
       cb();
       return;
     }
-    this.endLevel((endErr?: Error) => {
+    this._endLevel((endErr?: Error) => {
       if (endErr) {
         cb(endErr);
         return;

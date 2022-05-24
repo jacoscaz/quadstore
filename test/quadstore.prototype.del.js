@@ -1,7 +1,7 @@
 
 'use strict';
 
-const _ = require('../dist/lib/utils');
+const _ = require('../dist/utils');
 const should = require('should');
 
 module.exports = () => {

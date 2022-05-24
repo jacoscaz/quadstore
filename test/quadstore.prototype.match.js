@@ -1,11 +1,11 @@
 
 'use strict';
 
-const _ = require('../dist/lib/utils');
-const utils = require('../dist/lib/utils');
+const _ = require('../dist/utils');
+const utils = require('../dist/utils');
 const should = require('should');
 const AsyncIterator = require('asynciterator');
-const {DefaultGraphMode} = require('../dist/lib/types');
+const {DefaultGraphMode} = require('../dist/types');
 
 module.exports = () => {
 

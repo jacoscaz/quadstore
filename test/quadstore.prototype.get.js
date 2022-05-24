@@ -1,8 +1,8 @@
 
 'use strict';
 
-const _ = require('../dist/lib/utils');
-const xsd = require('../dist/lib/serialization/xsd');
+const _ = require('../dist/utils');
+const xsd = require('../dist/serialization/xsd');
 const should = require('should');
 
 module.exports = () => {

@@ -6,10 +6,10 @@ import { sliceString } from './utils';
 
 export const namedNodeWriter = {
   writtenValueBytes: 2,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: NamedNode, prefixes: Prefixes) {
+  write(value: DataView|undefined, valueOffset: number, node: NamedNode, prefixes: Prefixes) {
     const compactedIri = prefixes.compactIri(node.value);
     if (value) {
-      value.writeUInt16LE(compactedIri.length, valueOffset);
+      value.setUint16(valueOffset, compactedIri.length, true);
     }
     return compactedIri;
   },
@@ -18,8 +18,8 @@ export const namedNodeWriter = {
 export const namedNodeReader = {
   readValueBytes: 2,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory, prefixes: Prefixes): NamedNode {
-    const valueLen = value.readUInt16LE(valueOffset);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, prefixes: Prefixes): NamedNode {
+    const valueLen = value.getUint16(valueOffset, true);
     this.readKeyChars = valueLen;
     return factory.namedNode(prefixes.expandTerm(sliceString(key, keyOffset, valueLen)));
   },
@@ -27,9 +27,9 @@ export const namedNodeReader = {
 
 export const blankNodeWriter = {
   writtenValueBytes: 2,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: BlankNode) {
+  write(value: DataView|undefined, valueOffset: number, node: BlankNode) {
     if (value) {
-      value.writeUInt16LE(node.value.length, valueOffset);
+      value.setUint16(valueOffset, node.value.length, true);
     }
     return node.value;
   },
@@ -38,8 +38,8 @@ export const blankNodeWriter = {
 export const blankNodeReader = {
   readValueBytes: 2,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory): BlankNode {
-    const valueLen = value.readUInt16LE(valueOffset);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): BlankNode {
+    const valueLen = value.getUint16(valueOffset, true);
     this.readKeyChars = valueLen;
     return factory.blankNode(sliceString(key, keyOffset, valueLen));
   },
@@ -47,10 +47,10 @@ export const blankNodeReader = {
 
 export const genericLiteralWriter = {
   writtenValueBytes: 4,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: Literal, separator: string) {
+  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string) {
     if (value) {
-      value.writeUInt16LE(node.value.length, <number>valueOffset);
-      value.writeUInt16LE(node.datatype.value.length, <number>valueOffset + 2);
+      value.setUint16(valueOffset, node.value.length, true);
+      value.setUint16(valueOffset + 2, node.datatype.value.length,  true);
     }
     return node.datatype.value + separator + node.value;
   },
@@ -59,9 +59,9 @@ export const genericLiteralWriter = {
 export const genericLiteralReader = {
   readValueBytes: 4,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.readUInt16LE(valueOffset);
-    const datatypeValueLen = value.readUInt16LE(valueOffset + 2);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value.getUint16(valueOffset, true);
+    const datatypeValueLen = value.getUint16(valueOffset + 2, true);
     this.readKeyChars = valueLen + datatypeValueLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + datatypeValueLen + separator.length, valueLen),
@@ -72,9 +72,9 @@ export const genericLiteralReader = {
 
 export const stringLiteralWriter = {
   writtenValueBytes: 2,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: Literal) {
+  write(value: DataView|undefined, valueOffset: number, node: Literal) {
     if (value) {
-      value.writeUInt16LE(node.value.length, valueOffset);
+      value.setUint16(valueOffset, node.value.length, true);
     }
     return node.value;
   },
@@ -83,8 +83,8 @@ export const stringLiteralWriter = {
 export const stringLiteralReader = {
   readValueBytes: 2,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory): Literal {
-    const valueLen = value.readUInt16LE(valueOffset);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): Literal {
+    const valueLen = value.getUint16(valueOffset, true);
     this.readKeyChars = valueLen;
     return factory.literal(sliceString(key, keyOffset, valueLen));
   },
@@ -92,10 +92,10 @@ export const stringLiteralReader = {
 
 export const langStringLiteralWriter = {
   writtenValueBytes: 4,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: Literal, separator: string) {
+  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string) {
     if (value) {
-      value.writeUInt16LE(node.value.length, valueOffset);
-      value.writeUInt16LE(node.language.length, <number>valueOffset + 2);
+      value.setUint16(valueOffset, node.value.length, true);
+      value.setUint16(valueOffset + 2, node.language.length, true);
     }
     return node.language + separator + node.value;
   },
@@ -104,9 +104,9 @@ export const langStringLiteralWriter = {
 export const langStringLiteralReader = {
   readValueBytes: 4,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.readUInt16LE(valueOffset);
-    const langCodeLen = value.readUInt16LE(valueOffset + 2);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value.getUint16(valueOffset, true);
+    const langCodeLen = value.getUint16(valueOffset + 2, true);
     this.readKeyChars = valueLen + langCodeLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + langCodeLen + separator.length, valueLen),
@@ -117,11 +117,11 @@ export const langStringLiteralReader = {
 
 export const numericLiteralWriter = {
   writtenValueBytes: 6,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: Literal, separator: string, encodedNumericValue: string, rangeMode: boolean) {
+  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string, encodedNumericValue: string, rangeMode: boolean) {
     if (value) {
-      value.writeUInt16LE(node.value.length, valueOffset);
-      value.writeUInt16LE(node.datatype.value.length, <number>valueOffset + 2);
-      value.writeUInt16LE(encodedNumericValue.length, <number>valueOffset + 4);
+      value.setUint16(valueOffset, node.value.length, true);
+      value.setUint16(valueOffset + 2, node.datatype.value.length, true);
+      value.setUint16(valueOffset + 4, encodedNumericValue.length, true);
     }
     let ret = encodedNumericValue;
     if (!rangeMode) {
@@ -134,10 +134,10 @@ export const numericLiteralWriter = {
 export const numericLiteralReader = {
   readValueBytes: 6,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.readUInt16LE(valueOffset);
-    const datatypeValueLen = value.readUInt16LE(valueOffset + 2);
-    const numericValueLen = value.readUInt16LE(valueOffset + 4);
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value.getUint16(valueOffset, true);
+    const datatypeValueLen = value.getUint16(valueOffset + 2, true);
+    const numericValueLen = value.getUint16(valueOffset + 4, true);
     this.readKeyChars = numericValueLen + datatypeValueLen + valueLen + (separator.length * 2);
     return factory.literal(
       sliceString(key, keyOffset + numericValueLen + separator.length + datatypeValueLen + separator.length, valueLen),
@@ -148,9 +148,9 @@ export const numericLiteralReader = {
 
 export const defaultGraphWriter = {
   writtenValueBytes: 2,
-  write(value: Buffer|undefined, valueOffset: number|undefined, node: DefaultGraph) {
+  write(value: DataView|undefined, valueOffset: number, node: DefaultGraph) {
     if (value) {
-      value.writeUInt16LE(2, valueOffset);
+      value.setUint16(valueOffset, 2, true);
     }
     return 'dg';
   },
@@ -159,7 +159,7 @@ export const defaultGraphWriter = {
 export const defaultGraphReader = {
   readValueBytes: 2,
   readKeyChars: 2,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, factory: DataFactory): DefaultGraph {
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): DefaultGraph {
     return factory.defaultGraph();
   },
 };

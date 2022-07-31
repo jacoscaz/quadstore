@@ -6,7 +6,7 @@ module.exports = () => {
 
   describe('Quadstore serialization', function () {
 
-    const value = Buffer.alloc(32);
+    const value = new DataView(new ArrayBuffer(32));
 
     it('Should serialize and deserialize quads with named nodes', function () {
       const { store } = this;

@@ -3,6 +3,10 @@
 
 const _ = require('../dist/utils');
 const should = require('should');
+const {bufferEquals} = require('../dist/utils');
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 module.exports = () => {
 
@@ -31,10 +35,10 @@ module.exports = () => {
     it('should pre-write kvps when putting a quad', async function () {
       const { store } = this;
       await store.put(quads[0], {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: batch => batch.put('key1', encoder.encode('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
     it('should pre-write kvps when putting quads', async function () {
@@ -42,8 +46,8 @@ module.exports = () => {
       await store.multiPut(quads, {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
     it('should pre-write kvps when deleting a quad', async function () {
@@ -52,8 +56,8 @@ module.exports = () => {
       await store.del(quads[0], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
     it('should pre-write kvps when deleting quads', async function () {
@@ -62,8 +66,8 @@ module.exports = () => {
       await store.multiDel(quads, {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
     it('should pre-write kvps when patching a quad', async function () {
@@ -72,8 +76,8 @@ module.exports = () => {
       await store.patch(quads[0], quads[1], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
     it('should pre-write kvps when patching quads', async function () {
@@ -82,8 +86,8 @@ module.exports = () => {
       await store.multiPatch([quads[0]], [quads[1]], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await _.pFromCallback(cb => store.db.get('key1', cb));
-      should(Buffer.from('value1').equals(value)).be.true();
+      const value = await _.pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      should(bufferEquals(encoder.encode('value1'), value)).be.true();
     });
 
   });

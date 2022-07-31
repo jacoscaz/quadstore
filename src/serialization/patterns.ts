@@ -12,12 +12,12 @@ import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLi
 const patternLiteralWriter = {
   write(term: Literal) {
     if (term.language) {
-      return langStringLiteralWriter.write(undefined, undefined, term, separator);
+      return langStringLiteralWriter.write(undefined, 0, term, separator);
     }
     if (term.datatype) {
       switch (term.datatype.value) {
         case xsd.string:
-          return stringLiteralWriter.write(undefined, undefined, term);
+          return stringLiteralWriter.write(undefined, 0, term);
         case xsd.integer:
         case xsd.double:
         case xsd.decimal:
@@ -33,14 +33,14 @@ const patternLiteralWriter = {
         case xsd.unsignedShort:
         case xsd.unsignedByte:
         case xsd.positiveInteger:
-          return numericLiteralWriter.write(undefined, undefined, term, separator, encode(term.value), true);
+          return numericLiteralWriter.write(undefined, 0, term, separator, encode(term.value), true);
         case xsd.dateTime:
-          return numericLiteralWriter.write(undefined, undefined, term, separator, encode(new Date(term.value).valueOf()), true);
+          return numericLiteralWriter.write(undefined, 0, term, separator, encode(new Date(term.value).valueOf()), true);
         default:
-          return genericLiteralWriter.write(undefined, undefined, term, separator);
+          return genericLiteralWriter.write(undefined, 0, term, separator);
       }
     }
-    return stringLiteralWriter.write(undefined, undefined, term);
+    return stringLiteralWriter.write(undefined, 0, term);
   }
 };
 
@@ -91,21 +91,21 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
         lte = true;
         break;
       case 'NamedNode':
-        gt += namedNodeWriter.write(undefined, undefined, term, prefixes);
+        gt += namedNodeWriter.write(undefined, 0, term, prefixes);
         gte = true;
-        lt += namedNodeWriter.write(undefined, undefined, term, prefixes);
+        lt += namedNodeWriter.write(undefined, 0, term, prefixes);
         lte = true;
         break;
       case 'BlankNode':
-        gt += blankNodeWriter.write(undefined, undefined, term);
+        gt += blankNodeWriter.write(undefined, 0, term);
         gte = true;
-        lt += blankNodeWriter.write(undefined, undefined, term);
+        lt += blankNodeWriter.write(undefined, 0, term);
         lte = true;
         break;
       case 'DefaultGraph':
-        gt += defaultGraphWriter.write(undefined, undefined, term);
+        gt += defaultGraphWriter.write(undefined, 0, term);
         gte = true;
-        lt += defaultGraphWriter.write(undefined, undefined, term);
+        lt += defaultGraphWriter.write(undefined, 0, term);
         lte = true;
         break;
     }

@@ -35,26 +35,25 @@
     "url": "https://github.com/belayeng/quadstore.git"
   },
   "devDependencies": {
-    "@types/abstract-leveldown": "^7.2.0",
     "@types/fs-extra": "^9.0.13",
     "@types/leveldown": "^4.0.3",
     "@types/memdown": "^3.0.0",
     "@types/n3": "^1.10.4",
     "@types/rdf-js": "^4.0.1",
     "@types/rocksdb": "^3.0.1",
-    "abstract-leveldown": "^7.2.0",
-    "fs-extra": "^10.0.1",
-    "leveldown": "^6.1.0",
-    "memdown": "^6.1.1",
-    "mocha": "^9.2.2",
-    "n3": "^1.15.0",
-    "rdf-data-factory": "^1.1.0",
-    "rocksdb": "^5.2.0",
+    "abstract-level": "^1.0.3",
+    "fs-extra": "^10.1.0",
+    "classic-level": "^1.2.0",
+    "memory-level": "^1.0.0",
+    "mocha": "^10.0.0",
+    "n3": "^1.16.2",
+    "rdf-data-factory": "^1.1.1",
+    "rocksdb": "^5.2.1",
     "should": "^13.2.3",
-    "typescript": "^4.6.2"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
-    "asynciterator": "^3.3.0",
+    "asynciterator": "^3.6.0",
     "js-sorted-set": "^0.7.0"
   },
   "author": "Jacopo Scazzosi <jacopo@scazzosi.com>",

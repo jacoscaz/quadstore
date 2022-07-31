@@ -5,9 +5,9 @@ import type { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_S
 import type {
   DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts,
   Pattern, StoreOpts, VoidResult, TSReadable,
-  TermName, Prefixes, QuadArrayResultWithinternals, QuadStreamResultWithInternals
+  TermName, Prefixes, QuadArrayResultWithInternals, QuadStreamResultWithInternals
 } from './types';
-import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown';
+import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level';
 
 import { ResultType } from './types';
 import { EventEmitter } from 'events';
@@ -22,17 +22,17 @@ import {
   defaultIndexes,
   pFromCallback,
   separator,
-  ensureAbstractLevelDOWN,
+  ensureAbstractLevel,
 } from './utils';
 import { getApproximateSize, getStream } from './get';
 import {Scope} from './scope';
-import {quadWriter, copyBuffer} from './serialization';
+import {quadWriter, copyValueBuffer} from './serialization';
 
-const __value = Buffer.alloc(32);
+const __value: DataView = new DataView(new ArrayBuffer(32));
 
 export class Quadstore implements Store {
 
-  readonly db: AbstractLevelDOWN;
+  readonly db: AbstractLevel<any, any, any>;
 
   readonly indexes: InternalIndex[];
   readonly id: string;
@@ -42,7 +42,7 @@ export class Quadstore implements Store {
   readonly dataFactory: DataFactory;
 
   constructor(opts: StoreOpts) {
-    ensureAbstractLevelDOWN(opts.backend, '"opts.backend"');
+    ensureAbstractLevel(opts.backend, '"opts.backend"');
     this.dataFactory = opts.dataFactory;
     this.db = opts.backend;
     this.indexes = [];
@@ -82,7 +82,6 @@ export class Quadstore implements Store {
     switch (this.db.status) {
       case 'closing':
         await this.waitForStatus('closed');
-      case 'new':
       case 'closed':
         await pFromCallback((cb) => { this.db.open(cb); });
         break;
@@ -99,7 +98,6 @@ export class Quadstore implements Store {
       case 'opening':
         await this.waitForStatus('open');
       case 'open':
-      case 'new':
         await pFromCallback((cb) => { this.db.close(cb); });
         break;
       case 'closing':
@@ -129,7 +127,7 @@ export class Quadstore implements Store {
   async clear(): Promise<void> {
     if (typeof this.db.clear === 'function') {
       return new Promise((resolve, reject) => {
-        this.db.clear((err: Error) => {
+        this.db.clear((err?: Error | null) => {
           err ? reject(err) : resolve();
         });
       });
@@ -202,7 +200,7 @@ export class Quadstore implements Store {
     }
     batch = this.indexes.reduce((indexBatch, index) => {
       const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-      return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
+      return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -217,7 +215,7 @@ export class Quadstore implements Store {
       }
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);
@@ -252,7 +250,7 @@ export class Quadstore implements Store {
       const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
       indexBatch.del(oldKey);
       const newKey = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-      return indexBatch.put(newKey, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
+      return indexBatch.put(newKey, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
     }, this.db.batch());
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -270,21 +268,21 @@ export class Quadstore implements Store {
     batch = newQuads.reduce((quadBatch, newQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyBuffer(__value, 0, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
-  private async writeBatch(batch: AbstractChainedBatch, opts: BatchOpts) {
+  private async writeBatch(batch: AbstractChainedBatch<any, any, any>, opts: BatchOpts) {
     if (opts.preWrite) {
       await opts.preWrite(batch);
     }
     await pFromCallback((cb) => { batch.write(cb); });
   }
 
-  async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResultWithinternals> {
+  async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResultWithInternals> {
     this.ensureReady();
     const results = await this.getStream(pattern, opts);
     const items: Quad[] = await streamToArray(results.iterator);

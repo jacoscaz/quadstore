@@ -1,17 +1,17 @@
 
 import type { Readable } from 'stream';
-import type { AbstractChainedBatch, AbstractLevelDOWN } from 'abstract-leveldown'
+import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level'
 import type { AsyncIterator } from 'asynciterator';
 import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
 import type { Scope } from '../scope';
-import {AbstractIteratorOptions} from 'abstract-leveldown';
+import {AbstractIteratorOptions} from 'abstract-level';
 
 export interface BatchOpts {
   /**
    * Factory for additional Key-Value Pair operations to be included atomically
    * in a batch.
    */
-  preWrite?: (batch: AbstractChainedBatch) => Promise<any> | any;
+  preWrite?: (batch: AbstractChainedBatch<any, any, any>) => Promise<any> | any;
 }
 
 export interface DelOpts extends BatchOpts {
@@ -31,8 +31,6 @@ export type TSReadable<T> = Readable | AsyncIterator<T>;
 export enum ResultType {
   VOID = 'void',
   QUADS = 'quads',
-  BOOLEAN = 'boolean',
-  BINDINGS = 'bindings',
   APPROXIMATE_SIZE = 'approximate_size',
 }
 
@@ -88,7 +86,7 @@ export interface QuadArrayResult {
   items: Quad[],
 }
 
-export interface QuadArrayResultWithinternals extends QuadArrayResult {
+export interface QuadArrayResultWithInternals extends QuadArrayResult {
   index: TermName[],
   resorted: boolean,
 }
@@ -115,7 +113,7 @@ export interface Prefixes {
 }
 
 export interface StoreOpts {
-  backend: AbstractLevelDOWN,
+  backend: AbstractLevel<any, any, any>,
   prefixes?: Prefixes,
   indexes?: TermName[][],
   dataFactory: DataFactory,
@@ -130,8 +128,8 @@ export interface IndexQuery {
   index: InternalIndex;
 }
 
-export interface LevelQuery {
-  level: AbstractIteratorOptions;
+export interface LevelQuery<LK, LV> {
+  level: AbstractIteratorOptions<LK, LV>;
   order: TermName[];
   index: InternalIndex;
 }

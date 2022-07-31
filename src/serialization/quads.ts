@@ -11,40 +11,40 @@ import { blankNodeReader, blankNodeWriter, defaultGraphReader, defaultGraphWrite
 
 export const quadWriter = {
   writtenValueBytes: 0,
-  write(prefix: string, value: Buffer, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
+  write(prefix: string, value: DataView, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
     let ret = prefix;
     let valueOffset = 0;
     for (let t = 0, term; t < termNames.length; t += 1) {
       term = quad[termNames[t]];
       switch (term.termType) {
         case 'NamedNode':
-          value.writeUInt16LE(0, valueOffset);
+          value.setUint16(valueOffset, 0, true);
           valueOffset += 2;
           ret += namedNodeWriter.write(value, valueOffset, term, prefixes);
           valueOffset += namedNodeWriter.writtenValueBytes;
           break;
         case 'BlankNode':
-          value.writeUInt16LE(1, valueOffset);
+          value.setUint16(valueOffset, 1, true);
           valueOffset += 2;
           ret += blankNodeWriter.write(value, valueOffset, term);
           valueOffset += blankNodeWriter.writtenValueBytes;
           break;
         case 'DefaultGraph':
-          value.writeUInt16LE(6, valueOffset);
+          value.setUint16(valueOffset, 6, true);
           valueOffset += 2;
           ret += defaultGraphWriter.write(value, valueOffset, term);
           valueOffset += defaultGraphWriter.writtenValueBytes;
           break;
         case 'Literal':
           if (term.language) {
-            value.writeUInt16LE(4, valueOffset);
+            value.setUint16(valueOffset, 4, true);
             valueOffset += 2;
             ret += langStringLiteralWriter.write(value, valueOffset, term, separator);
             valueOffset += langStringLiteralWriter.writtenValueBytes;
           } else if (term.datatype) {
             switch (term.datatype.value) {
               case xsd.string:
-                value.writeUInt16LE(3, valueOffset);
+                value.setUint16(valueOffset, 3, true);
                 valueOffset += 2;
                 ret += stringLiteralWriter.write(value, valueOffset, term);
                 valueOffset += stringLiteralWriter.writtenValueBytes;
@@ -64,25 +64,25 @@ export const quadWriter = {
               case xsd.unsignedShort:
               case xsd.unsignedByte:
               case xsd.positiveInteger:
-                value.writeUInt16LE(5, valueOffset);
+                value.setUint16(valueOffset, 5, true);
                 valueOffset += 2;
                 ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(term.value), false);
                 valueOffset += numericLiteralWriter.writtenValueBytes;
                 break;
               case xsd.dateTime:
-                value.writeUInt16LE(5, valueOffset);
+                value.setUint16(valueOffset, 5, true);
                 valueOffset += 2;
                 ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(new Date(term.value).valueOf()), false);
                 valueOffset += numericLiteralWriter.writtenValueBytes;
                 break;
               default:
-                value.writeUInt16LE(2, valueOffset);
+                value.setUint16(valueOffset, 2, true);
                 valueOffset += 2;
                 ret += genericLiteralWriter.write(value, valueOffset, term, separator);
                 valueOffset += genericLiteralWriter.writtenValueBytes;
             }
           } else {
-            value.writeUInt16LE(3, valueOffset);
+            value.setUint16(valueOffset, 3,true);
             valueOffset += 2;
             ret += stringLiteralWriter.write(value, valueOffset, term);
             valueOffset += stringLiteralWriter.writtenValueBytes;
@@ -100,10 +100,10 @@ export const quadReader = {
   predicate: null,
   object: null,
   graph: null,
-  read(key: string, keyOffset: number, value: Buffer, valueOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
+  read(key: string, keyOffset: number, value: DataView, valueOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
     for (let t = 0, termName, termValue; t < termNames.length; t += 1) {
       termName = termNames[t];
-      const encodedTermType = value.readUInt16LE(valueOffset);
+      const encodedTermType = value.getUint16(valueOffset, true);
       valueOffset += 2;
       switch (encodedTermType) {
         case 0:

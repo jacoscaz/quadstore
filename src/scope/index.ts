@@ -1,6 +1,6 @@
 
 import type { DataFactory, Quad, BlankNode, Quad_Subject, Quad_Object, Quad_Graph } from 'rdf-js';
-import type { AbstractChainedBatch } from 'abstract-leveldown';
+import type { AbstractChainedBatch } from 'abstract-level';
 import type { Quadstore } from '../quadstore';
 
 import { LevelIterator } from '../get/leveliterator';
@@ -59,7 +59,7 @@ export class Scope {
     };
   }
 
-  static addMappingToLevelBatch(scopeId: string, batch: AbstractChainedBatch<any, any>, originalLabel: string, randomLabel: string) {
+  static addMappingToLevelBatch(scopeId: string, batch: AbstractChainedBatch<any, any, any>, originalLabel: string, randomLabel: string) {
     batch.put(`SCOPE${separator}${scopeId}${separator}${originalLabel}`, JSON.stringify({ originalLabel, randomLabel }));
   }
 
@@ -69,7 +69,7 @@ export class Scope {
     this.id = id;
   }
 
-  private parseBlankNode(node: BlankNode, batch: AbstractChainedBatch<any, any>): BlankNode {
+  private parseBlankNode(node: BlankNode, batch: AbstractChainedBatch<any, any, any>): BlankNode {
     let cachedNode = this.blankNodes.get(node.value);
     if (!cachedNode) {
       cachedNode = this.factory.blankNode(nanoid());
@@ -79,7 +79,7 @@ export class Scope {
     return cachedNode;
   }
 
-  private parseSubject(node: Quad_Subject, batch: AbstractChainedBatch<any, any>): Quad_Subject {
+  private parseSubject(node: Quad_Subject, batch: AbstractChainedBatch<any, any, any>): Quad_Subject {
     switch (node.termType) {
       case 'BlankNode':
         return this.parseBlankNode(node, batch);
@@ -88,7 +88,7 @@ export class Scope {
     }
   }
 
-  private parseObject(node: Quad_Object, batch: AbstractChainedBatch<any, any>): Quad_Object {
+  private parseObject(node: Quad_Object, batch: AbstractChainedBatch<any, any, any>): Quad_Object {
     switch (node.termType) {
       case 'BlankNode':
         return this.parseBlankNode(node, batch);
@@ -97,7 +97,7 @@ export class Scope {
     }
   }
 
-  private parseGraph(node: Quad_Graph, batch: AbstractChainedBatch<any, any>): Quad_Graph {
+  private parseGraph(node: Quad_Graph, batch: AbstractChainedBatch<any, any, any>): Quad_Graph {
     switch (node.termType) {
       case 'BlankNode':
         return this.parseBlankNode(node, batch);
@@ -106,7 +106,7 @@ export class Scope {
     }
   }
 
-  parseQuad(quad: Quad, batch: AbstractChainedBatch<any, any>): Quad {
+  parseQuad(quad: Quad, batch: AbstractChainedBatch<any, any, any>): Quad {
     return this.factory.quad(
       this.parseSubject(quad.subject, batch),
       quad.predicate,

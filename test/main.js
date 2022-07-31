@@ -6,19 +6,19 @@ const fs = require('fs-extra');
 const util = require('util');
 const path = require('path');
 const utils = require('../dist/utils');
-const memdown = require('memdown');
-const rocksdb = require('rocksdb');
-const leveldown = require('leveldown');
+const { MemoryLevel } = require('memory-level');
+// const rocksdb = require('rocksdb');
+const { ClassicLevel } = require('classic-level');
 const {DataFactory} = require('rdf-data-factory');
 
 const remove = util.promisify(fs.remove);
 
 require('./fpstring')();
 
-describe('MemDOWN backend', () => {
+describe('MemoryLevel backend', () => {
 
   beforeEach(async function () {
-    this.db = memdown();
+    this.db = new MemoryLevel();
     this.indexes = null;
     this.dataFactory = new DataFactory();
   });
@@ -27,28 +27,11 @@ describe('MemDOWN backend', () => {
 
 });
 
-describe('LevelDOWN backend', () => {
+describe('ClassicLevel backend', () => {
 
   beforeEach(async function () {
-    this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
-    this.db = leveldown(this.location);
-    this.indexes = null;
-    this.dataFactory = new DataFactory();
-  });
-
-  afterEach(async function () {
-    await remove(this.location);
-  });
-
-  require('./quadstore')();
-
-});
-
-describe('RocksDB backend', () => {
-
-  beforeEach(async function () {
-    this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
-    this.db = rocksdb(this.location);
+    this.location = path.join(os.tmpdir(), 'quadstore-' + utils.nanoid());
+    this.db = new ClassicLevel(this.location);
     this.indexes = null;
     this.dataFactory = new DataFactory();
   });
@@ -61,10 +44,27 @@ describe('RocksDB backend', () => {
 
 });
 
-describe('MemDOWN backend, standard indexes, with prefixes', () => {
+// describe('RocksDB backend', () => {
+//
+//   beforeEach(async function () {
+//     this.location = path.join(os.tmpdir(), 'node-quadstore-' + utils.nanoid());
+//     this.db = rocksdb(this.location);
+//     this.indexes = null;
+//     this.dataFactory = new DataFactory();
+//   });
+//
+//   afterEach(async function () {
+//     await remove(this.location);
+//   });
+//
+//   require('./quadstore')();
+//
+// });
+
+describe('MemoryLevel backend, standard indexes, with prefixes', () => {
 
   beforeEach(async function () {
-    this.db = memdown();
+    this.db = new MemoryLevel();
     this.indexes = null;
     this.dataFactory = new DataFactory();
     this.prefixes = {

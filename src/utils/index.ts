@@ -1,7 +1,7 @@
 
 import type { EventEmitter } from 'events';
 import type { TSReadable, TermName, Binding } from '../types';
-import type { AbstractLevelDOWN } from 'abstract-leveldown';
+import type { AbstractLevel } from 'abstract-level';
 
 import { TransformIterator } from 'asynciterator';
 import { Quad, Term } from 'rdf-js';
@@ -21,16 +21,16 @@ export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;
 };
 
-export const isAbstractLevelDOWN = (o: any): o is AbstractLevelDOWN => {
+export const isAbstractLevel = <TDatabase, K, V>(o: any): o is AbstractLevel<TDatabase, K, V> => {
   return isObject(o)
     && typeof(o.open) === 'function'
     && typeof(o.batch) === 'function'
   ;
 };
 
-export const ensureAbstractLevelDOWN = (o: any, key: string) => {
-  if (!isAbstractLevelDOWN(o)) {
-    throw new Error(`${key} is not an AbstractLevelDOWN instance`);
+export const ensureAbstractLevel = (o: any, key: string) => {
+  if (!isAbstractLevel(o)) {
+    throw new Error(`${key} is not an AbstractLevel instance`);
   }
 };
 
@@ -168,7 +168,6 @@ export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) =
   });
 };
 
-export const emptyArray: any[] = [];
 export const emptyObject: { [key: string]: any } = {};
 
 export const boundary = '\uDBFF\uDFFF';
@@ -236,3 +235,17 @@ export const arrStartsWith = (arr: TermName[], prefix: TermName[]): boolean => {
   }
   return true;
 };
+
+export const bufferEquals = (a: Uint8Array | DataView, b: Uint8Array | DataView): boolean => {
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
+  const _a: Uint8Array = a instanceof Uint8Array ? a : new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+  const _b: Uint8Array = b instanceof Uint8Array ? b : new Uint8Array(b.buffer, b.byteOffset, b.byteLength);
+  for (let i = 0; i < _a.length; i += 1) {
+    if (_a[i] !== _b[i]) {
+      return false;
+    }
+  }
+  return true;
+}

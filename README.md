@@ -14,7 +14,6 @@ interfaces and SPARQL queries.
 - [Status](#status)
     - [Roadmap](#roadmap)
     - [Changelog](#changelog)
-    - [Current version and features](#current-version)
     - [Notes](#notes)
 - [Usage](#usage)
     - [Storage](#storage-backends)
@@ -182,19 +181,20 @@ We're also evaluating the following features for future developments:
 ### Storage backends
 
 `quadstore` can work with any storage backend that implements the 
-[AbstractLevelDOWN interface][db1]. An incomplete list of available backends
+[AbstractLevel interface][db1]. An incomplete list of available backends
 is available at [level/awesome#stores][db6].
 
 Our test suite focuses on the following backends:
 
-- [`leveldown`][db2] for persistent storage using [LevelDB][db0]
-- [`rocksdb`][db4] for persistent storage using [RocksDB][db5]
-- [`memdown`][db3] for volatile in-memory storage using red-black trees
+- [`classic-level`][db2] for persistent storage using [LevelDB][db0]
+- [`memory-level`][db3] for volatile in-memory storage using red-black trees
+- ~~[`rocksdb`][db4] for persistent storage using [RocksDB][db5]~~
+  - waiting for the `rocks-level` package to be published
 
 [db0]: http://leveldb.org
-[db1]: https://github.com/Level/abstract-leveldown
-[db2]: https://github.com/level/leveldown
-[db3]: https://github.com/level/memdown
+[db1]: https://github.com/Level/abstract-level
+[db2]: https://github.com/level/classic-level
+[db3]: https://github.com/level/memory-level
 [db4]: https://github.com/level/rocksdb
 [db5]: https://rocksdb.org
 [db6]: https://github.com/level/awesome#stores
@@ -771,7 +771,7 @@ More information on [quadstore-comunica][c2]'s repository.
 
 ## Browser usage
 
-The [`level-js`][b1] backend for levelDB offers support for browser-side
+The [`browser-level`][b1] backend for levelDB offers support for browser-side
 persistent storage. 
 
 `quadstore` can be bundled for browser-side usage via Webpack, preferably using
@@ -782,54 +782,13 @@ that is required to use `quadstore` in the browser.
 Rollup, ES modules and tree-shaking are not supported (yet).
  
 [b0]: https://github.com/belayeng/quadstore-webpack-bundle
-[b1]: https://github.com/Level/level-js
+[b1]: https://github.com/Level/browser-level
 
 ## Performance
 
-The performance profile of `quadstore` is strongly influenced by its design
-choices in terms of atomicity. As all update operations are implemented 
-through [AbstractLevelDOWN#batch][perf-1] operations that atomically update 
-all indexes, they are performed in a manner that closely approximates batch
-random updates.
+Performance is evaluated at tracked at [https://github.com/belayeng/quadstore-perf][perf]
 
-[perf-1]: https://github.com/Level/abstract-leveldown#dbbatch
-[perf-2]: https://github.com/Level/bench
-
-The testing platform is a 2018 MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) 
-running Node v14.0.0.
-
-### Reading quads
-
-Sequential reads iterating through quads in any given index run at about
-**~340k quads per second**.
-
-```
-node dist/perf/read.js
-```
-
-### Importing quads
-
-Our reference benchmark for import performance is the [`level-bench`][perf-2]
-`batch-put` benchmark, which scores ~200k updates per second when run as follows:
-
-```
-node level-bench.js run batch-put leveldown --concurrency 1 --chained true --batchSize 10 --valueSize 256
-```
-
-We test import performance by importing the [`21million.rdf`][21mil-rdf] file
-or a subset of it. 
-
-```
-node dist/perf/loadfile.js /path/to/21million.rdf
-```
-
-With the default six indexes and the `leveldown` backend, import performance
-clocks at **~20k quads per second** when importing quads one-by-one, with a
-density of **~6.5k quads per MB**. Due to the six indexes, this translates to 
-~120k batched update operations per second, ~0.6 times the reference 
-target.
-
-[21mil-rdf]: https://github.com/dgraph-io/benchmarks/blob/master/data/21million.rdf.gz
+[perf]: https://github.com/belayeng/quadstore-perf
 
 ## LICENSE
 

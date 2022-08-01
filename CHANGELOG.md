@@ -1,6 +1,18 @@
 
 # CHANGELOG
 
+## 11.0.0
+
+- **[breaking]** upgraded to the new generation of `*-level` packages   
+  (https://github.com/Level/community#how-do-i-upgrade-to-abstract-level)
+- **[breaking]** uses `Uint16Array` instead of `Buffer` for value
+  (de)serialization
+- *[internal]* moves performance tests to dedicated repository   
+  (https://github.com/belayeng/quadstore-perf)
+- *[internal]* upgrades to newer versions of `asynciterator` where
+  we've done a lot of work on optimizing synchronous transforms
+  (https://github.com/RubenVerborgh/AsyncIterator/issues/44#issuecomment-1201438495)
+
 ## 10.0.0
 
 - **[breaking]** drops all SPARQL-related features in favor of
@@ -9,7 +21,7 @@
   implementation of RDF/JS's `DataFactory` interface
 - *[fix]* throws when `backend` is not an instance of `AbstractLevelDOWN`    
   (https://github.com/belayeng/quadstore/issues/140)
-- *[fix]* lands upstream fix to variable selection in SPARQL OPTIONAL clauses
+- *[fix]* lands upstream fix to variable selection in SPARQL OPTIONAL clauses   
   (https://github.com/belayeng/quadstore/issues/142)
 - *[internal]* replaces `immutable` and `decimal.js` with smaller
   alternatives in `quadstore-comunica`, dropping ~60 kB from the 

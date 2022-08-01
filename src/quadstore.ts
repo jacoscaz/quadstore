@@ -1,18 +1,44 @@
 
 'use strict';
 
-import type { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Stream } from 'rdf-js';
 import type {
-  DelStreamOpts, BatchOpts, DelOpts, PutOpts, PatchOpts, GetOpts, InternalIndex, PutStreamOpts,
-  Pattern, StoreOpts, VoidResult, TSReadable,
-  TermName, Prefixes, QuadArrayResultWithInternals, QuadStreamResultWithInternals
+  DataFactory,
+  Quad,
+  Quad_Graph,
+  Quad_Object,
+  Quad_Predicate,
+  Quad_Subject,
+  Store,
+  Stream,
+} from 'rdf-js';
+import type {
+  DelStreamOpts,
+  BatchOpts,
+  DelOpts,
+  PutOpts,
+  PatchOpts,
+  GetOpts,
+  InternalIndex,
+  PutStreamOpts,
+  Pattern,
+  StoreOpts,
+  VoidResult,
+  TSReadable,
+  TermName,
+  Prefixes,
+  QuadArrayResultWithInternals,
+  QuadStreamResultWithInternals,
 } from './types';
-import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level';
-
 import { ResultType } from './types';
+import type {
+  AbstractChainedBatch,
+  AbstractLevel,
+} from 'abstract-level';
 import { EventEmitter } from 'events';
-import { EmptyIterator, TransformIterator } from 'asynciterator';
-
+import {
+  EmptyIterator,
+  TransformIterator,
+} from 'asynciterator';
 import {
   consumeInBatches,
   consumeOneByOne,
@@ -26,9 +52,10 @@ import {
 } from './utils';
 import { getApproximateSize, getStream } from './get';
 import {Scope} from './scope';
-import {quadWriter, copyValueBuffer} from './serialization';
+import { quadWriter } from './serialization';
+import {copyUint16ArrayToUint8Array} from './serialization/utils';
 
-const __value: DataView = new DataView(new ArrayBuffer(32));
+const __value: Uint16Array = new Uint16Array(new ArrayBuffer(32));
 
 export class Quadstore implements Store {
 
@@ -200,7 +227,7 @@ export class Quadstore implements Store {
     }
     batch = this.indexes.reduce((indexBatch, index) => {
       const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-      return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
+      return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
     }, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -215,7 +242,7 @@ export class Quadstore implements Store {
       }
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);
@@ -250,7 +277,7 @@ export class Quadstore implements Store {
       const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
       indexBatch.del(oldKey);
       const newKey = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-      return indexBatch.put(newKey, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
+      return indexBatch.put(newKey, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
     }, this.db.batch());
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -268,7 +295,7 @@ export class Quadstore implements Store {
     batch = newQuads.reduce((quadBatch, newQuad) => {
       return this.indexes.reduce((indexBatch, index) => {
         const key = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyValueBuffer(__value, 0, quadWriter.writtenValueBytes));
+        return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
       }, quadBatch);
     }, batch);
     await this.writeBatch(batch, opts);

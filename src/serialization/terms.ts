@@ -5,63 +5,63 @@ import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'r
 import { sliceString } from './utils';
 
 export const namedNodeWriter = {
-  writtenValueBytes: 2,
-  write(value: DataView|undefined, valueOffset: number, node: NamedNode, prefixes: Prefixes) {
+  writtenValueLength: 1,
+  write(value: Uint16Array|undefined, valueOffset: number, node: NamedNode, prefixes: Prefixes) {
     const compactedIri = prefixes.compactIri(node.value);
     if (value) {
-      value.setUint16(valueOffset, compactedIri.length, true);
+      value[valueOffset] = compactedIri.length;
     }
     return compactedIri;
   },
 };
 
 export const namedNodeReader = {
-  readValueBytes: 2,
+  readValueBytes: 1,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, prefixes: Prefixes): NamedNode {
-    const valueLen = value.getUint16(valueOffset, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, prefixes: Prefixes): NamedNode {
+    const valueLen = value[valueOffset];
     this.readKeyChars = valueLen;
     return factory.namedNode(prefixes.expandTerm(sliceString(key, keyOffset, valueLen)));
   },
 };
 
 export const blankNodeWriter = {
-  writtenValueBytes: 2,
-  write(value: DataView|undefined, valueOffset: number, node: BlankNode) {
+  writtenValueLength: 1,
+  write(value: Uint16Array|undefined, valueOffset: number, node: BlankNode) {
     if (value) {
-      value.setUint16(valueOffset, node.value.length, true);
+      value[valueOffset] = node.value.length;
     }
     return node.value;
   },
 };
 
 export const blankNodeReader = {
-  readValueBytes: 2,
+  readValueBytes: 1,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): BlankNode {
-    const valueLen = value.getUint16(valueOffset, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): BlankNode {
+    const valueLen = value[valueOffset];
     this.readKeyChars = valueLen;
     return factory.blankNode(sliceString(key, keyOffset, valueLen));
   },
 };
 
 export const genericLiteralWriter = {
-  writtenValueBytes: 4,
-  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string) {
+  writtenValueLength: 2,
+  write(value: Uint16Array|undefined, valueOffset: number, node: Literal, separator: string) {
     if (value) {
-      value.setUint16(valueOffset, node.value.length, true);
-      value.setUint16(valueOffset + 2, node.datatype.value.length,  true);
+      value[valueOffset] = node.value.length;
+      value[valueOffset + 1] = node.datatype.value.length;
     }
     return node.datatype.value + separator + node.value;
   },
 };
 
 export const genericLiteralReader = {
-  readValueBytes: 4,
+  readValueBytes: 2,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.getUint16(valueOffset, true);
-    const datatypeValueLen = value.getUint16(valueOffset + 2, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value[valueOffset];
+    const datatypeValueLen = value[valueOffset + 1];
     this.readKeyChars = valueLen + datatypeValueLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + datatypeValueLen + separator.length, valueLen),
@@ -71,42 +71,42 @@ export const genericLiteralReader = {
 }
 
 export const stringLiteralWriter = {
-  writtenValueBytes: 2,
-  write(value: DataView|undefined, valueOffset: number, node: Literal) {
+  writtenValueLength: 1,
+  write(value: Uint16Array|undefined, valueOffset: number, node: Literal) {
     if (value) {
-      value.setUint16(valueOffset, node.value.length, true);
+      value[valueOffset] = node.value.length;
     }
     return node.value;
   },
 };
 
 export const stringLiteralReader = {
-  readValueBytes: 2,
+  readValueBytes: 1,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): Literal {
-    const valueLen = value.getUint16(valueOffset, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): Literal {
+    const valueLen = value[valueOffset];
     this.readKeyChars = valueLen;
     return factory.literal(sliceString(key, keyOffset, valueLen));
   },
 };
 
 export const langStringLiteralWriter = {
-  writtenValueBytes: 4,
-  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string) {
+  writtenValueLength: 2,
+  write(value: Uint16Array|undefined, valueOffset: number, node: Literal, separator: string) {
     if (value) {
-      value.setUint16(valueOffset, node.value.length, true);
-      value.setUint16(valueOffset + 2, node.language.length, true);
+      value[valueOffset] = node.value.length;
+      value[valueOffset + 1] = node.language.length;
     }
     return node.language + separator + node.value;
   },
 };
 
 export const langStringLiteralReader = {
-  readValueBytes: 4,
+  readValueBytes: 2,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.getUint16(valueOffset, true);
-    const langCodeLen = value.getUint16(valueOffset + 2, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value[valueOffset];
+    const langCodeLen = value[valueOffset + 1];
     this.readKeyChars = valueLen + langCodeLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + langCodeLen + separator.length, valueLen),
@@ -116,12 +116,12 @@ export const langStringLiteralReader = {
 }
 
 export const numericLiteralWriter = {
-  writtenValueBytes: 6,
-  write(value: DataView|undefined, valueOffset: number, node: Literal, separator: string, encodedNumericValue: string, rangeMode: boolean) {
+  writtenValueLength: 3,
+  write(value: Uint16Array|undefined, valueOffset: number, node: Literal, separator: string, encodedNumericValue: string, rangeMode: boolean) {
     if (value) {
-      value.setUint16(valueOffset, node.value.length, true);
-      value.setUint16(valueOffset + 2, node.datatype.value.length, true);
-      value.setUint16(valueOffset + 4, encodedNumericValue.length, true);
+      value[valueOffset] = node.value.length;
+      value[valueOffset + 1] = node.datatype.value.length;
+      value[valueOffset + 2] = encodedNumericValue.length;
     }
     let ret = encodedNumericValue;
     if (!rangeMode) {
@@ -132,12 +132,12 @@ export const numericLiteralWriter = {
 };
 
 export const numericLiteralReader = {
-  readValueBytes: 6,
+  readValueBytes: 3,
   readKeyChars: 0,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory, separator: string): Literal {
-    const valueLen = value.getUint16(valueOffset, true);
-    const datatypeValueLen = value.getUint16(valueOffset + 2, true);
-    const numericValueLen = value.getUint16(valueOffset + 4, true);
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
+    const valueLen = value[valueOffset];
+    const datatypeValueLen = value[valueOffset + 1];
+    const numericValueLen = value[valueOffset + 2];
     this.readKeyChars = numericValueLen + datatypeValueLen + valueLen + (separator.length * 2);
     return factory.literal(
       sliceString(key, keyOffset + numericValueLen + separator.length + datatypeValueLen + separator.length, valueLen),
@@ -147,19 +147,19 @@ export const numericLiteralReader = {
 }
 
 export const defaultGraphWriter = {
-  writtenValueBytes: 2,
-  write(value: DataView|undefined, valueOffset: number, node: DefaultGraph) {
+  writtenValueLength: 1,
+  write(value: Uint16Array|undefined, valueOffset: number, node: DefaultGraph) {
     if (value) {
-      value.setUint16(valueOffset, 2, true);
+      value[valueOffset] = 2;
     }
     return 'dg';
   },
 };
 
 export const defaultGraphReader = {
-  readValueBytes: 2,
+  readValueBytes: 1,
   readKeyChars: 2,
-  read(key: string, keyOffset: number, value: DataView, valueOffset: number, factory: DataFactory): DefaultGraph {
+  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): DefaultGraph {
     return factory.defaultGraph();
   },
 };

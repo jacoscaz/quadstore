@@ -18,10 +18,10 @@ import { arrStartsWith, emptyObject, separator } from '../utils';
 import { LevelIterator } from './leveliterator';
 import { quadReader, quadWriter, writePattern } from '../serialization';
 import { SortingIterator } from './sortingIterator';
-import {AbstractLevel} from 'abstract-level';
-import {UInt8ArrayToValueBuffer} from '../serialization/utils';
+import { AbstractLevel } from 'abstract-level';
+import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
 
-const __value = new DataView(new ArrayBuffer(32));
+const __value = new Uint16Array(new ArrayBuffer(32));
 
 const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery<any, any>|null => {
   const indexQuery = writePattern(pattern, index, prefixes);
@@ -64,7 +64,7 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
   if (levelQueryFull !== null) {
     const { index, level, order } = levelQueryFull;
     let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Uint8Array) => {
-      return quadReader.read(key, index.prefix.length, UInt8ArrayToValueBuffer(value), 0, index.terms, dataFactory, prefixes);
+      return quadReader.read(key, index.prefix.length, viewUint8ArrayAsUint16Array(value), 0, index.terms, dataFactory, prefixes);
     });
     return { type: ResultType.QUADS, order, iterator, index: index.terms, resorted: false };
   }
@@ -74,7 +74,7 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
   if (levelQueryNoOpts !== null) {
     const { index, level, order } = levelQueryNoOpts;
     let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Uint8Array) => {
-      return quadReader.read(key, index.prefix.length, UInt8ArrayToValueBuffer(value), 0, index.terms, dataFactory, prefixes);
+      return quadReader.read(key, index.prefix.length, viewUint8ArrayAsUint16Array(value), 0, index.terms, dataFactory, prefixes);
     });
     if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
       const compare = opts.reverse === true

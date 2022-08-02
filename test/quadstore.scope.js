@@ -1,6 +1,6 @@
 
 const should = require('should');
-const { streamToArray } = require('../dist/utils');
+const { streamToArray } = require('../dist/utils/stuff');
 const { Scope } = require('../dist/scope');
 const { LevelIterator } = require('../dist/get/leveliterator');
 

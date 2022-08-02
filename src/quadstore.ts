@@ -40,20 +40,22 @@ import {
   TransformIterator,
 } from 'asynciterator';
 import {
-  consumeOneByOne,
-  consumeInBatches,
-  emptyObject,
-  nanoid,
   streamToArray,
-  defaultIndexes,
   pFromCallback,
-  separator,
   ensureAbstractLevel,
-} from './utils';
+} from './utils/stuff';
+import {
+  emptyObject,
+  defaultIndexes,
+  separator,
+} from './utils/constants';
+import { consumeOneByOne } from './utils/consumeonebyone';
+import { consumeInBatches } from './utils/consumeinbatches';
+import { uid } from './utils/uid';
 import { getApproximateSize, getStream } from './get';
-import {Scope} from './scope';
+import { Scope } from './scope';
 import { quadWriter } from './serialization';
-import {copyUint16ArrayToUint8Array} from './serialization/utils';
+import { copyUint16ArrayToUint8Array } from './serialization/utils';
 
 const __value: Uint16Array = new Uint16Array(new ArrayBuffer(32));
 
@@ -73,7 +75,7 @@ export class Quadstore implements Store {
     this.dataFactory = opts.dataFactory;
     this.db = opts.backend;
     this.indexes = [];
-    this.id = nanoid();
+    this.id = uid();
     (opts.indexes || defaultIndexes)
       .forEach((index: TermName[]) => this._addIndex(index));
     this.prefixes = opts.prefixes || {

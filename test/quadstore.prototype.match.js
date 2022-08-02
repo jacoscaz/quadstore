@@ -1,11 +1,10 @@
 
 'use strict';
 
-const _ = require('../dist/utils');
-const utils = require('../dist/utils');
 const should = require('should');
 const AsyncIterator = require('asynciterator');
-const {DefaultGraphMode} = require('../dist/types');
+const { DefaultGraphMode } = require('../dist/types');
+const { waitForEvent, streamToArray } = require('../dist/utils/stuff');
 
 module.exports = () => {
 
@@ -30,9 +29,9 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const subject = dataFactory.namedNode('http://ex.com/s2');
-        const matchedQuads = await utils.streamToArray(store.match(subject));
+        const matchedQuads = await streamToArray(store.match(subject));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -54,9 +53,9 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const predicate = dataFactory.namedNode('http://ex.com/p2');
-        const matchedQuads = await utils.streamToArray(store.match(null, predicate));
+        const matchedQuads = await streamToArray(store.match(null, predicate));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -78,9 +77,9 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const object = dataFactory.literal('o2', 'en-gb');
-        const matchedQuads = await utils.streamToArray(store.match(null, null, object));
+        const matchedQuads = await streamToArray(store.match(null, null, object));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -102,9 +101,9 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const graph = dataFactory.namedNode('http://ex.com/g2');
-        const matchedQuads = await utils.streamToArray(store.match(null, null, null, graph));
+        const matchedQuads = await streamToArray(store.match(null, null, null, graph));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -126,8 +125,8 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
-        const matchedQuads = await utils.streamToArray(store.match(null, null, null, dataFactory.defaultGraph()));
+        await waitForEvent(store.import(source), 'end', true);
+        const matchedQuads = await streamToArray(store.match(null, null, null, dataFactory.defaultGraph()));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[0]]);
       });
@@ -153,11 +152,10 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
-        // console.log(await store._debugQuads());
+        await waitForEvent(store.import(source), 'end', true);
         const match = { termType: 'Range',
           gt: dataFactory.literal('6', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer')) };
-        const matchedQuads = await utils.streamToArray(store.match(null, null, match, null));
+        const matchedQuads = await streamToArray(store.match(null, null, match, null));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -179,10 +177,10 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const match = { termType: 'Range',
           gte: dataFactory.literal('7.0', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#double')) };
-        const matchedQuads = await utils.streamToArray(store.match(null, null, match, null));
+        const matchedQuads = await streamToArray(store.match(null, null, match, null));
         should(matchedQuads).have.length(1);
         should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
       });
@@ -204,12 +202,12 @@ module.exports = () => {
           )
         ];
         const source = new AsyncIterator.ArrayIterator(quads);
-        await utils.waitForEvent(store.import(source), 'end', true);
+        await waitForEvent(store.import(source), 'end', true);
         const match = {
           termType: 'Range',
           gt: dataFactory.literal('7.0', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#double')),
         };
-        const matchedQuads = await utils.streamToArray(store.match(null, null, match, null));
+        const matchedQuads = await streamToArray(store.match(null, null, match, null));
         should(matchedQuads).have.length(0);
       });
     });

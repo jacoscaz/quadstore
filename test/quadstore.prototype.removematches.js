@@ -1,10 +1,9 @@
 
 'use strict';
 
-const _ = require('../dist/utils');
-const utils = require('../dist/utils');
 const should = require('should');
 const AsyncIterator = require('asynciterator');
+const { streamToArray, waitForEvent } = require('../dist/utils/stuff');
 
 module.exports = () => {
   describe('Quadstore.prototype.removeMatches()', () => {
@@ -31,9 +30,9 @@ module.exports = () => {
         )
       ];
       const importStream = new AsyncIterator.ArrayIterator(importQuads);
-      await utils.waitForEvent(store.import(importStream), 'end', true);
-      await utils.waitForEvent(store.removeMatches(null, null, null, dataFactory.namedNode('http://ex.com/g1')), 'end', true);
-      const matchedQuads = await utils.streamToArray(store.match());
+      await waitForEvent(store.import(importStream), 'end', true);
+      await waitForEvent(store.removeMatches(null, null, null, dataFactory.namedNode('http://ex.com/g1')), 'end', true);
+      const matchedQuads = await streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });
   });

@@ -113,3 +113,17 @@ const delayIterator = (iterator, avgDelay = 5) => {
 };
 
 module.exports.delayIterator = delayIterator;
+
+const equalsUint8Array = (a, b) => {
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+};
+
+module.exports.equalsUint8Array = equalsUint8Array;

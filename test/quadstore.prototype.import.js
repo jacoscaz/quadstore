@@ -1,10 +1,9 @@
 
 'use strict';
 
-const _ = require('../dist/utils');
-const utils = require('../dist/utils');
 const should = require('should');
 const AsyncIterator = require('asynciterator');
+const { waitForEvent, streamToArray } = require('../dist/utils/stuff');
 
 module.exports = () => {
 
@@ -21,8 +20,8 @@ module.exports = () => {
         )
       ];
       const source = new AsyncIterator.ArrayIterator(quads);
-      await utils.waitForEvent(store.import(source), 'end', true);
-      const matchedQuads = await utils.streamToArray(store.match());
+      await waitForEvent(store.import(source), 'end', true);
+      const matchedQuads = await streamToArray(store.match());
       should(matchedQuads).have.length(1);
     });
 
@@ -49,8 +48,8 @@ module.exports = () => {
         )
       ];
       const source = new AsyncIterator.ArrayIterator(quads);
-      await utils.waitForEvent(store.import(source), 'end', true);
-      const matchedQuads = await utils.streamToArray(store.match());
+      await waitForEvent(store.import(source), 'end', true);
+      const matchedQuads = await streamToArray(store.match());
       should(matchedQuads).have.length(3);
     });
 

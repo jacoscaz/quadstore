@@ -14,7 +14,8 @@ import type {
 import type { AbstractIteratorOptions } from 'abstract-level';
 
 import { ResultType, LevelQuery } from '../types';
-import { arrStartsWith, emptyObject, separator } from '../utils';
+import { arrStartsWith } from '../utils/stuff';
+import { emptyObject, separator } from '../utils/constants';
 import { LevelIterator } from './leveliterator';
 import { quadReader, quadWriter, writePattern } from '../serialization';
 import { SortingIterator } from './sortingiterator';

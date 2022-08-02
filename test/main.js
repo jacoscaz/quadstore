@@ -5,7 +5,7 @@ const os = require('os');
 const fs = require('fs-extra');
 const util = require('util');
 const path = require('path');
-const utils = require('../dist/utils');
+const { uid } = require('../dist/utils/uid');
 const { MemoryLevel } = require('memory-level');
 // const rocksdb = require('rocksdb');
 const { ClassicLevel } = require('classic-level');
@@ -30,7 +30,7 @@ describe('MemoryLevel backend', () => {
 describe('ClassicLevel backend', () => {
 
   beforeEach(async function () {
-    this.location = path.join(os.tmpdir(), 'quadstore-' + utils.nanoid());
+    this.location = path.join(os.tmpdir(), `quadstore-${uid()}`);
     this.db = new ClassicLevel(this.location);
     this.indexes = null;
     this.dataFactory = new DataFactory();

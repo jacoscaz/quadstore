@@ -4,7 +4,7 @@ import type { InternalIndex, Pattern, Prefixes, IndexQuery } from '../types';
 
 import * as xsd from './xsd';
 import { encode } from './fpstring';
-import { separator, boundary } from '../utils';
+import { separator, boundary } from '../utils/constants';
 import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLiteralWriter, namedNodeWriter,
          numericLiteralWriter, stringLiteralWriter } from './terms';
 

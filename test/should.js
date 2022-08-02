@@ -1,6 +1,6 @@
 
 const should = require('should');
-const {getQuadComparator, getBindingComparator} = require('../dist/utils');
+const { getQuadComparator, getBindingComparator } = require('../dist/utils/comparators');
 
 const equalToItemArray = function (expected, comparator, message) {
   this.params = {

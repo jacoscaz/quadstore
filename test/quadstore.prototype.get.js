@@ -1,9 +1,9 @@
 
 'use strict';
 
-const _ = require('../dist/utils');
-const xsd = require('../dist/serialization/xsd');
 const should = require('should');
+const xsd = require('../dist/serialization/xsd');
+const { arrStartsWith } = require('../dist/utils/stuff');
 
 module.exports = () => {
 
@@ -288,7 +288,7 @@ module.exports = () => {
         ));
       }
     });
-    
+
     it('should produce the same results whether sorting in-memory or not', async function () {
       const { dataFactory, store } = this;
       const memResults = await store.get(
@@ -301,8 +301,8 @@ module.exports = () => {
         { order: ['object'] },
       );
       should(idxResults.resorted).eql(false);
-      should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
-      should(_.arrStartsWith(memResults.order, ['object'])).be.true();
+      should(arrStartsWith(idxResults.order, ['object'])).be.true();
+      should(arrStartsWith(memResults.order, ['object'])).be.true();
       should(idxResults.items).have.length(90);
       should(idxResults.items).be.equalToQuadArray(memResults.items);
       should(idxResults.items[0].object.value).eql('10');
@@ -321,8 +321,8 @@ module.exports = () => {
         { order: ['object'], reverse: true },
       );
       should(idxResults.resorted).eql(false);
-      should(_.arrStartsWith(idxResults.order, ['object'])).be.true();
-      should(_.arrStartsWith(memResults.order, ['object'])).be.true();
+      should(arrStartsWith(idxResults.order, ['object'])).be.true();
+      should(arrStartsWith(memResults.order, ['object'])).be.true();
       should(idxResults.items).have.length(90);
       should(idxResults.items).be.equalToQuadArray(memResults.items);
       should(idxResults.items[0].object.value).eql('99');

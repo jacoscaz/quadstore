@@ -4,7 +4,7 @@ import type { Prefixes, Quad, TermName } from '../types';
 
 import * as xsd from './xsd';
 import { encode } from './fpstring';
-import { separator } from '../utils';
+import { separator } from '../utils/constants';
 import { blankNodeReader, blankNodeWriter, defaultGraphReader, defaultGraphWriter, genericLiteralReader,
          genericLiteralWriter, langStringLiteralReader, langStringLiteralWriter, namedNodeReader, namedNodeWriter,
          numericLiteralReader, numericLiteralWriter, stringLiteralReader, stringLiteralWriter } from './terms';

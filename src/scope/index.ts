@@ -4,7 +4,10 @@ import type { AbstractChainedBatch } from 'abstract-level';
 import type { Quadstore } from '../quadstore';
 
 import { LevelIterator } from '../get/leveliterator';
-import { nanoid, separator, boundary, consumeOneByOne, pFromCallback } from '../utils';
+import { consumeOneByOne } from '../utils/consumeonebyone';
+import { uid } from '../utils/uid';
+import { pFromCallback } from '../utils/stuff';
+import { separator, boundary } from '../utils/constants';
 
 export class Scope {
 
@@ -14,7 +17,7 @@ export class Scope {
   readonly factory: DataFactory;
 
   static async init(store: Quadstore): Promise<Scope> {
-    return new Scope(store.dataFactory, nanoid(), new Map());
+    return new Scope(store.dataFactory, uid(), new Map());
   }
 
   static async load(store: Quadstore, scopeId: string): Promise<Scope> {
@@ -72,7 +75,7 @@ export class Scope {
   private parseBlankNode(node: BlankNode, batch: AbstractChainedBatch<any, any, any>): BlankNode {
     let cachedNode = this.blankNodes.get(node.value);
     if (!cachedNode) {
-      cachedNode = this.factory.blankNode(nanoid());
+      cachedNode = this.factory.blankNode(uid());
       this.blankNodes.set(node.value, cachedNode);
       Scope.addMappingToLevelBatch(this.id, batch, node.value, cachedNode.value);
     }

@@ -1,7 +1,8 @@
 
 const should = require('should');
 const { IntegerIterator } = require('asynciterator');
-const { consumeInBatches } = require('../dist/utils/index');
+const { delayIterator } = require('./utils');
+const { consumeInBatches } = require('../dist/utils/consumeinbatches');
 
 module.exports = () => {
 
@@ -59,12 +60,7 @@ module.exports = () => {
 
     describe('with an asynchronous IntegerIterator as the source', () => {
       beforeEach(() => {
-        source = new IntegerIterator({ start: 0, step: 1, end: 99 }).transform({
-          transform(item, done, push) {
-            push(item);
-            setTimeout(done, Math.random() * 2);
-          }
-        });
+        source = delayIterator(new IntegerIterator({ start: 0, step: 1, end: 99 }), 2);
       });
       runTests();
     });

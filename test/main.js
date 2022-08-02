@@ -9,7 +9,7 @@ const utils = require('../dist/utils');
 const { MemoryLevel } = require('memory-level');
 // const rocksdb = require('rocksdb');
 const { ClassicLevel } = require('classic-level');
-const {DataFactory} = require('rdf-data-factory');
+const { DataFactory } = require('rdf-data-factory');
 
 const remove = util.promisify(fs.remove);
 
@@ -37,7 +37,11 @@ describe('ClassicLevel backend', () => {
   });
 
   afterEach(async function () {
-    await remove(this.location);
+    try {
+      await remove(this.location);
+    } catch (err) {
+      console.error(err);
+    }
   });
 
   require('./quadstore')();

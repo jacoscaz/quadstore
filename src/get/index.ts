@@ -17,7 +17,7 @@ import { ResultType, LevelQuery } from '../types';
 import { arrStartsWith, emptyObject, separator } from '../utils';
 import { LevelIterator } from './leveliterator';
 import { quadReader, quadWriter, writePattern } from '../serialization';
-import { SortingIterator } from './sortingIterator';
+import { SortingIterator } from './sortingiterator';
 import { AbstractLevel } from 'abstract-level';
 import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
 

@@ -1,14 +1,14 @@
 
 import type { EventEmitter } from 'events';
-import type { TSReadable, TermName, Binding } from '../types';
 import type { AbstractLevel } from 'abstract-level';
+import type { TSReadable, TermName, Binding } from '../types';
 
-import { TransformIterator } from 'asynciterator';
 import { Quad, Term } from 'rdf-js';
-
 export { flatMap } from './flatmap';
 export { pReduce } from './p-reduce';
 export { nanoid } from './nanoid';
+export { consumeInBatches } from './consumeinbatches';
+export { consumeOneByOne } from './consumeonebyone';
 
 export const termNames: TermName[] = [
   'subject',
@@ -84,81 +84,6 @@ export const defaultIndexes: TermName[][] = [
   ['predicate', 'object', 'graph', 'subject'],
   ['graph', 'predicate', 'object', 'subject'],
 ];
-
-class BatchingIterator<T> extends TransformIterator<T, T> {
-
-  constructor(source: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<void>) {
-
-    // @ts-ignore
-    super(source);
-
-    let ind = 0;
-    const buf = new Array(batchSize);
-
-    this._transform = (item: T, done: () => void) => {
-      buf[ind++] = item;
-      if (ind < batchSize) {
-        done();
-        return;
-      }
-      ind = 0;
-      onEachBatch(buf).then(done.bind(null, null)).catch(done);
-    };
-
-    this._flush = (done: () => void) => {
-      if (ind === 0) {
-        done();
-        return;
-      }
-      onEachBatch(buf.slice(0, ind)).then(done.bind(null, null)).catch(done);
-    };
-
-  }
-
-}
-
-export const consumeInBatches = async <T>(iterator: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<any>) => {
-  return new Promise((resolve, reject) => {
-    new BatchingIterator(iterator, batchSize, onEachBatch)
-      .on('end', resolve)
-      .on('error', reject);
-  });
-};
-
-export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (item: T) => any | Promise<any>) => {
-  return new Promise<void>((resolve, reject) => {
-    let ended = false;
-    let waiting = false;
-    let working = false;
-    const loop = () => {
-      working = false;
-      waiting = false;
-      const item = iterator.read();
-      if (item === null) {
-        if (ended) {
-          resolve();
-        } else {
-          waiting = true;
-          iterator.once('readable', loop);
-        }
-        return;
-      }
-      working = true;
-      Promise.resolve(onEachItem(item)).then(loop).catch(reject);
-    };
-    iterator.once('end', () => {
-      ended = true;
-      if (waiting) {
-        iterator.removeListener('readable', loop);
-        resolve();
-      }
-      if (!working) {
-        resolve();
-      }
-    });
-    loop();
-  });
-};
 
 export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) => void) => void): Promise<T|undefined> => {
   return new Promise((resolve, reject) => {
@@ -248,4 +173,4 @@ export const bufferEquals = (a: Uint8Array | DataView, b: Uint8Array | DataView)
     }
   }
   return true;
-}
+};

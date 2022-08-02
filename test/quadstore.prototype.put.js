@@ -178,5 +178,50 @@ module.exports = () => {
     });
   });
 
+  describe('Quadstore.prototype.putStream() with batchSize', () => {
+
+    beforeEach(async function () {
+      const { dataFactory } = this;
+      const quads = [];
+      for (let i = 0; i < 10; i += 1) {
+        quads.push(dataFactory.quad(
+          dataFactory.namedNode('ex://s'),
+          dataFactory.namedNode('ex://p'),
+          dataFactory.namedNode(`ex://o${i}`),
+          dataFactory.namedNode('ex://g'),
+        ));
+      }
+      this.quads = quads;
+    });
+
+    afterEach(async function () {
+      const { store, quads } = this;
+      const { items } = await store.get({});
+      items.sort((a, b) => a.object.value < b.object.value ? -1 : 1);
+      should(items).be.equalToQuadArray(quads);
+    });
+
+    it('batchSize set to 1', async function () {
+      const { store, quads } = this;
+      await store.putStream(new ArrayIterator(quads), { batchSize: 1 });
+    });
+
+    it('batchSize set to the number of quads', async function () {
+      const { store, quads } = this;
+      await store.putStream(new ArrayIterator(quads), { batchSize: 10 });
+    });
+
+    it('batchSize set to a perfect divisor of the number of quads', async function () {
+      const { store, quads } = this;
+      await store.putStream(new ArrayIterator(quads), { batchSize: 2 });
+    });
+
+    it('batchSize set to an imperfect divisor of the number of quads', async function () {
+      const { store, quads } = this;
+      await store.putStream(new ArrayIterator(quads), { batchSize: 3 });
+    });
+
+  });
+
 
 };

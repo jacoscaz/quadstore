@@ -40,8 +40,8 @@ import {
   TransformIterator,
 } from 'asynciterator';
 import {
-  consumeInBatches,
   consumeOneByOne,
+  consumeInBatches,
   emptyObject,
   nanoid,
   streamToArray,

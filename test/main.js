@@ -98,3 +98,7 @@ describe('MemoryLevel backend, standard indexes, with prefixes', () => {
   require('./quadstore')();
 
 });
+
+describe('Utils', () => {
+  require('./utils.consumeinbatches')();
+});

@@ -16,7 +16,7 @@ export const namedNodeWriter = {
 };
 
 export const namedNodeReader = {
-  readValueBytes: 1,
+  readValueLength: 1,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, prefixes: Prefixes): NamedNode {
     const valueLen = value[valueOffset];
@@ -36,7 +36,7 @@ export const blankNodeWriter = {
 };
 
 export const blankNodeReader = {
-  readValueBytes: 1,
+  readValueLength: 1,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): BlankNode {
     const valueLen = value[valueOffset];
@@ -57,7 +57,7 @@ export const genericLiteralWriter = {
 };
 
 export const genericLiteralReader = {
-  readValueBytes: 2,
+  readValueLength: 2,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
     const valueLen = value[valueOffset];
@@ -81,7 +81,7 @@ export const stringLiteralWriter = {
 };
 
 export const stringLiteralReader = {
-  readValueBytes: 1,
+  readValueLength: 1,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): Literal {
     const valueLen = value[valueOffset];
@@ -102,7 +102,7 @@ export const langStringLiteralWriter = {
 };
 
 export const langStringLiteralReader = {
-  readValueBytes: 2,
+  readValueLength: 2,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
     const valueLen = value[valueOffset];
@@ -132,7 +132,7 @@ export const numericLiteralWriter = {
 };
 
 export const numericLiteralReader = {
-  readValueBytes: 3,
+  readValueLength: 3,
   readKeyChars: 0,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory, separator: string): Literal {
     const valueLen = value[valueOffset];
@@ -157,7 +157,7 @@ export const defaultGraphWriter = {
 };
 
 export const defaultGraphReader = {
-  readValueBytes: 1,
+  readValueLength: 1,
   readKeyChars: 2,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): DefaultGraph {
     return factory.defaultGraph();

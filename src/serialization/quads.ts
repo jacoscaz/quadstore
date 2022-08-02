@@ -110,43 +110,43 @@ export const quadReader = {
           termValue = namedNodeReader.read(key, keyOffset, value, valueOffset, factory, prefixes);
           // @ts-ignore
           keyOffset += namedNodeReader.readKeyChars;
-          valueOffset += namedNodeReader.readValueBytes;
+          valueOffset += namedNodeReader.readValueLength;
           break;
         case 1:
           termValue = blankNodeReader.read(key, keyOffset, value, valueOffset, factory);
           // @ts-ignore
           keyOffset += blankNodeReader.readKeyChars;
-          valueOffset += blankNodeReader.readValueBytes;
+          valueOffset += blankNodeReader.readValueLength;
           break;
         case 2:
           termValue = genericLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
           // @ts-ignore
           keyOffset += genericLiteralReader.readKeyChars;
-          valueOffset += genericLiteralReader.readValueBytes;
+          valueOffset += genericLiteralReader.readValueLength;
           break;
         case 3:
           termValue = stringLiteralReader.read(key, keyOffset, value, valueOffset, factory);
           // @ts-ignore
           keyOffset += stringLiteralReader.readKeyChars;
-          valueOffset += stringLiteralReader.readValueBytes;
+          valueOffset += stringLiteralReader.readValueLength;
           break;
         case 4:
           termValue = langStringLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
           // @ts-ignore
           keyOffset += langStringLiteralReader.readKeyChars;
-          valueOffset += langStringLiteralReader.readValueBytes;
+          valueOffset += langStringLiteralReader.readValueLength;
           break;
         case 5:
           termValue = numericLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
           // @ts-ignore
           keyOffset += numericLiteralReader.readKeyChars;
-          valueOffset += numericLiteralReader.readValueBytes;
+          valueOffset += numericLiteralReader.readValueLength;
           break;
         case 6:
           termValue = defaultGraphReader.read(key, keyOffset, value, valueOffset, factory);
           // @ts-ignore
           keyOffset += defaultGraphReader.readKeyChars;
-          valueOffset += defaultGraphReader.readValueBytes;
+          valueOffset += defaultGraphReader.readValueLength;
           break;
         default: throw new Error(`Unexpected encoded term type "${encodedTermType}"`);
       }

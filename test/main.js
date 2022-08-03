@@ -33,7 +33,7 @@ describe('ClassicLevel backend', () => {
   });
 
   afterEach(async function () {
-    await fs.rm(this.location, { recursive: true, force: true });
+    await fs.rm(this.location, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
   });
 
   require('./quadstore')();

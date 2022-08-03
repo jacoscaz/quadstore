@@ -55,9 +55,9 @@ import { uid } from './utils/uid';
 import { getApproximateSize, getStream } from './get';
 import { Scope } from './scope';
 import { quadWriter } from './serialization';
-import { copyUint16ArrayToUint8Array } from './serialization/utils';
+import {copyUint16ArrayToUint8Array, viewUint16ArrayAsUint8Array} from './serialization/utils';
 
-const __value: Uint16Array = new Uint16Array(new ArrayBuffer(32));
+// const __value: Uint16Array = new Uint16Array(new ArrayBuffer(32));
 
 export class Quadstore implements Store {
 
@@ -221,66 +221,77 @@ export class Quadstore implements Store {
     return await getApproximateSize(this, pattern, opts);
   }
 
+  private _batchPut(quad: Quad, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
+    const { indexes } = this;
+    for (let i = 0, il = indexes.length, index; i < il; i += 1) {
+      index = indexes[i];
+      const value = new Uint16Array(16);
+      const key = quadWriter.write(index.prefix, value, quad, index.terms, this.prefixes);
+      batch = batch.put(key, value);
+    }
+    return batch;
+  }
+
   async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     let batch = this.db.batch();
     if (opts.scope) {
       quad = opts.scope.parseQuad(quad, batch);
     }
-    batch = this.indexes.reduce((indexBatch, index) => {
-      const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-      return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
-    }, batch);
+    this._batchPut(quad, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async multiPut(quads: Quad[], opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
+    const { indexes } = this;
     let batch = this.db.batch();
-    batch = quads.reduce((quadBatch, quad) => {
+    for (let q = 0, ql = quads.length, quad; q < ql; q += 1) {
+      quad = quads[q];
       if (opts.scope) {
         quad = opts.scope.parseQuad(quad, batch);
       }
-      return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
-      }, quadBatch);
-    }, batch);
+      this._batchPut(quad, batch);
+    }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
+  private _batchDel(quad: Quad, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
+    const { indexes } = this;
+    for (let i = 0, il = indexes.length, index; i < il; i += 1) {
+      index = indexes[i];
+      const key = quadWriter.write(index.prefix, undefined, quad, index.terms, this.prefixes);
+      batch = batch.del(key);
+    }
+    return batch;
+  }
+
   async del(quad: Quad, opts: DelOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const batch = this.indexes.reduce((indexBatch, index) => {
-      const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-      return indexBatch.del(key);
-    }, this.db.batch());
+    const batch = this.db.batch();
+    this._batchDel(quad, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async multiDel(quads: Quad[], opts: DelOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const batch = quads.reduce((quadBatch, quad) => {
-      return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, quad, index.terms, this.prefixes);
-        return indexBatch.del(key);
-      }, quadBatch);
-    }, this.db.batch());
+    const batch = this.db.batch();
+    for (let q = 0, ql = quads.length, quad; q < ql; q += 1) {
+      quad = quads[q];
+      this._batchDel(quad, batch);
+    }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async patch(oldQuad: Quad, newQuad: Quad, opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const batch = this.indexes.reduce((indexBatch, index) => {
-      const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
-      indexBatch.del(oldKey);
-      const newKey = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-      return indexBatch.put(newKey, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
-    }, this.db.batch());
+    const batch = this.db.batch();
+    this._batchDel(oldQuad, batch);
+    this._batchPut(newQuad, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
@@ -288,18 +299,14 @@ export class Quadstore implements Store {
   async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     let batch = this.db.batch();
-    batch = oldQuads.reduce((quadBatch, oldQuad) => {
-      return this.indexes.reduce((indexBatch, index) => {
-        const oldKey = quadWriter.write(index.prefix, __value, oldQuad, index.terms, this.prefixes);
-        return indexBatch.del(oldKey);
-      }, quadBatch);
-    }, batch);
-    batch = newQuads.reduce((quadBatch, newQuad) => {
-      return this.indexes.reduce((indexBatch, index) => {
-        const key = quadWriter.write(index.prefix, __value, newQuad, index.terms, this.prefixes);
-        return indexBatch.put(key, copyUint16ArrayToUint8Array(__value, quadWriter.writtenValueLength));
-      }, quadBatch);
-    }, batch);
+    for (let oq = 0, oql = oldQuads.length, oldQuad; oq < oql; oq += 1) {
+      oldQuad = oldQuads[oq];
+      this._batchDel(oldQuad, batch);
+    }
+    for (let nq = 0, nql = newQuads.length, newQuad; nq < nql; nq += 1) {
+      newQuad = newQuads[nq];
+      this._batchPut(newQuad, batch);
+    }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }

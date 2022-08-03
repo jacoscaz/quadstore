@@ -11,40 +11,50 @@ import { blankNodeReader, blankNodeWriter, defaultGraphReader, defaultGraphWrite
 
 export const quadWriter = {
   writtenValueLength: 0,
-  write(prefix: string, value: Uint16Array, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
+  write(prefix: string, value: Uint16Array|undefined, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
     let ret = prefix;
     let valueOffset = 0;
     for (let t = 0, term; t < termNames.length; t += 1) {
       term = quad[termNames[t]];
       switch (term.termType) {
         case 'NamedNode':
-          value[valueOffset] = 0;
+          if (value) {
+            value[valueOffset] = 0;
+          }
           valueOffset += 1;
           ret += namedNodeWriter.write(value, valueOffset, term, prefixes);
           valueOffset += namedNodeWriter.writtenValueLength;
           break;
         case 'BlankNode':
-          value[valueOffset] = 1;
+          if (value) {
+            value[valueOffset] = 1;
+          }
           valueOffset += 1;
           ret += blankNodeWriter.write(value, valueOffset, term);
           valueOffset += blankNodeWriter.writtenValueLength;
           break;
         case 'DefaultGraph':
-          value[valueOffset] = 6;
+          if (value) {
+            value[valueOffset] = 6;
+          }
           valueOffset += 1;
           ret += defaultGraphWriter.write(value, valueOffset, term);
           valueOffset += defaultGraphWriter.writtenValueLength;
           break;
         case 'Literal':
           if (term.language) {
-            value[valueOffset] = 4;
+            if (value) {
+              value[valueOffset] = 4;
+            }
             valueOffset += 1;
             ret += langStringLiteralWriter.write(value, valueOffset, term, separator);
             valueOffset += langStringLiteralWriter.writtenValueLength;
           } else if (term.datatype) {
             switch (term.datatype.value) {
               case xsd.string:
-                value[valueOffset] = 3;
+                if (value) {
+                  value[valueOffset] = 3;
+                }
                 valueOffset += 1;
                 ret += stringLiteralWriter.write(value, valueOffset, term);
                 valueOffset += stringLiteralWriter.writtenValueLength;
@@ -64,25 +74,33 @@ export const quadWriter = {
               case xsd.unsignedShort:
               case xsd.unsignedByte:
               case xsd.positiveInteger:
-                value[valueOffset] = 5;
+                if (value) {
+                  value[valueOffset] = 5;
+                }
                 valueOffset += 1;
                 ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(term.value), false);
                 valueOffset += numericLiteralWriter.writtenValueLength;
                 break;
               case xsd.dateTime:
-                value[valueOffset] = 5;
+                if (value) {
+                  value[valueOffset] = 5;
+                }
                 valueOffset += 1;
                 ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(new Date(term.value).valueOf()), false);
                 valueOffset += numericLiteralWriter.writtenValueLength;
                 break;
               default:
-                value[valueOffset] = 2;
+                if (value) {
+                  value[valueOffset] = 2;
+                }
                 valueOffset += 1;
                 ret += genericLiteralWriter.write(value, valueOffset, term, separator);
                 valueOffset += genericLiteralWriter.writtenValueLength;
             }
           } else {
-            value[valueOffset] = 3;
+            if (value) {
+              value[valueOffset] = 3;
+            }
             valueOffset += 1;
             ret += stringLiteralWriter.write(value, valueOffset, term);
             valueOffset += stringLiteralWriter.writtenValueLength;

@@ -1,17 +1,13 @@
 
 'use strict';
 
+const fs = require('fs/promises');
 const os = require('os');
-const fs = require('fs-extra');
-const util = require('util');
 const path = require('path');
 const { uid } = require('../dist/utils/uid');
 const { MemoryLevel } = require('memory-level');
-// const rocksdb = require('rocksdb');
 const { ClassicLevel } = require('classic-level');
 const { DataFactory } = require('rdf-data-factory');
-
-const remove = util.promisify(fs.remove);
 
 require('./fpstring')();
 
@@ -37,11 +33,7 @@ describe('ClassicLevel backend', () => {
   });
 
   afterEach(async function () {
-    try {
-      await remove(this.location);
-    } catch (err) {
-      console.error(err);
-    }
+    await fs.rm(this.location, { recursive: true, force: true });
   });
 
   require('./quadstore')();

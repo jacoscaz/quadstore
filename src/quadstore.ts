@@ -41,7 +41,6 @@ import {
 } from 'asynciterator';
 import {
   streamToArray,
-  pFromCallback,
   ensureAbstractLevel,
 } from './utils/stuff';
 import {
@@ -112,7 +111,7 @@ export class Quadstore implements Store {
       case 'closing':
         await this.waitForStatus('closed');
       case 'closed':
-        await pFromCallback((cb) => { this.db.open(cb); });
+        await this.db.open();
         break;
       case 'opening':
         await this.waitForStatus('open');
@@ -127,7 +126,7 @@ export class Quadstore implements Store {
       case 'opening':
         await this.waitForStatus('open');
       case 'open':
-        await pFromCallback((cb) => { this.db.close(cb); });
+        await this.db.close();
         break;
       case 'closing':
         await this.waitForStatus('closed');
@@ -315,7 +314,7 @@ export class Quadstore implements Store {
     if (opts.preWrite) {
       await opts.preWrite(batch);
     }
-    await pFromCallback((cb) => { batch.write(cb); });
+    await batch.write();
   }
 
   async get(pattern: Pattern, opts: GetOpts = emptyObject): Promise<QuadArrayResultWithInternals> {

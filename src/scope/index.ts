@@ -6,7 +6,6 @@ import type { Quadstore } from '../quadstore';
 import { LevelIterator } from '../get/leveliterator';
 import { consumeOneByOne } from '../utils/consumeonebyone';
 import { uid } from '../utils/uid';
-import { pFromCallback } from '../utils/stuff';
 import { separator, boundary } from '../utils/constants';
 
 export class Scope {
@@ -45,7 +44,7 @@ export class Scope {
     await consumeOneByOne(iterator, (key: string) => {
       batch.del(key);
     });
-    await pFromCallback((cb) => { batch.write(cb); });
+    await batch.write();
   }
 
   static getLevelIteratorOpts(keys: boolean, values: boolean, scopeId?: string) {

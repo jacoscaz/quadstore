@@ -62,14 +62,6 @@ export const resolveOnEvent = (emitter: EventEmitter, event: string, rejectOnErr
 
 export const waitForEvent = resolveOnEvent;
 
-export const pFromCallback = <T>(fn: (cb: (err: Error|undefined|null, val?: T) => void) => void): Promise<T|undefined> => {
-  return new Promise((resolve, reject) => {
-    fn((err: Error|undefined|null, val?: T) => {
-      err ? reject(err) : resolve(val);
-    });
-  });
-};
-
 export const arrStartsWith = (arr: TermName[], prefix: TermName[]): boolean => {
   for (let i = 0; i < prefix.length; i += 1) {
     if (prefix[i] !== arr[i]) {

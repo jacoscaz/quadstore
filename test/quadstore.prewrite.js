@@ -3,7 +3,6 @@
 
 const should = require('should');
 const { equalsUint8Array } = require('./utils');
-const { pFromCallback } = require('../dist/utils/stuff');
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -37,7 +36,7 @@ module.exports = () => {
       await store.put(quads[0], {
         preWrite: batch => batch.put('key1', encoder.encode('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 
@@ -46,7 +45,7 @@ module.exports = () => {
       await store.multiPut(quads, {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 
@@ -56,7 +55,7 @@ module.exports = () => {
       await store.del(quads[0], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 
@@ -66,7 +65,7 @@ module.exports = () => {
       await store.multiDel(quads, {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 
@@ -76,7 +75,7 @@ module.exports = () => {
       await store.patch(quads[0], quads[1], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 
@@ -86,7 +85,7 @@ module.exports = () => {
       await store.multiPatch([quads[0]], [quads[1]], {
         preWrite: batch => batch.put('key1', Buffer.from('value1'))
       });
-      const value = await pFromCallback(cb => store.db.get('key1', { valueEncoding: 'view' }, cb));
+      const value = await store.db.get('key1', { valueEncoding: 'view' });
       should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
     });
 

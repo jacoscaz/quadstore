@@ -6,7 +6,7 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
     let bufpos = 0;
     let looping = true;
     let ended = false;
-    const buffer = new Array(batchSize);
+    let buffer = new Array(batchSize);
     const flushAndResolve = () => {
       cleanup();
       if (bufpos > 0) {
@@ -46,7 +46,9 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
       }
       if (bufpos === batchSize) {
         bufpos = 0;
-        onEachBatch(buffer.slice()).then(loop).catch(onError);
+        let current = buffer;
+        buffer = new Array(batchSize);
+        onEachBatch(current).then(loop).catch(onError);
       }
     };
     const cleanup = () => {

@@ -346,6 +346,23 @@ module.exports = () => {
       should(memResults.items[9].predicate.value).eql(`ex://p89`);
     });
 
+    it('should order by predicate while querying for a range of object literals, sorting in memory, limiting', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['predicate'], limit: 2 },
+      );
+      should(memResults.resorted).eql(true);
+      should(memResults.items).have.length(2);
+      should(memResults.items[0].predicate.value).eql(`ex://p80`);
+      should(memResults.items[1].predicate.value).eql(`ex://p81`);
+    });
+
     it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse', async function () {
       const { dataFactory, store } = this;
       const memResults = await store.get(
@@ -361,6 +378,23 @@ module.exports = () => {
       should(memResults.items).have.length(10);
       should(memResults.items[0].predicate.value).eql(`ex://p89`);
       should(memResults.items[9].predicate.value).eql(`ex://p80`);
+    });
+
+    it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse, limiting', async function () {
+      const { dataFactory, store } = this;
+      const memResults = await store.get(
+        {
+          object: {
+            termType: 'Range',
+            lt: dataFactory.literal('20', dataFactory.namedNode(xsd.decimal)),
+          },
+        },
+        { order: ['predicate'], reverse: true, limit: 2 },
+      );
+      should(memResults.resorted).eql(true);
+      should(memResults.items).have.length(2);
+      should(memResults.items[0].predicate.value).eql(`ex://p89`);
+      should(memResults.items[1].predicate.value).eql(`ex://p88`);
     });
 
     it('should order by object while querying for a range of object literals without sorting in memory', async function () {

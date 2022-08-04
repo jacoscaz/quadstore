@@ -22,6 +22,22 @@ import { SortingIterator } from './sortingiterator';
 import { AbstractLevel } from 'abstract-level';
 import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
 
+const SORTING_KEY = Symbol();
+
+interface SortableQuad extends Quad {
+  [SORTING_KEY]: string;
+}
+
+const compareSortableQuadsReverse = (left: SortableQuad, right: SortableQuad) => {
+  return left[SORTING_KEY] > right[SORTING_KEY] ? -1 : 1;
+};
+
+const compareSortableQuads = (left: SortableQuad, right: SortableQuad) => {
+  return left[SORTING_KEY] > right[SORTING_KEY] ? 1 : -1;
+};
+
+const emitSortableQuad = (item: SortableQuad): Quad => item;
+
 const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery<any, any>|null => {
   const indexQuery = writePattern(pattern, index, prefixes);
   if (indexQuery === null) {
@@ -76,19 +92,21 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
       return quadReader.read(key, index.prefix.length, viewUint8ArrayAsUint16Array(value), 0, index.terms, dataFactory, prefixes);
     });
     if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
-      const compare = opts.reverse === true
-        ? (left: [Quad, string], right: [Quad, string]) => left[1] > right[1] ? -1 : 1
-        : (left: [Quad, string], right: [Quad, string]) => left[1] > right[1] ? 1 : -1
-      ;
-      const digest = (item: Quad): [Quad, string] => {
-        return [item, quadWriter.write('', undefined, 0, item, <TermName[]>opts.order, prefixes) + separator];
+      const digest = (item: Quad): SortableQuad => {
+        (item as SortableQuad)[SORTING_KEY] = quadWriter.write('', undefined, 0, item, <TermName[]>opts.order, prefixes) + separator;
+        return (item as SortableQuad);
       };
-      const emit = (item: [Quad, string]): Quad => {
-        return item[0];
-      }
-      iterator = new SortingIterator<Quad, [Quad, string], Quad>(iterator, compare, digest, emit);
+      const compare = opts.reverse === true ? compareSortableQuadsReverse : compareSortableQuads;
+      iterator = new SortingIterator<Quad, SortableQuad, Quad>(iterator, compare, digest, emitSortableQuad);
       if (typeof opts.limit !== 'undefined') {
-        iterator = iterator.take(opts.limit);
+        const onEndOrError = function (this: AsyncIterator<any>) {
+          this.removeListener('end', onEndOrError);
+          this.removeListener('error', onEndOrError);
+          this.destroy();
+        };
+        iterator = iterator.take(opts.limit)
+          .on('end', onEndOrError)
+          .on('error', onEndOrError);
       }
     }
     return {type: ResultType.QUADS, order: opts.order || order, iterator, index: index.terms, resorted: true };

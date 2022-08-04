@@ -18,7 +18,7 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
@@ -34,7 +34,7 @@ module.exports = () => {
         factory.defaultGraph(),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
@@ -50,7 +50,7 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
@@ -66,7 +66,7 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
@@ -82,7 +82,7 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });
@@ -98,7 +98,7 @@ module.exports = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
-        const key = quadWriter.write(index.prefix, value, quad, index.terms, prefixes);
+        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
         should(read.equals(quad)).be.true();
       });

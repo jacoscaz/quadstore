@@ -41,7 +41,7 @@ import {
 } from 'asynciterator';
 import {
   streamToArray,
-  ensureAbstractLevel,
+  ensureAbstractLevel, ceilToMultipleOf,
 } from './utils/stuff';
 import {
   emptyObject,
@@ -54,9 +54,7 @@ import { uid } from './utils/uid';
 import { getApproximateSize, getStream } from './get';
 import { Scope } from './scope';
 import { quadWriter } from './serialization';
-import {copyUint16ArrayToUint8Array, viewUint16ArrayAsUint8Array} from './serialization/utils';
-
-// const __value: Uint16Array = new Uint16Array(new ArrayBuffer(32));
+import {viewUint16ArrayAsUint8Array} from './serialization/utils';
 
 export class Quadstore implements Store {
 
@@ -220,38 +218,43 @@ export class Quadstore implements Store {
     return await getApproximateSize(this, pattern, opts);
   }
 
-  private _batchPut(quad: Quad, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
+  private _batchPut(quad: Quad, value: Uint16Array, baseValueOffset: number, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
     const { indexes } = this;
-    for (let i = 0, il = indexes.length, index; i < il; i += 1) {
+    for (let i = 0, il = indexes.length, index, valueOffset; i < il; i += 1) {
+      valueOffset = baseValueOffset + i * 16;
       index = indexes[i];
-      const value = new Uint16Array(16);
-      const key = quadWriter.write(index.prefix, value, quad, index.terms, this.prefixes);
-      batch = batch.put(key, value);
+      const key = quadWriter.write(index.prefix, value, valueOffset, quad, index.terms, this.prefixes);
+      batch = batch.put(key, viewUint16ArrayAsUint8Array(value, valueOffset, 16));
     }
     return batch;
   }
 
   async put(quad: Quad, opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    let batch = this.db.batch();
+    const { indexes, db } = this;
+    let batch = db.batch();
     if (opts.scope) {
       quad = opts.scope.parseQuad(quad, batch);
     }
-    this._batchPut(quad, batch);
+    const value = new Uint16Array(16 * indexes.length);
+    this._batchPut(quad, value, 0, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async multiPut(quads: Quad[], opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const { indexes } = this;
-    let batch = this.db.batch();
+    const { indexes, db } = this;
+    const value = new Uint16Array(16 * indexes.length * quads.length);
+    let valueOffset = 0;
+    let batch = db.batch();
     for (let q = 0, ql = quads.length, quad; q < ql; q += 1) {
       quad = quads[q];
+      valueOffset = q * indexes.length * 16;
       if (opts.scope) {
         quad = opts.scope.parseQuad(quad, batch);
       }
-      this._batchPut(quad, batch);
+      this._batchPut(quad, value, valueOffset, batch);
     }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
@@ -261,7 +264,7 @@ export class Quadstore implements Store {
     const { indexes } = this;
     for (let i = 0, il = indexes.length, index; i < il; i += 1) {
       index = indexes[i];
-      const key = quadWriter.write(index.prefix, undefined, quad, index.terms, this.prefixes);
+      const key = quadWriter.write(index.prefix, undefined, 0, quad, index.terms, this.prefixes);
       batch = batch.del(key);
     }
     return batch;
@@ -288,23 +291,29 @@ export class Quadstore implements Store {
 
   async patch(oldQuad: Quad, newQuad: Quad, opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    const batch = this.db.batch();
+    const { indexes, db } = this;
+    const batch = db.batch();
     this._batchDel(oldQuad, batch);
-    this._batchPut(newQuad, batch);
+    const value = new Uint16Array(16 * indexes.length);
+    this._batchPut(newQuad, value, 0, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   async multiPatch(oldQuads: Quad[], newQuads: Quad[], opts: PatchOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
-    let batch = this.db.batch();
+    const { indexes, db } = this;
+    let batch = db.batch();
     for (let oq = 0, oql = oldQuads.length, oldQuad; oq < oql; oq += 1) {
       oldQuad = oldQuads[oq];
       this._batchDel(oldQuad, batch);
     }
+    const value = new Uint16Array(16 * indexes.length * newQuads.length);
+    let valueOffset = 0;
     for (let nq = 0, nql = newQuads.length, newQuad; nq < nql; nq += 1) {
+      valueOffset = nq * indexes.length * 16;
       newQuad = newQuads[nq];
-      this._batchPut(newQuad, batch);
+      this._batchPut(newQuad, value, valueOffset, batch);
     }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };

@@ -22,8 +22,6 @@ import { SortingIterator } from './sortingiterator';
 import { AbstractLevel } from 'abstract-level';
 import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
 
-const __value = new Uint16Array(new ArrayBuffer(32));
-
 const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes: Prefixes, opts: GetOpts): LevelQuery<any, any>|null => {
   const indexQuery = writePattern(pattern, index, prefixes);
   if (indexQuery === null) {
@@ -83,7 +81,7 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
         : (left: [Quad, string], right: [Quad, string]) => left[1] > right[1] ? 1 : -1
       ;
       const digest = (item: Quad): [Quad, string] => {
-        return [item, quadWriter.write('', __value, item, <TermName[]>opts.order, prefixes) + separator];
+        return [item, quadWriter.write('', undefined, 0, item, <TermName[]>opts.order, prefixes) + separator];
       };
       const emit = (item: [Quad, string]): Quad => {
         return item[0];

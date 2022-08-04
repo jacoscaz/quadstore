@@ -70,3 +70,7 @@ export const arrStartsWith = (arr: TermName[], prefix: TermName[]): boolean => {
   }
   return true;
 };
+
+export const ceilToMultipleOf = (num: number, multiple: number): number => {
+  return Math.ceil(num / multiple) * multiple;
+};

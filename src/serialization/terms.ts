@@ -2,7 +2,11 @@
 import type { Prefixes } from '../types';
 import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'rdf-js';
 
+import * as xsd from './xsd';
 import { sliceString } from './utils';
+import {Term} from 'rdf-js';
+import {separator} from '../utils/constants';
+import {encode} from './fpstring';
 
 export const namedNodeWriter = {
   writtenValueLength: 1,
@@ -162,4 +166,164 @@ export const defaultGraphReader = {
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, factory: DataFactory): DefaultGraph {
     return factory.defaultGraph();
   },
+};
+
+export const termWriter = {
+  writtenValueLength: 0,
+  write(value: Uint16Array | undefined, baseValueOffset: number, term: Term, prefixes: Prefixes): string {
+    let ret = '';
+    let valueOffset = baseValueOffset;
+    switch (term.termType) {
+      case 'NamedNode':
+        if (value) {
+          value[valueOffset] = 0;
+        }
+        valueOffset += 1;
+        ret += namedNodeWriter.write(value, valueOffset, term, prefixes);
+        valueOffset += namedNodeWriter.writtenValueLength;
+        break;
+      case 'BlankNode':
+        if (value) {
+          value[valueOffset] = 1;
+        }
+        valueOffset += 1;
+        ret += blankNodeWriter.write(value, valueOffset, term);
+        valueOffset += blankNodeWriter.writtenValueLength;
+        break;
+      case 'DefaultGraph':
+        if (value) {
+          value[valueOffset] = 6;
+        }
+        valueOffset += 1;
+        ret += defaultGraphWriter.write(value, valueOffset, term);
+        valueOffset += defaultGraphWriter.writtenValueLength;
+        break;
+      case 'Literal':
+        if (term.language) {
+          if (value) {
+            value[valueOffset] = 4;
+          }
+          valueOffset += 1;
+          ret += langStringLiteralWriter.write(value, valueOffset, term, separator);
+          valueOffset += langStringLiteralWriter.writtenValueLength;
+        } else if (term.datatype) {
+          switch (term.datatype.value) {
+            case xsd.string:
+              if (value) {
+                value[valueOffset] = 3;
+              }
+              valueOffset += 1;
+              ret += stringLiteralWriter.write(value, valueOffset, term);
+              valueOffset += stringLiteralWriter.writtenValueLength;
+              break;
+            case xsd.integer:
+            case xsd.double:
+            case xsd.decimal:
+            case xsd.nonPositiveInteger:
+            case xsd.negativeInteger:
+            case xsd.long:
+            case xsd.int:
+            case xsd.short:
+            case xsd.byte:
+            case xsd.nonNegativeInteger:
+            case xsd.unsignedLong:
+            case xsd.unsignedInt:
+            case xsd.unsignedShort:
+            case xsd.unsignedByte:
+            case xsd.positiveInteger:
+              if (value) {
+                value[valueOffset] = 5;
+              }
+              valueOffset += 1;
+              ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(term.value), false);
+              valueOffset += numericLiteralWriter.writtenValueLength;
+              break;
+            case xsd.dateTime:
+              if (value) {
+                value[valueOffset] = 5;
+              }
+              valueOffset += 1;
+              ret += numericLiteralWriter.write(value, valueOffset, term, separator, encode(new Date(term.value).valueOf()), false);
+              valueOffset += numericLiteralWriter.writtenValueLength;
+              break;
+            default:
+              if (value) {
+                value[valueOffset] = 2;
+              }
+              valueOffset += 1;
+              ret += genericLiteralWriter.write(value, valueOffset, term, separator);
+              valueOffset += genericLiteralWriter.writtenValueLength;
+          }
+        } else {
+          if (value) {
+            value[valueOffset] = 3;
+          }
+          valueOffset += 1;
+          ret += stringLiteralWriter.write(value, valueOffset, term);
+          valueOffset += stringLiteralWriter.writtenValueLength;
+        }
+    }
+    this.writtenValueLength = valueOffset - baseValueOffset;
+    return ret;
+  }
+};
+
+export const termReader = {
+  readKeyChars: 0,
+  readValueLength: 0,
+  read(key: string, baseKeyOffset: number, value: Uint16Array, baseValueOffset: number, factory: DataFactory, prefixes: Prefixes) {
+    let keyOffset = baseKeyOffset;
+    let valueOffset = baseValueOffset;
+    let termValue;
+    const encodedTermType = value[valueOffset];
+    valueOffset += 1;
+    switch (encodedTermType) {
+      case 0:
+        termValue = namedNodeReader.read(key, keyOffset, value, valueOffset, factory, prefixes);
+        // @ts-ignore
+        keyOffset += namedNodeReader.readKeyChars;
+        valueOffset += namedNodeReader.readValueLength;
+        break;
+      case 1:
+        termValue = blankNodeReader.read(key, keyOffset, value, valueOffset, factory);
+        // @ts-ignore
+        keyOffset += blankNodeReader.readKeyChars;
+        valueOffset += blankNodeReader.readValueLength;
+        break;
+      case 2:
+        termValue = genericLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
+        // @ts-ignore
+        keyOffset += genericLiteralReader.readKeyChars;
+        valueOffset += genericLiteralReader.readValueLength;
+        break;
+      case 3:
+        termValue = stringLiteralReader.read(key, keyOffset, value, valueOffset, factory);
+        // @ts-ignore
+        keyOffset += stringLiteralReader.readKeyChars;
+        valueOffset += stringLiteralReader.readValueLength;
+        break;
+      case 4:
+        termValue = langStringLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
+        // @ts-ignore
+        keyOffset += langStringLiteralReader.readKeyChars;
+        valueOffset += langStringLiteralReader.readValueLength;
+        break;
+      case 5:
+        termValue = numericLiteralReader.read(key, keyOffset, value, valueOffset, factory, separator);
+        // @ts-ignore
+        keyOffset += numericLiteralReader.readKeyChars;
+        valueOffset += numericLiteralReader.readValueLength;
+        break;
+      case 6:
+        termValue = defaultGraphReader.read(key, keyOffset, value, valueOffset, factory);
+        // @ts-ignore
+        keyOffset += defaultGraphReader.readKeyChars;
+        valueOffset += defaultGraphReader.readValueLength;
+        break;
+      default: throw new Error(`Unexpected encoded term type "${encodedTermType}"`);
+    }
+    this.readKeyChars = keyOffset - baseKeyOffset;
+    this.readValueLength = valueOffset - baseValueOffset;
+    return termValue;
+  }
 };

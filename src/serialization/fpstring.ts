@@ -15,13 +15,6 @@
  *
  * https://tools.ietf.org/html/draft-wood-ldapext-float-00
  *
- * The only deviation from Doug's draft consists in flipping the
- * exponent's digits by subtracting the exponent from 999 and flipping
- * the mantissa's digits by subtracting the mantissa from 10.
- *
- * FLIPPED_EXPONENT = 999 - EXPONENT
- * FLIPPED_MANTISSA =  10 - MANTISSA
- *
  * The resulting strings follow the pattern described in the draft:
  *
  * +-+-+---+-+------------------+
@@ -32,61 +25,103 @@
  *
  * The first character identifies which case the original number
  * belongs to, which determines whether the exponent and mantissa
- * have been flipped:
+ * have been flipped and/or inverted:
  *
- * 1. Negative mantissa and positive exponent ==> FLIP BOTH
- * 2. Negative mantissa and negative exponent ==> FLIP MANTISSA
- * 3. Zero                                    ==> RETURN ZERO
- * 4. Positive mantissa and negative exponent ==> FLIP EXPONENT
- * 5. Positive mantissa and positive exponent ==> NOTHING TO FLIP
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | CASE | RANGE      | MANTISSA AND EXPONENT SIGNS             | FLIPS              | INVERSIONS |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 0    | -Infinity  |                                         |                    |            |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 1    | X <= -1    | negative mantissa and positive exponent | mantissa, exponent |            |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 2    | 0 < X < -1 | negative mantissa and negative exponent | mantissa           | exponent   |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 3    | X = 0      |                                         |                    |            |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 4    | 0 < X < 1  | positive mantissa and negative exponent | exponent           | exponent   |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 5    | X >= 1     | positive mantissa and positive exponent | mantissa, exponent |            |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ * | 6    | Infinity   |                                         |                    |            |
+ * +------+------------+-----------------------------------------+--------------------+------------+
+ *
  */
 
-const joinParts = (encodingCase: number, exponentChars: string, mantissaChars: string): string => {
-  return `${encodingCase}${exponentChars}${mantissaChars.charAt(0)}${mantissaChars.slice(2)}`;
+
+const join = (encodingCase: number, exponent: number, mantissa: number): string => {
+  let r = '' + encodingCase;
+  if (exponent < 10) {
+    r += '00' + exponent;
+  } else if (exponent < 100) {
+    r += '0' + exponent;
+  } else {
+    r += exponent;
+  }
+  r += mantissa.toFixed(17);
+  return r;
 };
 
-const flipExponent = (exponentChars: string): string => {
-  return (999 - parseInt(exponentChars)).toString().padStart(3, '0');
-};
-
-const flipMantissa = (mantissaChars: string): string => {
-  return (10 - parseFloat(mantissaChars)).toPrecision(17).slice(0, 18);
-};
+const ZERO = join(3, 0, 0);
+const NEG_INF = join(0, 0, 0);
+const POS_INF = join(6, 0, 0);
 
 export const encode = (stringOrNumber: string|number): string => {
 
-  const n = typeof stringOrNumber !== 'number'
+  let mantissa: number = typeof stringOrNumber !== 'number'
     ? parseFloat(stringOrNumber)
     : stringOrNumber;
 
-  // CASE 3: n === 0
-  if (n === 0) {
-    return joinParts(3, '000', '0.0000000000000000');
+  if (Number.isNaN(mantissa)) {
+    throw new Error(`Cannot serialize NaN`);
   }
 
-  const e = (n > 0 ? '+' : '') + n.toExponential(16);
+  if (mantissa === -Infinity) {
+    return NEG_INF;
+  }
 
-  const mantissaSign = e.charAt(0);
-  const mantissaChars = e.slice(1, 19);
+  if (mantissa === Infinity) {
+    return POS_INF;
+  }
 
-  const exponentSign = e.charAt(20);
-  const exponentChars = e.slice(21).padStart(3, '0');
+  // CASE 3: n === 0
+  if (mantissa === 0) {
+    return ZERO;
+  }
 
-  switch (`${exponentSign}${mantissaSign}`) {
-    case '+-':
-      // CASE 1: n <= -1
-      return joinParts(1, flipExponent(exponentChars), flipMantissa(mantissaChars));
-    case '--':
-      // CASE 2: -1 < n < 0
-      return joinParts(2, exponentChars, flipMantissa(mantissaChars));
-    case '-+':
-      // CASE 4: 0 < n < 1
-      return joinParts(4, flipExponent(exponentChars), mantissaChars);
-    case '++':
-      // CASE 5: n >= 1
-      return joinParts(5, exponentChars, mantissaChars);
-    default:
-      throw new Error(`should not be here - "${exponentSign}${mantissaSign}" "${stringOrNumber}"`);
+  let exponent = 0
+  let sign = 0
+
+  if (mantissa < 0) {
+    sign = 1;
+    mantissa *= -1;
+  }
+
+  while (mantissa > 10) {
+    mantissa /= 10;
+    exponent += 1;
+  }
+
+  while (mantissa < 1) {
+    mantissa *= 10;
+    exponent -= 1;
+  }
+
+  if (sign === 1) {
+    if (exponent >= 0) {
+      // CASE 1: n <= -1 (negative sign, exp >= 0)
+      return join(1, 999 - exponent, 10 - mantissa);
+    } else {
+      // CASE 2: -1 < n < 0 (negative sign, exp < 0)
+      return join(2, exponent * -1, 10 - mantissa);
+    }
+  } else {
+    if (exponent < 0) {
+      // CASE 4: 0 < n < 1 (positive sign, exp < 0)
+      return join(4, 999 + exponent, mantissa);
+    } else {
+      // CASE 5: n >= 1 (positive sign, exp >= 0)
+      return join(5, exponent, mantissa);
+    }
   }
 
 };

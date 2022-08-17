@@ -83,7 +83,6 @@ export const encode = (stringOrNumber: string|number): string => {
     return POS_INF;
   }
 
-  // CASE 3: n === 0
   if (mantissa === 0) {
     return ZERO;
   }
@@ -108,18 +107,14 @@ export const encode = (stringOrNumber: string|number): string => {
 
   if (sign === 1) {
     if (exponent >= 0) {
-      // CASE 1: n <= -1 (negative sign, exp >= 0)
       return join(1, 999 - exponent, 10 - mantissa);
     } else {
-      // CASE 2: -1 < n < 0 (negative sign, exp < 0)
       return join(2, exponent * -1, 10 - mantissa);
     }
   } else {
     if (exponent < 0) {
-      // CASE 4: 0 < n < 1 (positive sign, exp < 0)
       return join(4, 999 + exponent, mantissa);
     } else {
-      // CASE 5: n >= 1 (positive sign, exp >= 0)
       return join(5, exponent, mantissa);
     }
   }

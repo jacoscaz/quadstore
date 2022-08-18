@@ -43,6 +43,7 @@ module.exports = () => {
       let batchCount = 0;
       let last = false;
       await consumeInBatches(source, batchSize, async (batch) => {
+        await new Promise((resolve) => setTimeout(resolve, 1));
         should(last).eql(false);
         should(batch.length).be.lessThanOrEqual(batchSize);
         last = batch.length < batchSize;

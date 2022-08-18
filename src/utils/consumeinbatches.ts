@@ -10,7 +10,9 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
     const flushAndResolve = () => {
       cleanup();
       if (bufpos > 0) {
-        Promise.resolve(onEachBatch(buffer.slice(0, bufpos))).then(resolve).catch(onError);
+        Promise.resolve(onEachBatch(buffer.slice(0, bufpos)))
+          .then(resolve)
+          .catch(onError);
         return;
       }
       resolve();
@@ -27,12 +29,12 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
     };
     const onReadable = () => {
       if (!looping) {
-        looping = true;
         loop();
       }
     };
     let item: T | null = null;
     const loop = () => {
+      looping = true;
       if (ended) {
         flushAndResolve();
         return;
@@ -45,10 +47,10 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
         return;
       }
       if (bufpos === batchSize) {
+        Promise.resolve(onEachBatch(buffer.slice()))
+          .then(loop)
+          .catch(onError);
         bufpos = 0;
-        const current = buffer;
-        buffer = new Array(batchSize);
-        Promise.resolve(onEachBatch(current)).then(loop).catch(onError);
       }
     };
     const cleanup = () => {

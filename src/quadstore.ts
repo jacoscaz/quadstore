@@ -41,7 +41,7 @@ import {
 } from 'asynciterator';
 import {
   streamToArray,
-  ensureAbstractLevel, ceilToMultipleOf,
+  ensureAbstractLevel,
 } from './utils/stuff';
 import {
   emptyObject,

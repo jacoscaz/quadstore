@@ -96,5 +96,6 @@ describe('MemoryLevel backend, standard indexes, with prefixes', () => {
 });
 
 describe('Utils', () => {
+  require('./utils.consumeonebyone')();
   require('./utils.consumeinbatches')();
 });

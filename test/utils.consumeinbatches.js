@@ -4,10 +4,13 @@ const { IntegerIterator } = require('asynciterator');
 const { delayIterator } = require('./utils');
 const { consumeInBatches } = require('../dist/utils/consumeinbatches');
 
+const createSourceIterator = () => new IntegerIterator({ start: 0, step: 1, end: 99 });
+
 module.exports = () => {
 
   describe('consumeInBatches()', () => {
 
+    let source;
     let batchSize;
 
     const runTests = () => {
@@ -34,9 +37,8 @@ module.exports = () => {
 
     };
 
-    let source;
-
     afterEach(async () => {
+      let itemValue = 0;
       let itemCount = 0;
       let batchCount = 0;
       let last = false;
@@ -46,6 +48,9 @@ module.exports = () => {
         last = batch.length < batchSize;
         itemCount += batch.length;
         batchCount += 1;
+        for (let i = 0; i < batch.length; i += 1) {
+          should(batch[i]).eql(itemValue++);
+        }
       });
       should(itemCount).eql(100);
       should(batchCount).eql(Math.ceil(100 / batchSize));
@@ -53,14 +58,14 @@ module.exports = () => {
 
     describe('with an IntegerIterator as the source', () => {
       beforeEach(() => {
-        source = new IntegerIterator({ start: 0, step: 1, end: 99 });
+        source = createSourceIterator();
       });
       runTests();
     });
 
     describe('with an asynchronous IntegerIterator as the source', () => {
       beforeEach(() => {
-        source = delayIterator(new IntegerIterator({ start: 0, step: 1, end: 99 }), 2);
+        source = delayIterator(createSourceIterator(), 2);
       });
       runTests();
     });

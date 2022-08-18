@@ -46,7 +46,9 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
       }
       if (bufpos === batchSize) {
         bufpos = 0;
-        Promise.resolve(onEachBatch(buffer.slice())).then(loop).catch(onError);
+        const current = buffer;
+        buffer = new Array(batchSize);
+        Promise.resolve(onEachBatch(current)).then(loop).catch(onError);
       }
     };
     const cleanup = () => {

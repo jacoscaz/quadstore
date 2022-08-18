@@ -1,16 +1,16 @@
 
 import { TSReadable } from '../types';
 
-export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => Promise<any>): Promise<void> => {
+export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => any): Promise<void> => {
   return new Promise((resolve, reject) => {
     let bufpos = 0;
-    let looping = true;
+    let looping = false;
     let ended = false;
     let buffer = new Array(batchSize);
     const flushAndResolve = () => {
       cleanup();
       if (bufpos > 0) {
-        onEachBatch(buffer.slice(0, bufpos)).then(resolve).catch(onError);
+        Promise.resolve(onEachBatch(buffer.slice(0, bufpos))).then(resolve).catch(onError);
         return;
       }
       resolve();
@@ -46,19 +46,22 @@ export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: nu
       }
       if (bufpos === batchSize) {
         bufpos = 0;
-        let current = buffer;
-        buffer = new Array(batchSize);
-        onEachBatch(current).then(loop).catch(onError);
+        Promise.resolve(onEachBatch(buffer.slice())).then(loop).catch(onError);
       }
     };
     const cleanup = () => {
       readable.removeListener('end', onEnd);
       readable.removeListener('error', onError);
       readable.removeListener('readable', onReadable);
+      if (typeof readable.destroy === 'function') {
+        readable.destroy();
+      }
     };
     readable.on('end', onEnd);
     readable.on('error', onError);
     readable.on('readable', onReadable);
-    loop();
+    if (readable.readable !== false) {
+      loop();
+    }
   });
 };

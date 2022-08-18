@@ -98,7 +98,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[6]]);
     });
 
-    it('should match quads by context', async function () {
+    it('should match quads by graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         graph: dataFactory.namedNode('ex://c') });
@@ -132,7 +132,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[5]]);
     });
 
-    it('should match quads by subject and context', async function () {
+    it('should match quads by subject and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s2'),
@@ -159,7 +159,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[5]]);
     });
 
-    it('should match quads by predicate and context', async function () {
+    it('should match quads by predicate and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         predicate: dataFactory.namedNode('ex://p'),
@@ -168,7 +168,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[0], ...this.quads.slice(2, 4)]);
     });
 
-    it('should match quads by object and context', async function () {
+    it('should match quads by object and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         object: dataFactory.namedNode('ex://o2'),
@@ -197,7 +197,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[5]]);
     });
 
-    it('should match quads by subject, predicate and context', async function () {
+    it('should match quads by subject, predicate and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s'),
@@ -207,7 +207,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[1]]);
     });
 
-    it('should match quads by subject, object and context', async function () {
+    it('should match quads by subject, object and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s'),
@@ -217,7 +217,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[1]]);
     });
 
-    it('should match quads by predicate, object and context', async function () {
+    it('should match quads by predicate, object and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         predicate: dataFactory.namedNode('ex://p2'),
@@ -227,7 +227,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[1], this.quads[4]]);
     });
 
-    it('should match quads by predicate, object and context where object is a numeric literal', async function () {
+    it('should match quads by predicate, object and graph where object is a numeric literal', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         predicate: dataFactory.namedNode('ex://p3'),
@@ -237,7 +237,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[5]]);
     });
 
-    it('should match quads by subject, predicate, object and context', async function () {
+    it('should match quads by subject, predicate, object and graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s2'),
@@ -248,7 +248,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[4]]);
     });
 
-    it('should match quads by subject, predicate, object and context where object is a numeric literal', async function () {
+    it('should match quads by subject, predicate, object and graph where object is a numeric literal', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s3'),
@@ -259,7 +259,7 @@ module.exports = () => {
       should(quads).be.equalToQuadArray([this.quads[5]]);
     });
 
-    it('should match quads by subject, predicate, object and context where object is a numeric literal', async function () {
+    it('should match quads by subject, predicate, object and graph where object is a numeric literal', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s3'),
@@ -268,6 +268,23 @@ module.exports = () => {
         graph: dataFactory.namedNode('ex://c3'),
       });
       should(quads).be.equalToQuadArray([this.quads[5]]);
+    });
+
+    it('should match zero quads when provided with an unknown subject', async function () {
+      const { dataFactory, store } = this;
+      const { items: quads } = await store.get({
+        subject: dataFactory.namedNode('ex://unknown'),
+      });
+      should(quads).have.length(0);
+    });
+
+    it('should match zero quads when provided with an unknown subject and a known predicate', async function () {
+      const { dataFactory, store } = this;
+      const { items: quads } = await store.get({
+        subject: dataFactory.namedNode('ex://unknown'),
+        predicate: dataFactory.namedNode('ex://p3'),
+      });
+      should(quads).have.length(0);
     });
 
   });

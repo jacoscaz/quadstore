@@ -102,12 +102,12 @@ const iteratorToArray = (iterator, cb) => {
 
 module.exports.iteratorToArray = iteratorToArray;
 
-const delayIterator = (iterator, avgDelay = 5) => {
-  const delayed = iterator.transform(function (item, done) {
+const delayIterator = (iterator, maxDelay = 5) => {
+  const delayed = iterator.transform((item, done, push) => {
     setTimeout(() => {
-      this._push(item);
+      push(item);
       done();
-    }, Math.round(Math.random() * avgDelay));
+    }, Math.round(Math.random() * maxDelay));
   });
   return delayed;
 };

@@ -70,3 +70,5 @@ export const arrStartsWith = (arr: TermName[], prefix: TermName[]): boolean => {
   }
   return true;
 };
+
+export const RESOLVED = Promise.resolve();

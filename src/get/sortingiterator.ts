@@ -1,5 +1,6 @@
 
 import { AsyncIterator } from 'asynciterator';
+import { RESOLVED } from '../utils/stuff';
 
 const SortedSet = require('js-sorted-set');
 
@@ -60,9 +61,7 @@ export class SortingIterator<In, Int, Out> extends AsyncIterator<Out> {
       return null;
     };
 
-    Promise.resolve().then(() => {
-      startBuffering();
-    });
+    RESOLVED.then(startBuffering);
 
   }
 

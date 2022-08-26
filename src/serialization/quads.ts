@@ -26,7 +26,7 @@ export const quadReader = {
   object: null,
   graph: null,
   read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
-    for (let t = 0, termName, termValue; t < termNames.length; t += 1) {
+    for (let t = 0, termName; t < termNames.length; t += 1) {
       termName = termNames[t];
       // @ts-ignore
       this[termName] = termReader.read(key, keyOffset, value, valueOffset, factory, prefixes);

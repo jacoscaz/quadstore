@@ -87,50 +87,15 @@ export class Quadstore implements Store {
     }
   }
 
-  protected waitForStatus(status: string, timeout: number = 200) {
-    return new Promise<void>((resolve, reject) => {
-      const t = setTimeout(() => {
-        clearInterval(i);
-        clearTimeout(t);
-        reject(new Error(`Timeout while waiting for status "${status}"`));
-      }, timeout);
-      const i = setInterval(() => {
-        if (this.db.status === status) {
-          clearInterval(i);
-          clearTimeout(t);
-          resolve();
-        }
-      }, 10);
-    });
-  }
-
   async open() {
-    switch (this.db.status) {
-      case 'closing':
-        await this.waitForStatus('closed');
-      case 'closed':
-        await this.db.open();
-        break;
-      case 'opening':
-        await this.waitForStatus('open');
-        break;
-      case 'open':
-      default:
+    if (this.db.status !== 'open') {
+      await this.db.open();
     }
   }
 
   async close() {
-    switch (this.db.status) {
-      case 'opening':
-        await this.waitForStatus('open');
-      case 'open':
-        await this.db.close();
-        break;
-      case 'closing':
-        await this.waitForStatus('closed');
-        break;
-      case 'closed':
-      default:
+    if (this.db.status !== 'closed') {
+      await this.db.close();
     }
   }
 

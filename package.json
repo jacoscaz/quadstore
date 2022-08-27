@@ -23,7 +23,7 @@
   "scripts": {
     "test": "npm run clean && npm run build:cjs && mocha ./test",
     "dev": "npm run clean && tsc -p tsconfig.cjs.json --watch",
-    "clean": "rm -r dist",
+    "clean": "rm -rf dist",
     "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
     "build:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",

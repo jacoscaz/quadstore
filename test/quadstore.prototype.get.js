@@ -2,8 +2,8 @@
 'use strict';
 
 const should = require('should');
-const xsd = require('../dist/serialization/xsd');
-const { arrStartsWith } = require('../dist/utils/stuff');
+const xsd = require('../dist/cjs/serialization/xsd');
+const { arrStartsWith } = require('../dist/cjs/utils/stuff');
 
 module.exports = () => {
 

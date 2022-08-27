@@ -2,7 +2,7 @@
 const should = require('should');
 const { IntegerIterator } = require('asynciterator');
 const { delayIterator } = require('./utils');
-const { consumeInBatches } = require('../dist/utils/consumeinbatches');
+const { consumeInBatches } = require('../dist/cjs/utils/consumeinbatches');
 
 const createSourceIterator = () => new IntegerIterator({ start: 0, step: 1, end: 99 });
 

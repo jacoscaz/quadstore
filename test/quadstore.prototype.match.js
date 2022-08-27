@@ -3,8 +3,8 @@
 
 const should = require('should');
 const AsyncIterator = require('asynciterator');
-const { DefaultGraphMode } = require('../dist/types');
-const { waitForEvent, streamToArray } = require('../dist/utils/stuff');
+const { DefaultGraphMode } = require('../dist/cjs/types');
+const { waitForEvent, streamToArray } = require('../dist/cjs/utils/stuff');
 
 module.exports = () => {
 

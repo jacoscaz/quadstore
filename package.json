@@ -14,15 +14,21 @@
     "browser"
   ],
   "type": "commonjs",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/cjs/index.js"
+  },
   "scripts": {
-    "test": "mocha ./test",
-    "ts:build": "tsc --project ./tsconfig.json",
-    "ts:watch": "mkdir -p dist && tsc --watch --project ./tsconfig.json",
-    "build": "npm run ts:build",
-    "publish:alpha": "npm publish --tag alpha",
-    "publish:beta": "npm publish --tag beta"
+    "test": "npm run clean && npm run build:cjs && mocha ./test",
+    "dev": "npm run clean && tsc -p tsconfig.cjs.json --watch",
+    "clean": "rm -r dist",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "publish:alpha": "npm run build && npm publish --tag alpha",
+    "publish:beta": "npm run build && npm publish --tag beta"
   },
   "files": [
     "dist/**/*.js",

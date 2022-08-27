@@ -4,7 +4,7 @@
 const fs = require('fs/promises');
 const os = require('os');
 const path = require('path');
-const { uid } = require('../dist/utils/uid');
+const { uid } = require('../dist/cjs/utils/uid');
 const { MemoryLevel } = require('memory-level');
 const { ClassicLevel } = require('classic-level');
 const { DataFactory } = require('rdf-data-factory');

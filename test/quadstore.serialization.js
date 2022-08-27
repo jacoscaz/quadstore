@@ -1,6 +1,6 @@
 
-const xsd = require('../dist/serialization/xsd');
-const {quadWriter, quadReader} = require('../dist/serialization');
+const xsd = require('../dist/cjs/serialization/xsd');
+const {quadWriter, quadReader} = require('../dist/cjs/serialization');
 
 module.exports = () => {
 

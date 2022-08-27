@@ -3,7 +3,7 @@
 
 const should = require('should');
 const AsyncIterator = require('asynciterator');
-const { waitForEvent, streamToArray } = require('../dist/utils/stuff');
+const { waitForEvent, streamToArray } = require('../dist/cjs/utils/stuff');
 
 module.exports = () => {
 

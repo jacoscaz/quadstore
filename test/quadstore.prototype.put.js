@@ -1,9 +1,9 @@
 
 const should = require('./should');
 const { ArrayIterator } = require('asynciterator');
-const { streamToArray } = require('../dist/utils/stuff');
-const { Scope } = require('../dist/scope');
-const { LevelIterator } = require('../dist/get/leveliterator');
+const { streamToArray } = require('../dist/cjs/utils/stuff');
+const { Scope } = require('../dist/cjs/scope');
+const { LevelIterator } = require('../dist/cjs/get/leveliterator');
 
 module.exports = () => {
 

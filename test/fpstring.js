@@ -1,5 +1,5 @@
 
-const {encode} = require('../dist/serialization/fpstring');
+const { encode } = require('../dist/cjs/serialization/fpstring');
 
 /*
  * https://stackoverflow.com/a/12646864

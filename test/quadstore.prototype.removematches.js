@@ -3,7 +3,7 @@
 
 const should = require('should');
 const AsyncIterator = require('asynciterator');
-const { streamToArray, waitForEvent } = require('../dist/utils/stuff');
+const { streamToArray, waitForEvent } = require('../dist/cjs/utils/stuff');
 
 module.exports = () => {
   describe('Quadstore.prototype.removeMatches()', () => {

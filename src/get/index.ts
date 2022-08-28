@@ -1,5 +1,5 @@
 
-import type { Quadstore } from '../quadstore';
+import type { Quadstore } from '../quadstore.js';
 import type { AsyncIterator } from 'asynciterator';
 import type {
   ApproximateSizeResult,
@@ -10,17 +10,17 @@ import type {
   Quad,
   QuadStreamResultWithInternals,
   TermName,
-} from '../types';
+} from '../types/index.js';
 import type { AbstractIteratorOptions } from 'abstract-level';
 
-import { ResultType, LevelQuery } from '../types';
-import { arrStartsWith } from '../utils/stuff';
-import { emptyObject, separator } from '../utils/constants';
-import { LevelIterator } from './leveliterator';
-import { quadReader, quadWriter, writePattern } from '../serialization';
-import { SortingIterator } from './sortingiterator';
+import { ResultType, LevelQuery } from '../types/index.js';
+import { arrStartsWith } from '../utils/stuff.js';
+import { emptyObject, separator } from '../utils/constants.js';
+import { LevelIterator } from './leveliterator.js';
+import { quadReader, quadWriter, writePattern } from '../serialization/index.js';
+import { SortingIterator } from './sortingiterator.js';
 import { AbstractLevel } from 'abstract-level';
-import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
+import { viewUint8ArrayAsUint16Array } from '../serialization/utils.js';
 
 const SORTING_KEY = Symbol();
 

@@ -1,9 +1,9 @@
 
 import type { DataFactory, Term } from 'rdf-js';
-import type { Prefixes, Quad, TermName } from '../types';
+import type { Prefixes, Quad, TermName } from '../types/index.js';
 
-import { separator } from '../utils/constants';
-import { termReader, termWriter } from './terms';
+import { separator } from '../utils/constants.js';
+import { termReader, termWriter } from './terms.js';
 
 export const quadWriter = {
   writtenValueLength: 0,

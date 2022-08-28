@@ -3,7 +3,7 @@ import type { Readable } from 'stream';
 import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level'
 import type { AsyncIterator } from 'asynciterator';
 import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
-import type { Scope } from '../scope';
+import type { Scope } from '../scope/index';
 import {AbstractIteratorOptions} from 'abstract-level';
 
 export interface BatchOpts {

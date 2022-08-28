@@ -1,7 +1,7 @@
 
 import type { EventEmitter } from 'events';
 import type { AbstractLevel } from 'abstract-level';
-import type { TSReadable, TermName } from '../types';
+import type { TSReadable, TermName } from '../types/index.js';
 
 export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;
@@ -26,19 +26,21 @@ export const streamToArray = <T>(readStream: TSReadable<T>): Promise<T[]> => {
     const onData = (chunk: T) => {
       chunks.push(chunk);
     };
-    const onceEnd = () => {
+    const cleanup = () => {
       readStream.removeListener('data', onData);
-      readStream.removeListener('error', onceError);
+      readStream.removeListener('error', onError);
+      readStream.destroy();
+    };
+    const onEnd = () => {
+      cleanup();
       resolve(chunks);
     };
-    const onceError = (err: Error) => {
-      readStream.removeListener('data', onData);
-      readStream.removeListener('end', onceEnd);
-      readStream.destroy();
+    const onError = (err: Error) => {
+      cleanup();
       reject(err);
     };
-    readStream.once('error', onceError);
-    readStream.once('end', onceEnd);
+    readStream.on('error', onError);
+    readStream.on('end', onEnd);
     readStream.on('data', onData);
   });
 }

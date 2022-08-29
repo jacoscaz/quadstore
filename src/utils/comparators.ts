@@ -1,7 +1,7 @@
 
 import { Quad, Term } from 'rdf-js';
-import { Binding, TermName } from '../types/index.js';
-import { termNames } from './constants.js';
+import { Binding, TermName } from '../types';
+import { termNames } from './constants';
 
 export const getTermComparator = (): (a: Term, b: Term) => (-1 | 0 | 1) => {
   return (a: Term, b: Term): -1|0|1 => {

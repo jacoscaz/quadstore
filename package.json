@@ -33,8 +33,7 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "dist/index.js",
-    "dist/index.d.ts"
+    "dist/**/package.json"
   ],
   "repository": {
     "type": "git",

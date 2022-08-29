@@ -1,5 +1,5 @@
 
-import { TSReadable } from '../types/index.js';
+import { TSReadable } from '../types';
 
 export const consumeInBatches = async <T>(readable: TSReadable<T>, batchSize: number, onEachBatch: (items: T[]) => any): Promise<void> => {
   return new Promise((resolve, reject) => {

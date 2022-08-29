@@ -1,12 +1,12 @@
 
 import type { Literal } from 'rdf-js';
-import type { InternalIndex, Pattern, Prefixes, IndexQuery } from '../types/index.js';
+import type { InternalIndex, Pattern, Prefixes, IndexQuery } from '../types';
 
-import * as xsd from './xsd.js';
-import { encode } from './fpstring.js';
-import { separator, boundary } from '../utils/constants.js';
+import * as xsd from './xsd';
+import { encode } from './fpstring';
+import { separator, boundary } from '../utils/constants';
 import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLiteralWriter, namedNodeWriter,
-         numericLiteralWriter, stringLiteralWriter } from './terms.js';
+         numericLiteralWriter, stringLiteralWriter } from './terms';
 
 
 const patternLiteralWriter = {

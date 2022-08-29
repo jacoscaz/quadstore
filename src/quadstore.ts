@@ -28,8 +28,8 @@ import type {
   Prefixes,
   QuadArrayResultWithInternals,
   QuadStreamResultWithInternals,
-} from './types/index.js';
-import { ResultType } from './types/index.js';
+} from './types';
+import { ResultType } from './types';
 import type {
   AbstractChainedBatch,
   AbstractLevel,
@@ -42,19 +42,19 @@ import {
 import {
   streamToArray,
   ensureAbstractLevel,
-} from './utils/stuff.js';
+} from './utils/stuff';
 import {
   emptyObject,
   defaultIndexes,
   separator,
-} from './utils/constants.js';
-import { consumeOneByOne } from './utils/consumeonebyone.js';
-import { consumeInBatches } from './utils/consumeinbatches.js';
-import { uid } from './utils/uid.js';
-import { getApproximateSize, getStream } from './get/index.js';
-import { Scope } from './scope/index.js';
-import { quadWriter } from './serialization/quads.js';
-import { viewUint16ArrayAsUint8Array } from './serialization/utils.js';
+} from './utils/constants';
+import { consumeOneByOne } from './utils/consumeonebyone';
+import { consumeInBatches } from './utils/consumeinbatches';
+import { uid } from './utils/uid';
+import { getApproximateSize, getStream } from './get';
+import { Scope } from './scope';
+import { quadWriter } from './serialization/quads';
+import { viewUint16ArrayAsUint8Array } from './serialization/utils';
 
 export class Quadstore implements Store {
 

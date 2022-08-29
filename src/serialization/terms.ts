@@ -1,12 +1,12 @@
 
-import type { Prefixes } from '../types/index.js';
+import type { Prefixes } from '../types';
 import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'rdf-js';
 
-import * as xsd from './xsd.js';
-import { sliceString } from './utils.js';
+import * as xsd from './xsd';
+import { sliceString } from './utils';
 import {Term} from 'rdf-js';
-import {separator} from '../utils/constants.js';
-import {encode} from './fpstring.js';
+import {separator} from '../utils/constants';
+import {encode} from './fpstring';
 
 export const namedNodeWriter = {
   writtenValueLength: 1,

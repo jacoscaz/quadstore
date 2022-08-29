@@ -1,7 +1,7 @@
 
 import type { EventEmitter } from 'events';
 import type { AbstractLevel } from 'abstract-level';
-import type { TSReadable, TermName } from '../types/index.js';
+import type { TSReadable, TermName } from '../types';
 
 export const isObject = (o: any): boolean => {
   return typeof(o) === 'object' && o !== null;

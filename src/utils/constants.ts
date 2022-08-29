@@ -1,5 +1,5 @@
 
-import { TermName } from '../types/index.js';
+import { TermName } from '../types';
 
 export const emptyObject: { [key: string]: any } = {};
 

@@ -790,9 +790,9 @@ CDN:
 
 ```ts
 import { DataFactory } from 'https://cdn.skypack.dev/rdf-data-factory@1.1.1';
-import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0-beta.4';
+import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0';
 import { MemoryLevel } from 'https://cdn.skypack.dev/memory-level@1.0.0';
-import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.0-beta.5';
+import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.0';
 
 const backend = new MemoryLevel();
 const dataFactory = new DataFactory();

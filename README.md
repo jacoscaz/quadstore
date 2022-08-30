@@ -822,6 +822,12 @@ to an unchecked use of `require` that can't be easily merged upstream.
 }
 ```
 
+Example usage:
+
+```shell
+deno run --import-map quadstore-import-map.json quadstore-test.ts
+```
+
 [d0]: https://deno.land
 [d1]: https://www.skypack.dev
 [d2]: https://github.com/belayeng/quadstore/issues/139

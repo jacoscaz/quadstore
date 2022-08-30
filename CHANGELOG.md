@@ -7,8 +7,10 @@
   (https://github.com/Level/community#how-do-i-upgrade-to-abstract-level)
 - **[breaking]** uses `Uint16Array` instead of `Buffer` for value
   (de)serialization
-- *[new]* adds support for ES modules   
+- *[new]* adds support for ES modules through separate CJS and ESM builds   
   (https://github.com/belayeng/quadstore/issues/138)
+- *[new]* partial support for Deno   
+  (https://github.com/belayeng/quadstore/issues/139)
 - *[internal]* moves performance tests to dedicated repository   
   (https://github.com/belayeng/quadstore-perf)
 - *[internal]* upgrades to newer versions of `asynciterator` where

@@ -3,9 +3,9 @@
 
 # QUADSTORE
 
-Quadstore is a LevelDB-backed RDF graph database for Node.js and the browser 
-with native support for quads and querying across named graphs, RDF/JS 
-interfaces and SPARQL queries.
+Quadstore is a LevelDB-backed RDF graph database for JS runtimes (browsers,
+Node.js, Deno, ...) with native support for quads and querying across named
+graphs, RDF/JS interfaces and SPARQL queries.
 
 ## Table of contents
 
@@ -44,6 +44,7 @@ interfaces and SPARQL queries.
         - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
 - [SPARQL](#sparql)
 - [Browser usage](#browser-usage)
+- [Deno usage](#deno-usage)
 - [Performance](#performance)
 - [License](#license)
 
@@ -775,14 +776,43 @@ The [`browser-level`][b1] backend for levelDB offers support for browser-side
 persistent storage. 
 
 `quadstore` can be bundled for browser-side usage via Webpack, preferably using
-version 5.x. The [reference repository][b0] is meant to help in getting to a
-working Webpack configuration and also hosts a pre-built bundle with everything
-that is required to use `quadstore` in the browser.
-
-Rollup, ES modules and tree-shaking are not supported (yet).
+version 5.x. The reference [quadstore-browser][b0] is meant to help in getting 
+to a working Webpack configuration and also hosts a pre-built bundle with everything
+that is required to use `quadstore` in browsers.
  
-[b0]: https://github.com/belayeng/quadstore-webpack-bundle
+[b0]: https://github.com/belayeng/quadstore-browser
 [b1]: https://github.com/Level/browser-level
+
+## Deno usage
+
+`quadstore` can be used with the [Deno][d0] runtime via the [skypack.dev][d1] 
+CDN:  
+
+```ts
+import { DataFactory } from 'https://cdn.skypack.dev/rdf-data-factory@1.1.1';
+import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0-beta.4';
+import { MemoryLevel } from 'https://cdn.skypack.dev/memory-level@1.0.0';
+
+const backend = new MemoryLevel();
+const dataFactory = new DataFactory();
+const store = new Quadstore({ backend, dataFactory });
+
+await store.open();
+await store.put(dataFactory.quad(
+  dataFactory.namedNode('ex://s'),
+  dataFactory.namedNode('ex://p'),
+  dataFactory.namedNode('ex://o'),
+));
+const { items } = await store.get({});
+console.log(items);
+await store.close();
+```
+
+Support for SPARQL queries through `quadstore-comunica` is tracked [here][d2].
+
+[d0]: https://deno.land
+[d1]: https://www.skypack.dev
+[d2]: https://github.com/belayeng/quadstore/issues/139
 
 ## Performance
 

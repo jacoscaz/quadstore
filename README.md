@@ -786,29 +786,41 @@ that is required to use `quadstore` in browsers.
 ## Deno usage
 
 `quadstore` can be used with the [Deno][d0] runtime via the [skypack.dev][d1] 
-CDN:  
+CDN:
 
 ```ts
 import { DataFactory } from 'https://cdn.skypack.dev/rdf-data-factory@1.1.1';
 import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0-beta.4';
 import { MemoryLevel } from 'https://cdn.skypack.dev/memory-level@1.0.0';
+import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.0-beta.5';
 
 const backend = new MemoryLevel();
 const dataFactory = new DataFactory();
 const store = new Quadstore({ backend, dataFactory });
+const engine = new Engine(store);
 
 await store.open();
 await store.put(dataFactory.quad(
-  dataFactory.namedNode('ex://s'),
-  dataFactory.namedNode('ex://p'),
-  dataFactory.namedNode('ex://o'),
+        dataFactory.namedNode('ex://s'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.namedNode('ex://o'),
 ));
-const { items } = await store.get({});
-console.log(items);
-await store.close();
+const stream = await engine.queryBindings('SELECT * WHERE { ?s ?p ?o }');
+stream.on('data', (bindings) => console.log(bindings));
 ```
 
-Support for SPARQL queries through `quadstore-comunica` is tracked [here][d2].
+Due to an upstream issue with the SPARQL parser, the following import map must
+be used. This replaces Skypack's own version of `sparqljs@3.5.2` with one that
+is hosted on `gist.github.com` and is identical to the former if not for a fix
+to an unchecked use of `require` that can't be easily merged upstream.
+
+```json 
+{
+  "imports": {
+    "https://cdn.skypack.dev/-/sparqljs@v3.5.2-dsMDqK77bLuGqQk32ifA/dist=es2019,mode=imports/optimized/sparqljs.js": "https://gist.githubusercontent.com/jacoscaz/022c513ca77b0061c5bfee0356ba3b8d/raw/95bb09057fbad4daace3684c80b1164b38725c7c/sparql.js-skypack-require-fix.js"
+  }
+}
+```
 
 [d0]: https://deno.land
 [d1]: https://www.skypack.dev

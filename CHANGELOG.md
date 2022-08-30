@@ -9,7 +9,7 @@
   (de)serialization
 - *[new]* adds support for ES modules through separate CJS and ESM builds   
   (https://github.com/belayeng/quadstore/issues/138)
-- *[new]* partial support for Deno   
+- *[new]* adds support for Deno   
   (https://github.com/belayeng/quadstore/issues/139)
 - *[internal]* moves performance tests to dedicated repository   
   (https://github.com/belayeng/quadstore-perf)

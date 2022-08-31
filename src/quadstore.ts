@@ -37,7 +37,7 @@ import type {
 import { EventEmitter } from 'events';
 import {
   EmptyIterator,
-  TransformIterator,
+  wrap,
 } from 'asynciterator';
 import {
   streamToArray,
@@ -135,9 +135,7 @@ export class Quadstore implements Store {
       return new EmptyIterator();
     }
     const pattern: Pattern = { subject, predicate, object, graph };
-    return new TransformIterator<Quad, Quad>(
-      this.getStream(pattern, opts).then(results => results.iterator),
-    );
+    return wrap(this.getStream(pattern, opts).then(results => results.iterator));
   }
 
   async countQuads(subject?: Quad_Subject, predicate?: Quad_Predicate, object?: Quad_Object, graph?: Quad_Graph, opts: GetOpts = emptyObject): Promise<number> {

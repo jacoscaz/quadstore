@@ -22,6 +22,19 @@ module.exports = () => {
       should(foundQuads).be.equalToQuadArray([newQuad]);
     });
 
+    it('should store a single quad with a term that serializes to a string longer than 127 chars', async function () {
+      const { dataFactory, store } = this;
+      const newQuad = dataFactory.quad(
+        dataFactory.namedNode('ex://s'),
+        dataFactory.namedNode('ex://p'),
+        dataFactory.literal(''.padStart(2000, 'aaabbb')),
+        dataFactory.namedNode('ex://g'),
+      );
+      await store.put(newQuad);
+      const {items: foundQuads} = await store.get({});
+      should(foundQuads).be.equalToQuadArray([newQuad]);
+    });
+
     it('should store multiple quads', async function () {
       const { dataFactory, store } = this;
       const newQuads = [

@@ -1,12 +1,13 @@
 
 const xsd = require('../dist/cjs/serialization/xsd');
 const {quadWriter, quadReader} = require('../dist/cjs/serialization');
+const {termReader, termWriter} = require('../dist/cjs/serialization/terms');
 
 module.exports = () => {
 
   describe('Quadstore serialization', function () {
 
-    const value = new DataView(new ArrayBuffer(32));
+    const value = new Uint16Array(32);
 
     it('Should serialize and deserialize quads with named nodes', function () {
       const { store } = this;
@@ -88,13 +89,12 @@ module.exports = () => {
       });
     });
 
-    it('Should serialize and deserialize quads with named nodes and simple string literals', function () {
-      const { store } = this;
-      const { indexes, prefixes, dataFactory: factory } = store;
+    it('Should serialize and deserialize a quad having a literal term that serializes to a string longer than 127 chars', async function () {
+      const { store: { dataFactory: factory, indexes }, prefixes } = this;
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
-        factory.literal('someString'),
+        factory.literal(''.padStart(2000, 'abab')),
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index) => {
@@ -105,8 +105,5 @@ module.exports = () => {
     });
 
   });
-
-
-
 
 };

@@ -17,6 +17,10 @@ describe('MemoryLevel backend', () => {
     this.db = new MemoryLevel();
     this.indexes = null;
     this.dataFactory = new DataFactory();
+    this.prefixes = {
+      expandTerm: term => term,
+      compactIri: iri => iri,
+    };
   });
 
   require('./quadstore')();
@@ -30,6 +34,10 @@ describe('ClassicLevel backend', () => {
     this.db = new ClassicLevel(this.location);
     this.indexes = null;
     this.dataFactory = new DataFactory();
+    this.prefixes = {
+      expandTerm: term => term,
+      compactIri: iri => iri,
+    };
   });
 
   afterEach(async function () {
@@ -47,6 +55,10 @@ describe('ClassicLevel backend', () => {
 //     this.db = rocksdb(this.location);
 //     this.indexes = null;
 //     this.dataFactory = new DataFactory();
+//     this.prefixes = {
+//       expandTerm: term => term,
+//       compactIri: iri => iri,
+//     };
 //   });
 //
 //   afterEach(async function () {

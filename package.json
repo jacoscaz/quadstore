@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "11.0.2",
+  "version": "11.0.3-beta.1",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -29,6 +29,7 @@
     "test": "npm run clean && npm run build:cjs && mocha ./test",
     "dev": "npm run clean && tsc -p tsconfig.cjs.json --watch",
     "clean": "rm -rf dist",
+    "watch:cjs": "rm -rf dist/cjs && mkdir -p dist/cjs && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json && tsc --watch -p tsconfig.cjs.json",
     "build:esm-fix-import-paths": "node fix-esm-import-paths.js",
     "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && npm run build:esm-fix-import-paths",
     "build:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",

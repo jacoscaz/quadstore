@@ -1,6 +1,15 @@
 
 # CHANGELOG
 
+## 11.0.3
+
+- *[fix]* fixes breaking serialization of terms that serialize to strings
+  longer than 127 chars      
+  (https://github.com/belayeng/quadstore/issues/152)
+- *[internal]* replaces `asynciterator`'s `TransformIterator` with `wrap()`    
+  following upstream performance work   
+  (https://github.com/RubenVerborgh/AsyncIterator/issues/44)
+
 ## 11.0.0
 
 - **[breaking]** upgraded to the new generation of `*-level` packages   

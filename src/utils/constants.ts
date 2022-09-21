@@ -1,5 +1,6 @@
 
-import { TermName } from '../types';
+import type { TermName } from '../types';
+import type { AbstractChainedBatchPutOptions, AbstractChainedBatchDelOptions } from 'abstract-level';
 
 export const emptyObject: { [key: string]: any } = {};
 
@@ -21,3 +22,12 @@ export const defaultIndexes: TermName[][] = [
   ['predicate', 'object', 'graph', 'subject'],
   ['graph', 'predicate', 'object', 'subject'],
 ];
+
+export const levelPutOpts: AbstractChainedBatchPutOptions<any, any, any> = {
+  keyEncoding: 'utf8',
+  valueEncoding: 'view',
+};
+
+export const levelDelOpts: AbstractChainedBatchDelOptions<any, any> = {
+  keyEncoding: 'utf8',
+};

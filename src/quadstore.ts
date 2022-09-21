@@ -47,6 +47,8 @@ import {
   emptyObject,
   defaultIndexes,
   separator,
+  levelPutOpts,
+  levelDelOpts,
 } from './utils/constants';
 import { consumeOneByOne } from './utils/consumeonebyone';
 import { consumeInBatches } from './utils/consumeinbatches';
@@ -187,7 +189,7 @@ export class Quadstore implements Store {
       valueOffset = baseValueOffset + i * 16;
       index = indexes[i];
       const key = quadWriter.write(index.prefix, value, valueOffset, quad, index.terms, this.prefixes);
-      batch = batch.put(key, viewUint16ArrayAsUint8Array(value, valueOffset, 16));
+      batch = batch.put(key, viewUint16ArrayAsUint8Array(value, valueOffset, 16), levelPutOpts);
     }
     return batch;
   }
@@ -228,7 +230,7 @@ export class Quadstore implements Store {
     for (let i = 0, il = indexes.length, index; i < il; i += 1) {
       index = indexes[i];
       const key = quadWriter.write(index.prefix, undefined, 0, quad, index.terms, this.prefixes);
-      batch = batch.del(key);
+      batch = batch.del(key, levelDelOpts);
     }
     return batch;
   }

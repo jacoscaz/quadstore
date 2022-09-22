@@ -10,7 +10,6 @@ graphs, RDF/JS interfaces and SPARQL queries.
 ## Table of contents
 
 - [Example of basic usage](#example-of-basic-usage)
-- [Introduction](#introduction)
 - [Status](#status)
     - [Roadmap](#roadmap)
     - [Changelog](#changelog)
@@ -47,18 +46,19 @@ graphs, RDF/JS interfaces and SPARQL queries.
 - [Deno usage](#deno-usage)
 - [Performance](#performance)
 - [License](#license)
+- [Authors](#authors)
 
 ## Example of basic usage
 
 ```typescript
-import memdown from 'memdown';
+import {MemoryLevel} from 'memory-level';
 import {DataFactory} from 'rdf-data-factory';
 import {Quadstore} from 'quadstore';
 import {Engine} from 'quadstore-comunica';
 
 // Any implementation of AbstractLevelDOWN can be used.
 // For server-side persistence, use `leveldown` or `rocksdb`.
-const backend = memdown();
+const backend = new MemoryLevel();
 
 // Implementation of the RDF/JS DataFactory interface
 const df = new DataFactory();           
@@ -85,67 +85,6 @@ const quadsStream = store.match(undefined, undefined, undefined, undefined);
 const query = await engine.query('SELECT * {?s ?p ?o}');
 const bindingsStream = await query.execute();
 ```
-
-## Introduction
-
-In the context of knowledge representation, a statement can often be 
-represented as a 3-dimensional `(subject, predicate, object)` tuple,
-normally referred to as a `triple`.
-
-```
-subject             predicate           object
-BOB                 KNOWS               ALICE
-BOB                 KNOWS               PAUL
-```
-
-A set of statements / triples can also be thought of as a graph:
-
-```
-                                        ┌────────┐
-              KNOWS (predicate)         │ ALICE  │
-     ┌─────────────────────────────────▶│(object)│
-     │                                  └────────┘
-┌─────────┐                                       
-│   BOB   │                                       
-│(subject)│                                       
-└─────────┘                             ┌────────┐
-     │                                  │  PAUL  │
-     └─────────────────────────────────▶│(object)│
-              KNOWS (predicate)         └────────┘
-```
-
-A `quad` is a triple with an additional term, usually called `graph` or
-`context`.
-
-    (subject, predicate, object, graph)
-
-On a semantic level, the `graph` term identifies the graph to which a triple 
-belongs. Each identifier can then be used as the `subject` or `object` of 
-additional triples, facilitating the representation of metadata such as 
-provenance and temporal validity. 
-
-```
-subject             predicate           object          graph
-BOB                 KNOWS               ALICE           GRAPH-1
-BOB                 KNOWS               PAUL            GRAPH-2
-GRAPH-1             SOURCE              FACEBOOK
-GRAPH-2             SOURCE              LINKEDIN
-```
-
-Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
-maintaining multiple indexes each of which deals with a different permutation
-of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
-that strikes a different compromise between expressiveness and performance, 
-opting to natively supporting quads while working towards minimizing 
-[the performance penalty][i4] that comes with the fourth term.
-
-Quadstore's development is supported by [Belay Engineering][i5]. <br>
-[<img src="https://belayeng.com/assets/images/logo/logo-positivo-rgb.svg" alt="Belay Engineerin's logo, the letter B made out of a continuous line" height="70">][i5]
-
-[i1]: http://nodejsconfit.levelgraph.io
-[i3]: https://github.com/levelgraph/levelgraph
-[i4]: https://github.com/levelgraph/levelgraph/issues/43#issuecomment-29519727
-[i5]: https://belayeng.com/en
 
 ## Status
 
@@ -841,3 +780,10 @@ Performance is evaluated at tracked at [https://github.com/belayeng/quadstore-pe
 ## LICENSE
 
 MIT. See [LICENSE.md](./LICENSE.md).
+
+## Authors
+
+Quadstore's development is supported by [Belay Engineering][i5]. <br>
+[<img src="https://belayeng.com/assets/images/logo/logo-positivo-rgb.svg" alt="Belay Engineerin's logo, the letter B made out of a continuous line" height="70">][i5]
+
+[i5]: https://belayeng.com/en

@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
-    "@types/expect.js": "^0.3.29",
     "@types/mocha": "^9.1.1",
     "@types/n3": "^1.10.4",
     "@types/node-static": "^0.7.7",

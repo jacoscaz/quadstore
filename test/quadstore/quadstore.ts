@@ -25,8 +25,6 @@ const runTests = () => {
   runRemoveMatchesTests();
   runPrewriteTests();
   runSerializationTests();
-  // require('./quadstore.prototype.put')();
-  // require('./quadstore.scope')();
 };
 
 export const runQuadstoreTests = () => {

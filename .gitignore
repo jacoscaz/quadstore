@@ -339,6 +339,7 @@ yarn.lock
 
 test/backends/*.js
 test/browser/index.js
+test/browser/index.bundle.js
 test/others/*.js
 test/quadstore/*.js
 test/utils/*.js

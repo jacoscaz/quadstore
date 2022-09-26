@@ -337,6 +337,7 @@ dist/cjs
 package-lock.json
 yarn.lock
 
+test/**/*.d.ts
 test/backends/*.js
 test/browser/index.js
 test/browser/index.bundle.js
@@ -344,4 +345,3 @@ test/others/*.js
 test/quadstore/*.js
 test/utils/*.js
 test/*.js
-

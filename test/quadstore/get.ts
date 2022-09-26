@@ -1,11 +1,8 @@
 
-'use strict';
+import * as xsd from '../../dist/esm/serialization/xsd';
+import { equalsQuadArray, toBeFalse, toStrictlyEqual, toBeTrue, arrayToStartWith, arrayToHaveLength } from '../utils/expect';
 
-const should = require('should');
-const xsd = require('../dist/cjs/serialization/xsd');
-const { arrStartsWith } = require('../dist/cjs/utils/stuff');
-
-module.exports = () => {
+export const runGetTests = () => {
 
   describe('Quadstore.prototype.get()', () => {
 
@@ -63,7 +60,7 @@ module.exports = () => {
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://s'),
       });
-      should(quads).be.equalToQuadArray(this.quads.slice(0, 2));
+      equalsQuadArray(quads, this.quads.slice(0, 2));
     });
 
     it('should match quads by predicate', async function () {
@@ -71,7 +68,7 @@ module.exports = () => {
       const { items: quads } = await store.get({
         predicate: dataFactory.namedNode('ex://p'),
       });
-      should(quads).be.equalToQuadArray([this.quads[0], ...this.quads.slice(2, 4)]);
+      equalsQuadArray(quads, [this.quads[0], ...this.quads.slice(2, 4)]);
     });
 
     it('should match quads by object', async function () {
@@ -79,7 +76,7 @@ module.exports = () => {
       const { items: quads } = await store.get({
         object: dataFactory.namedNode('ex://o'),
       });
-      should(quads).be.equalToQuadArray([this.quads[0], this.quads[2]]);
+      equalsQuadArray(quads, [this.quads[0], this.quads[2]]);
     });
 
     it('should match quads by object where object is a numeric literal', async function () {
@@ -87,7 +84,7 @@ module.exports = () => {
       const { items: quads } = await store.get({
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by object where object is a language-tagged string', async function () {
@@ -95,14 +92,14 @@ module.exports = () => {
       const { items: quads } = await store.get({
         object: dataFactory.literal('Hello, World', 'en-us'),
       });
-      should(quads).be.equalToQuadArray([this.quads[6]]);
+      equalsQuadArray(quads, [this.quads[6]]);
     });
 
     it('should match quads by graph', async function () {
       const { dataFactory, store } = this;
       const { items: quads } = await store.get({
         graph: dataFactory.namedNode('ex://c') });
-      should(quads).be.equalToQuadArray([this.quads[0], ...this.quads.slice(2, 4)]);
+      equalsQuadArray(quads, [this.quads[0], ...this.quads.slice(2, 4)]);
     });
 
     it('should match quads by subject and predicate', async function () {
@@ -111,7 +108,7 @@ module.exports = () => {
         subject: dataFactory.namedNode('ex://s2'),
         predicate: dataFactory.namedNode('ex://p'),
       });
-      should(quads).be.equalToQuadArray([this.quads[2], this.quads[3]]);
+      equalsQuadArray(quads, [this.quads[2], this.quads[3]]);
     });
 
     it('should match quads by subject and object', async function () {
@@ -120,7 +117,7 @@ module.exports = () => {
         subject: dataFactory.namedNode('ex://s2'),
         object: dataFactory.namedNode('ex://o'),
       });
-      should(quads).be.equalToQuadArray([this.quads[2]]);
+      equalsQuadArray(quads, [this.quads[2]]);
     });
 
     it('should match quads by subject and object where object is a numeric literal', async function () {
@@ -129,7 +126,7 @@ module.exports = () => {
         subject: dataFactory.namedNode('ex://s3'),
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by subject and graph', async function () {
@@ -138,7 +135,7 @@ module.exports = () => {
         subject: dataFactory.namedNode('ex://s2'),
         graph: dataFactory.namedNode('ex://c'),
       });
-      should(quads).be.equalToQuadArray([this.quads[2], this.quads[3]]);
+      equalsQuadArray(quads, [this.quads[2], this.quads[3]]);
     });
 
     it('should match quads by predicate and object', async function () {
@@ -147,7 +144,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p'),
         object: dataFactory.namedNode('ex://o'),
       });
-      should(quads).be.equalToQuadArray([this.quads[0], this.quads[2]]);
+      equalsQuadArray(quads, [this.quads[0], this.quads[2]]);
     });
 
     it('should match quads by predicate and object where object is a numeric literal', async function () {
@@ -156,7 +153,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p3'),
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by predicate and graph', async function () {
@@ -165,7 +162,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p'),
         graph: dataFactory.namedNode('ex://c'),
       });
-      should(quads).be.equalToQuadArray([this.quads[0], ...this.quads.slice(2, 4)]);
+      equalsQuadArray(quads, [this.quads[0], ...this.quads.slice(2, 4)]);
     });
 
     it('should match quads by object and graph', async function () {
@@ -174,7 +171,7 @@ module.exports = () => {
         object: dataFactory.namedNode('ex://o2'),
         graph: dataFactory.namedNode('ex://c2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[1], this.quads[4]]);
+      equalsQuadArray(quads, [this.quads[1], this.quads[4]]);
     });
 
     it('should match quads by subject, predicate and object', async function () {
@@ -184,7 +181,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p2'),
         object: dataFactory.namedNode('ex://o2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[1]]);
+      equalsQuadArray(quads, [this.quads[1]]);
     });
 
     it('should match quads by subject, predicate and object where object is a numeric literal', async function () {
@@ -194,7 +191,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p3'),
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by subject, predicate and graph', async function () {
@@ -204,7 +201,7 @@ module.exports = () => {
         predicate: dataFactory.namedNode('ex://p2'),
         graph: dataFactory.namedNode('ex://c2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[1]]);
+      equalsQuadArray(quads, [this.quads[1]]);
     });
 
     it('should match quads by subject, object and graph', async function () {
@@ -214,7 +211,7 @@ module.exports = () => {
         object: dataFactory.namedNode('ex://o2'),
         graph: dataFactory.namedNode('ex://c2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[1]]);
+      equalsQuadArray(quads, [this.quads[1]]);
     });
 
     it('should match quads by predicate, object and graph', async function () {
@@ -224,7 +221,7 @@ module.exports = () => {
         object: dataFactory.namedNode('ex://o2'),
         graph: dataFactory.namedNode('ex://c2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[1], this.quads[4]]);
+      equalsQuadArray(quads, [this.quads[1], this.quads[4]]);
     });
 
     it('should match quads by predicate, object and graph where object is a numeric literal', async function () {
@@ -234,7 +231,7 @@ module.exports = () => {
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
         graph: dataFactory.namedNode('ex://c3'),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by subject, predicate, object and graph', async function () {
@@ -245,7 +242,7 @@ module.exports = () => {
         object: dataFactory.namedNode('ex://o2'),
         graph: dataFactory.namedNode('ex://c2'),
       });
-      should(quads).be.equalToQuadArray([this.quads[4]]);
+      equalsQuadArray(quads, [this.quads[4]]);
     });
 
     it('should match quads by subject, predicate, object and graph where object is a numeric literal', async function () {
@@ -256,7 +253,7 @@ module.exports = () => {
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
         graph: dataFactory.namedNode('ex://c3'),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match quads by subject, predicate, object and graph where object is a numeric literal', async function () {
@@ -267,7 +264,7 @@ module.exports = () => {
         object: dataFactory.literal('44', dataFactory.namedNode(xsd.integer)),
         graph: dataFactory.namedNode('ex://c3'),
       });
-      should(quads).be.equalToQuadArray([this.quads[5]]);
+      equalsQuadArray(quads, [this.quads[5]]);
     });
 
     it('should match zero quads when provided with an unknown subject', async function () {
@@ -275,7 +272,7 @@ module.exports = () => {
       const { items: quads } = await store.get({
         subject: dataFactory.namedNode('ex://unknown'),
       });
-      should(quads).have.length(0);
+      equalsQuadArray(quads, []);
     });
 
     it('should match zero quads when provided with an unknown subject and a known predicate', async function () {
@@ -284,7 +281,7 @@ module.exports = () => {
         subject: dataFactory.namedNode('ex://unknown'),
         predicate: dataFactory.namedNode('ex://p3'),
       });
-      should(quads).have.length(0);
+      equalsQuadArray(quads, []);
     });
 
   });
@@ -312,18 +309,18 @@ module.exports = () => {
         { graph: dataFactory.namedNode('ex://g') },
         { order: ['object'] },
       );
-      should(memResults.resorted).eql(true);
+      toBeTrue(memResults.resorted);
       const idxResults = await store.get(
         { subject: dataFactory.namedNode('ex://s') },
         { order: ['object'] },
       );
-      should(idxResults.resorted).eql(false);
-      should(arrStartsWith(idxResults.order, ['object'])).be.true();
-      should(arrStartsWith(memResults.order, ['object'])).be.true();
-      should(idxResults.items).have.length(90);
-      should(idxResults.items).be.equalToQuadArray(memResults.items);
-      should(idxResults.items[0].object.value).eql('10');
-      should(idxResults.items[89].object.value).eql('99');
+      toBeFalse(idxResults.resorted);
+      arrayToStartWith(idxResults.order, ['object']);
+      arrayToStartWith(memResults.order, ['object']);
+      arrayToHaveLength(idxResults.items, 90);
+      equalsQuadArray(idxResults.items, memResults.items);
+      toStrictlyEqual(idxResults.items[0].object.value, '10');
+      toStrictlyEqual(idxResults.items[89].object.value, '99');
     });
 
     it('should produce the same results whether sorting in-memory or not, in reverse', async function () {
@@ -332,18 +329,18 @@ module.exports = () => {
         { graph: dataFactory.namedNode('ex://g') },
         { order: ['object'], reverse: true },
       );
-      should(memResults.resorted).eql(true);
+      toBeTrue(memResults.resorted);
       const idxResults = await store.get(
         { subject: dataFactory.namedNode('ex://s') },
         { order: ['object'], reverse: true },
       );
-      should(idxResults.resorted).eql(false);
-      should(arrStartsWith(idxResults.order, ['object'])).be.true();
-      should(arrStartsWith(memResults.order, ['object'])).be.true();
-      should(idxResults.items).have.length(90);
-      should(idxResults.items).be.equalToQuadArray(memResults.items);
-      should(idxResults.items[0].object.value).eql('99');
-      should(idxResults.items[89].object.value).eql('10');
+      toBeFalse(idxResults.resorted);
+      arrayToStartWith(idxResults.order, ['object']);
+      arrayToStartWith(memResults.order, ['object']);
+      arrayToHaveLength(idxResults.items, 90);
+      equalsQuadArray(idxResults.items, memResults.items);
+      toStrictlyEqual(idxResults.items[0].object.value, '99');
+      toStrictlyEqual(idxResults.items[89].object.value, '10');
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory', async function () {
@@ -357,10 +354,10 @@ module.exports = () => {
         },
         { order: ['predicate'] },
       );
-      should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(10);
-      should(memResults.items[0].predicate.value).eql(`ex://p80`);
-      should(memResults.items[9].predicate.value).eql(`ex://p89`);
+      toBeTrue(memResults.resorted);
+      arrayToHaveLength(memResults.items, 10);
+      toStrictlyEqual(memResults.items[0].predicate.value, `ex://p80`);
+      toStrictlyEqual(memResults.items[9].predicate.value, `ex://p89`);
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory, limiting', async function () {
@@ -374,10 +371,10 @@ module.exports = () => {
         },
         { order: ['predicate'], limit: 2 },
       );
-      should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(2);
-      should(memResults.items[0].predicate.value).eql(`ex://p80`);
-      should(memResults.items[1].predicate.value).eql(`ex://p81`);
+      toBeTrue(memResults.resorted);
+      arrayToHaveLength(memResults.items, 2);
+      toStrictlyEqual(memResults.items[0].predicate.value, `ex://p80`);
+      toStrictlyEqual(memResults.items[1].predicate.value, `ex://p81`);
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse', async function () {
@@ -391,10 +388,10 @@ module.exports = () => {
         },
         { order: ['predicate'], reverse: true },
       );
-      should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(10);
-      should(memResults.items[0].predicate.value).eql(`ex://p89`);
-      should(memResults.items[9].predicate.value).eql(`ex://p80`);
+      toBeTrue(memResults.resorted);
+      arrayToHaveLength(memResults.items, 10);
+      toStrictlyEqual(memResults.items[0].predicate.value, `ex://p89`);
+      toStrictlyEqual(memResults.items[9].predicate.value, `ex://p80`);
     });
 
     it('should order by predicate while querying for a range of object literals, sorting in memory, in reverse, limiting', async function () {
@@ -408,10 +405,10 @@ module.exports = () => {
         },
         { order: ['predicate'], reverse: true, limit: 2 },
       );
-      should(memResults.resorted).eql(true);
-      should(memResults.items).have.length(2);
-      should(memResults.items[0].predicate.value).eql(`ex://p89`);
-      should(memResults.items[1].predicate.value).eql(`ex://p88`);
+      toBeTrue(memResults.resorted);
+      arrayToHaveLength(memResults.items, 2);
+      toStrictlyEqual(memResults.items[0].predicate.value, `ex://p89`);
+      toStrictlyEqual(memResults.items[1].predicate.value, `ex://p88`);
     });
 
     it('should order by object while querying for a range of object literals without sorting in memory', async function () {
@@ -425,10 +422,10 @@ module.exports = () => {
         },
         { order: ['object'] },
       );
-      should(memResults.resorted).eql(false);
-      should(memResults.items).have.length(10);
-      should(memResults.items[0].object.value).eql(`10`);
-      should(memResults.items[9].object.value).eql(`19`);
+      toBeFalse(memResults.resorted);
+      arrayToHaveLength(memResults.items, 10);
+      toStrictlyEqual(memResults.items[0].object.value, `10`);
+      toStrictlyEqual(memResults.items[9].object.value, `19`);
     });
 
     it('should order by object while querying for a range of object literals without sorting in memory, in reverse', async function () {
@@ -442,10 +439,10 @@ module.exports = () => {
         },
         { order: ['object'], reverse: true },
       );
-      should(memResults.resorted).eql(false);
-      should(memResults.items).have.length(10);
-      should(memResults.items[0].object.value).eql(`19`);
-      should(memResults.items[9].object.value).eql(`10`);
+      toBeFalse(memResults.resorted);
+      arrayToHaveLength(memResults.items, 10);
+      toStrictlyEqual(memResults.items[0].object.value, `19`);
+      toStrictlyEqual(memResults.items[9].object.value, `10`);
     });
 
   });

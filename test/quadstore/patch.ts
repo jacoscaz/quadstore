@@ -1,9 +1,7 @@
 
-'use strict';
+import { equalsQuadArray } from '../utils/expect';
 
-const should = require('./should');
-
-module.exports = () => {
+export const runPatchTests = () => {
 
   describe('Quadstore.prototype.patch()', async function () {
 
@@ -73,7 +71,7 @@ module.exports = () => {
       await store.multiPut(quadsArray);
       await store.multiPatch(oldQuads, newQuads);
       const { items: quads } = await store.get({});
-      should(quads).be.equalToQuadArray(expected);
+      equalsQuadArray(quads, expected);
     });
 
   });

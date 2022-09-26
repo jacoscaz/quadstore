@@ -26,11 +26,14 @@
     "require": "./dist/cjs/index.js"
   },
   "scripts": {
-    "test": "npm run clean && npm run build:cjs && mocha ./test",
     "dev": "npm run clean && tsc -p tsconfig.cjs.json --watch",
     "clean": "rm -rf dist",
     "watch:cjs": "rm -rf dist/cjs && mkdir -p dist/cjs && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json && tsc --watch -p tsconfig.cjs.json",
-    "build:esm-fix-import-paths": "node fix-esm-import-paths.js",
+    "test:build": "cd test && tsc && node ../fix-esm-import-paths.cjs . && cd browser && webpack -c webpack.config.cjs",
+    "test:node": "cd test && mocha node.js --reporter spec",
+    "test:browser": "cd test && node browser.js",
+    "test": "npm run test:build && npm run test:node && npm run test:browser",
+    "build:esm-fix-import-paths": "node fix-esm-import-paths.cjs ./dist/esm",
     "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && npm run build:esm-fix-import-paths",
     "build:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
@@ -47,14 +50,24 @@
     "url": "https://github.com/belayeng/quadstore.git"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/expect.js": "^0.3.29",
+    "@types/mocha": "^9.1.1",
     "@types/n3": "^1.10.4",
+    "@types/node-static": "^0.7.7",
+    "browser-level": "^1.0.1",
+    "chai": "^4.3.6",
     "classic-level": "^1.2.0",
+    "expect.js": "^0.3.1",
     "memory-level": "^1.0.0",
     "mocha": "^10.0.0",
     "n3": "^1.16.2",
+    "node-static": "^0.7.11",
+    "puppeteer": "^18.0.5",
     "rdf-data-factory": "^1.1.1",
-    "should": "^13.2.3",
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.3",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   },
   "dependencies": {
     "@types/rdf-js": "^4.0.1",

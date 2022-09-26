@@ -2,9 +2,9 @@
 import type { Readable } from 'stream';
 import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level'
 import type { AsyncIterator } from 'asynciterator';
-import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
+import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad } from 'rdf-js';
 import type { Scope } from '../scope';
-import {AbstractIteratorOptions} from 'abstract-level';
+import type { AbstractIteratorOptions } from 'abstract-level';
 
 export interface BatchOpts {
   /**
@@ -74,10 +74,6 @@ export interface Pattern {
   predicate?: Quad_Predicate,
   object?: Quad_Object|Range,
   graph?: Quad_Graph,
-}
-
-export interface Binding {
-  [key: string]: Term,
 }
 
 export interface QuadArrayResult {

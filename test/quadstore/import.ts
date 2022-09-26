@@ -1,11 +1,9 @@
 
-'use strict';
+import { ArrayIterator } from 'asynciterator';
+import { waitForEvent, streamToArray } from '../../dist/esm/utils/stuff.js';
+import { arrayToHaveLength } from '../utils/expect.js';
 
-const should = require('should');
-const AsyncIterator = require('asynciterator');
-const { waitForEvent, streamToArray } = require('../dist/cjs/utils/stuff');
-
-module.exports = () => {
+export const runImportTests = () => {
 
   describe('Quadstore.prototype.import()', () => {
 
@@ -19,10 +17,10 @@ module.exports = () => {
           dataFactory.namedNode('http://ex.com/g')
         )
       ];
-      const source = new AsyncIterator.ArrayIterator(quads);
+      const source = new ArrayIterator(quads);
       await waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await streamToArray(store.match());
-      should(matchedQuads).have.length(1);
+      arrayToHaveLength(matchedQuads, 1);
     });
 
     it('should import multiple quads correctly', async function () {
@@ -47,10 +45,10 @@ module.exports = () => {
           dataFactory.namedNode('http://ex.com/g3')
         )
       ];
-      const source = new AsyncIterator.ArrayIterator(quads);
+      const source = new ArrayIterator(quads);
       await waitForEvent(store.import(source), 'end', true);
       const matchedQuads = await streamToArray(store.match());
-      should(matchedQuads).have.length(3);
+      arrayToHaveLength(matchedQuads, 3);
     });
 
   });

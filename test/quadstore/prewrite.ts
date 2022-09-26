@@ -1,17 +1,17 @@
 
-'use strict';
+import type { Quad } from 'rdf-js';
+import type { AbstractChainedBatch } from 'abstract-level';
 
-const should = require('should');
-const { equalsUint8Array } = require('./utils');
+import { toEqualUint8Array } from '../utils/expect';
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
-module.exports = () => {
+export const runPrewriteTests = () => {
 
   describe('Quadstore preWrite option', () => {
 
-    let quads;
+    let quads: Quad[];
+    const prewriteValue = encoder.encode('value1');
 
     beforeEach(function () {
       const { dataFactory } = this;
@@ -34,59 +34,59 @@ module.exports = () => {
     it('should pre-write kvps when putting a quad', async function () {
       const { store } = this;
       await store.put(quads[0], {
-        preWrite: batch => batch.put('key1', encoder.encode('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
     it('should pre-write kvps when putting quads', async function () {
       const { store } = this;
       await store.multiPut(quads, {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
     it('should pre-write kvps when deleting a quad', async function () {
       const { store } = this;
       await store.put(quads[0]);
       await store.del(quads[0], {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
     it('should pre-write kvps when deleting quads', async function () {
       const { store } = this;
       await store.multiPut(quads);
       await store.multiDel(quads, {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
     it('should pre-write kvps when patching a quad', async function () {
       const { store } = this;
       await store.put(quads[0]);
       await store.patch(quads[0], quads[1], {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
     it('should pre-write kvps when patching quads', async function () {
       const { store } = this;
       await store.multiPut([quads[0]]);
       await store.multiPatch([quads[0]], [quads[1]], {
-        preWrite: batch => batch.put('key1', Buffer.from('value1'))
+        preWrite: (batch: AbstractChainedBatch<any, any, any>) => batch.put('key1', prewriteValue)
       });
       const value = await store.db.get('key1', { valueEncoding: 'view' });
-      should(equalsUint8Array(encoder.encode('value1'), value)).be.true();
+      toEqualUint8Array(prewriteValue, value);
     });
 
   });

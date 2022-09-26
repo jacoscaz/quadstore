@@ -337,3 +337,10 @@ dist/cjs
 package-lock.json
 yarn.lock
 
+test/backends/*.js
+test/browser/index.js
+test/others/*.js
+test/quadstore/*.js
+test/utils/*.js
+test/*.js
+

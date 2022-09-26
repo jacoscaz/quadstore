@@ -1,16 +1,16 @@
 
-const should = require('should');
-const { IntegerIterator } = require('asynciterator');
-const { delayIterator } = require('./utils');
-const { consumeOneByOne } = require('../dist/cjs/utils/consumeonebyone');
+import {AsyncIterator, IntegerIterator} from 'asynciterator';
+import { delayIterator } from '../utils/stuff';
+import { consumeOneByOne } from '../../dist/esm/utils/consumeonebyone';
+import { toStrictlyEqual } from '../utils/expect';
 
 const createSourceIterator = () => new IntegerIterator({ start: 0, step: 1, end: 99 });
 
-module.exports = () => {
+export const runConsumeOneByOneTests = () => {
 
   describe('consumeOneByOne()', () => {
 
-    let source;
+    let source: AsyncIterator<any>;
 
     it('should consume an IntegerIterator', () => {
       source = createSourceIterator();
@@ -24,9 +24,9 @@ module.exports = () => {
       let count = 0;
       await consumeOneByOne(source, async (item) => {
         await new Promise((resolve) => setTimeout(resolve, 1));
-        should(item).eql(count++);
+        toStrictlyEqual(item, count++);
       });
-      should(count).eql(100);
+      toStrictlyEqual(count, 100);
     });
 
   });

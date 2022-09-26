@@ -1,6 +1,6 @@
 
-import { Quad, Term } from 'rdf-js';
-import { Binding, TermName } from '../types';
+import type { Quad, Term } from 'rdf-js';
+import type { TermName } from '../types';
 import { termNames } from './constants';
 
 export const getTermComparator = (): (a: Term, b: Term) => (-1 | 0 | 1) => {
@@ -38,17 +38,6 @@ export const getTermComparator = (): (a: Term, b: Term) => (-1 | 0 | 1) => {
 export const getQuadComparator = (_termNames: TermName[] = termNames): (a: Quad, b: Quad) => (-1 | 0 | 1) => {
   const termComparator = getTermComparator();
   return (a: Quad, b: Quad) => {
-    for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
-      r = termComparator(a[_termNames[i]], b[_termNames[i]]);
-      if (r !== 0) return r;
-    }
-    return 0;
-  };
-};
-
-export const getBindingComparator = (_termNames: string[] = termNames): (a: Binding, b: Binding) => -1|0|1 => {
-  const termComparator = getTermComparator();
-  return (a: Binding, b: Binding) => {
     for (let i = 0, n = _termNames.length, r: -1|0|1; i < n; i += 1) {
       r = termComparator(a[_termNames[i]], b[_termNames[i]]);
       if (r !== 0) return r;

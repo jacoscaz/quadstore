@@ -23,7 +23,7 @@ export class Scope {
     const levelOpts = Scope.getLevelIteratorOpts(false, true, scopeId);
     const iterator = new LevelIterator(
       store.db.iterator(levelOpts),
-      (key, value) => (<string>value),
+      (key: string, value: string) => value,
     );
     const blankNodes: Map<string, BlankNode> = new Map();
     const { dataFactory: factory } = store;
@@ -54,8 +54,8 @@ export class Scope {
     return {
       keys,
       values,
-      keyAsBuffer: false,
-      valueAsBuffer: false,
+      keyEncoding: 'utf8',
+      valueEncoding: 'utf8',
       gte,
       lte: `${gte}${boundary}`,
     };

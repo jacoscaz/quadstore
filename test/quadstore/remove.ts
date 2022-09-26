@@ -1,11 +1,9 @@
 
-'use strict';
+import { ArrayIterator } from 'asynciterator';
+import { waitForEvent, streamToArray } from '../../dist/esm/utils/stuff';
+import { arrayToHaveLength } from '../utils/expect.js';
 
-const should = require('should');
-const AsyncIterator = require('asynciterator');
-const { waitForEvent, streamToArray } = require('../dist/cjs/utils/stuff');
-
-module.exports = () => {
+export const runRemoveTests = () => {
 
   describe('Quadstore.prototype.remove()', () => {
 
@@ -45,12 +43,12 @@ module.exports = () => {
           dataFactory.namedNode('http://ex.com/g3')
         )
       ];
-      const importStream = new AsyncIterator.ArrayIterator(importQuads);
-      const removeStream = new AsyncIterator.ArrayIterator(removeQuads);
+      const importStream = new ArrayIterator(importQuads);
+      const removeStream = new ArrayIterator(removeQuads);
       await waitForEvent(store.import(importStream), 'end', true);
       await waitForEvent(store.remove(removeStream), 'end', true);
       const matchedQuads = await streamToArray(store.match());
-      should(matchedQuads).have.length(1);
+      arrayToHaveLength(matchedQuads, 1);
     });
 
   });

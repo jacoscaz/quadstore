@@ -1,12 +1,10 @@
 
-'use strict';
 
-const should = require('should');
-const AsyncIterator = require('asynciterator');
-const { DefaultGraphMode } = require('../dist/cjs/types');
-const { waitForEvent, streamToArray } = require('../dist/cjs/utils/stuff');
+import { ArrayIterator }  from 'asynciterator';
+import { waitForEvent, streamToArray }  from '../../dist/esm/utils/stuff';
+import { arrayToHaveLength, equalsQuadArray } from '../utils/expect.js';
 
-module.exports = () => {
+export const runMatchTests = () => {
 
   describe('Quadstore.prototype.match()', () => {
 
@@ -28,12 +26,12 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const subject = dataFactory.namedNode('http://ex.com/s2');
         const matchedQuads = await streamToArray(store.match(subject));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should match quads by predicate',  async function () {
@@ -52,12 +50,12 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const predicate = dataFactory.namedNode('http://ex.com/p2');
         const matchedQuads = await streamToArray(store.match(null, predicate));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should match quads by object',  async function () {
@@ -76,12 +74,12 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const object = dataFactory.literal('o2', 'en-gb');
         const matchedQuads = await streamToArray(store.match(null, null, object));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should match quads by graph',  async function () {
@@ -100,12 +98,12 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const graph = dataFactory.namedNode('http://ex.com/g2');
         const matchedQuads = await streamToArray(store.match(null, null, null, graph));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should match the default graph when explicitly passed',  async function () {
@@ -124,11 +122,11 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const matchedQuads = await streamToArray(store.match(null, null, null, dataFactory.defaultGraph()));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[0]]);
+
+        equalsQuadArray(matchedQuads, [quads[0]]);
       });
 
     });
@@ -151,13 +149,13 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const match = { termType: 'Range',
           gt: dataFactory.literal('6', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer')) };
         const matchedQuads = await streamToArray(store.match(null, null, match, null));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should match quads by object (literal) [GTE]', async function () {
@@ -176,13 +174,13 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const match = { termType: 'Range',
           gte: dataFactory.literal('7.0', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#double')) };
         const matchedQuads = await streamToArray(store.match(null, null, match, null));
-        should(matchedQuads).have.length(1);
-        should([matchedQuads[0]]).be.equalToQuadArray([quads[1]]);
+
+        equalsQuadArray(matchedQuads, [quads[1]]);
       });
 
       it('should not match quads by object (literal) if out of range [GT]', async function () {
@@ -201,14 +199,14 @@ module.exports = () => {
             dataFactory.namedNode('http://ex.com/g')
           )
         ];
-        const source = new AsyncIterator.ArrayIterator(quads);
+        const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
         const match = {
           termType: 'Range',
           gt: dataFactory.literal('7.0', dataFactory.namedNode('http://www.w3.org/2001/XMLSchema#double')),
         };
         const matchedQuads = await streamToArray(store.match(null, null, match, null));
-        should(matchedQuads).have.length(0);
+        arrayToHaveLength(matchedQuads, 0);
       });
     });
 

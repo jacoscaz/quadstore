@@ -1,9 +1,7 @@
 
-'use strict';
+import { equalsQuadArray } from '../utils/expect';
 
-const should = require('should');
-
-module.exports = () => {
+export const runDelTests = () => {
 
   describe('Quadstore.prototype.del()', () => {
 
@@ -25,10 +23,10 @@ module.exports = () => {
       ]
       await store.multiPut(quads);
       const { items: quadsBefore } = await store.get({});
-      should(quadsBefore).be.equalToQuadArray(quads);
+      equalsQuadArray(quadsBefore, quads);
       await store.del(quadsBefore[0]);
       const { items: quadsAfter } = await store.get({});
-      should(quadsAfter).be.equalToQuadArray([quads[1]]);
+      equalsQuadArray(quadsAfter, [quads[1]]);
     });
 
   });
@@ -53,10 +51,10 @@ module.exports = () => {
       ]
       await store.multiPut(quads);
       const { items: quadsBefore } = await store.get({});
-      should(quadsBefore).be.equalToQuadArray(quads);
+      equalsQuadArray(quadsBefore, quads);
       await store.multiDel([quadsBefore[0]]);
       const { items: quadsAfter } = await store.get({});
-      should(quadsAfter).be.equalToQuadArray([quads[1]]);
+      equalsQuadArray(quadsAfter, [quads[1]]);
     });
 
   });

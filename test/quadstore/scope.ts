@@ -1,17 +1,18 @@
 
-const should = require('should');
-const { streamToArray } = require('../dist/cjs/utils/stuff');
-const { Scope } = require('../dist/cjs/scope');
-const { LevelIterator } = require('../dist/cjs/get/leveliterator');
 
-module.exports = () => {
+import { streamToArray } from '../../dist/esm/utils/stuff';
+import { Scope } from '../../dist/esm/scope';
+import { LevelIterator } from '../../dist/esm/get/leveliterator';
+import { arrayToHaveLength, toNotEqualTerm, toBeAnArray, toBeInstanceOf } from '../utils/expect.js';
+
+export const runScopeTests = () => {
 
   describe('Quadstore.prototype.initScope()', () => {
 
     it('Should return a newly-instantiated scope', async function () {
-      const {dataFactory, store} = this;
+      const { store } = this;
       const scope = await store.initScope();
-      should(scope).be.instanceof(Scope);
+      toBeInstanceOf(scope, Scope);
     });
 
   });
@@ -19,9 +20,9 @@ module.exports = () => {
   describe('Quadstore.prototype.loadScope()', () => {
 
     it('Should return a newly-instantiated scope', async function () {
-      const {dataFactory, store} = this;
+      const { store } = this;
       const scope = await store.loadScope('random-id');
-      should(scope).be.instanceof(Scope);
+      toBeInstanceOf(scope, Scope);
     });
 
     it('Should not leak mappings between different scopes', async function () {
@@ -37,10 +38,10 @@ module.exports = () => {
       await store.put(quad, { scope: scopeA });
       await store.put(quad, { scope: scopeB });
       const { items } = await store.get({});
-      should(items).have.length(2);
+      arrayToHaveLength(items, 2);
       const reloadedScopeA = await store.loadScope(scopeA.id);
       const reloadedScopeB = await store.loadScope(scopeB.id);
-      should(reloadedScopeA.blankNodes.get('bo')).not.equal(reloadedScopeB.blankNodes.get('bo'));
+      toNotEqualTerm(reloadedScopeA.blankNodes.get('bo'), reloadedScopeB.blankNodes.get('bo'));
     });
 
   });
@@ -62,16 +63,16 @@ module.exports = () => {
       await store.deleteScope(scopeA.id);
       const entriesA = await streamToArray(new LevelIterator(
         store.db.iterator(Scope.getLevelIteratorOpts(true, true, scopeA.id)),
-        (key, value) => value.toString('utf8'),
+        (key: string, value: string) => value,
       ));
       const entriesB = await streamToArray(new LevelIterator(
         store.db.iterator(Scope.getLevelIteratorOpts(true, true, scopeB.id)),
-        (key, value) => value.toString('utf8'),
+        (key: string, value: string) => value,
       ));
-      should(entriesA).be.an.Array();
-      should(entriesB).be.an.Array();
-      should(entriesA).have.length(0);
-      should(entriesB).have.length(1);
+      toBeAnArray(entriesA);
+      toBeAnArray(entriesB);
+      arrayToHaveLength(entriesA, 0);
+      arrayToHaveLength(entriesB, 1);
     });
 
   });
@@ -93,10 +94,10 @@ module.exports = () => {
       await store.deleteAllScopes();
       const entries = await streamToArray(new LevelIterator(
         store.db.iterator(Scope.getLevelIteratorOpts(true, true)),
-        (key, value) => value.toString('utf8'),
+        (key: string, value: string) => value,
       ));
-      should(entries).be.an.Array();
-      should(entries).have.length(0);
+      toBeAnArray(entries);
+      arrayToHaveLength(entries, 0);
     });
 
   });

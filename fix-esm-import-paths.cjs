@@ -6,8 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SRC_DIR = path.resolve(__dirname, 'dist', 'esm');
-
+const { resolve, dirname, relative, extname } = path;
 const { readFile, writeFile, stat, opendir } = fs.promises;
 
 const fileExists = async (filePath) => {
@@ -30,11 +29,11 @@ const stringReplace = async (string, searchValue, replacer) => {
   });
 };
 
-const walk = async function* (dir) {
+const walkDir = async function* (dir) {
   for await (const entryStat of await opendir(dir)) {
-    const entry = path.resolve(dir, entryStat.name);
+    const entry = resolve(dir, entryStat.name);
     if (entryStat.isDirectory()) {
-      yield* walk(entry);
+      yield* walkDir(entry);
     } else if (entryStat.isFile()) {
       yield entry;
     }
@@ -42,18 +41,18 @@ const walk = async function* (dir) {
 };
 
 const resolveImportPath = async (sourceFile, importPath) => {
-  const root = path.dirname(sourceFile);
+  const root = dirname(sourceFile);
   if (importPath.match(/^\.\.?\//)) {
-    const importPathAbs = path.resolve(root, importPath);
+    const importPathAbs = resolve(root, importPath);
     let possiblePath = [
-      path.resolve(importPathAbs, './index.js'),
+      resolve(importPathAbs, './index.js'),
       importPathAbs + '.js',
     ];
     if (possiblePath.length) {
       for (let i = 0; i < possiblePath.length; i++) {
         let entry = possiblePath[i];
         if (await fileExists(entry)) {
-          const resolved = path.relative(root, entry);
+          const resolved = relative(root, entry);
           if (!resolved.startsWith('.')) {
             return './' + resolved;
           }
@@ -82,15 +81,15 @@ const replace = async (filePath, outFilePath) => {
   }
 };
 
-const main = async () => {
-  for await (const entry of walk(SRC_DIR)) {
-    if (path.extname(entry) === '.js') {
+(async () => {
+  const sourceDir = resolve(process.cwd(), process.argv[2] || '.');
+  for await (const entry of walkDir(sourceDir)) {
+    const ext = extname(entry);
+    if (ext === '.js' || ext === '.mjs') {
       await replace(entry, entry);
     }
   }
-};
-
-(async () => await main())().catch((err) => {
+})().catch((err) => {
   console.error(err);
   process.exit(1);
 });

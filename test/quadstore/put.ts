@@ -1,11 +1,12 @@
 
-const should = require('./should');
-const { ArrayIterator } = require('asynciterator');
-const { streamToArray } = require('../dist/cjs/utils/stuff');
-const { Scope } = require('../dist/cjs/scope');
-const { LevelIterator } = require('../dist/cjs/get/leveliterator');
+import type {Quad, Term} from 'rdf-js';
+import { ArrayIterator } from 'asynciterator';
+import { streamToArray } from '../../dist/esm/utils/stuff';
+import { Scope } from '../../dist/esm/scope';
+import { LevelIterator } from '../../dist/esm/get/leveliterator';
+import { arrayToHaveLength, equalsQuadArray, toBeAnArray, toBeFalse, toStrictlyEqual, toBeTrue } from '../utils/expect';
 
-module.exports = () => {
+export const runPutTests = () => {
 
   describe('Quadstore.prototype.put()', () => {
 
@@ -19,7 +20,7 @@ module.exports = () => {
       );
       await store.put(newQuad);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray([newQuad]);
+      equalsQuadArray(foundQuads, [newQuad]);
     });
 
     it('should store a single quad with a term that serializes to a string longer than 127 chars', async function () {
@@ -32,7 +33,7 @@ module.exports = () => {
       );
       await store.put(newQuad);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray([newQuad]);
+      equalsQuadArray(foundQuads, [newQuad]);
     });
 
     it('should store multiple quads', async function () {
@@ -54,7 +55,7 @@ module.exports = () => {
       await store.put(newQuads[0]);
       await store.put(newQuads[1]);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray(newQuads);
+      equalsQuadArray(foundQuads, newQuads);
     });
 
     it('should not duplicate quads', async function () {
@@ -77,7 +78,7 @@ module.exports = () => {
       await store.put(newQuads[1]);
       await store.put(newQuads[1]);
       const {items: foundQuads} = await store.get({});
-      should(foundQuads).be.equalToQuadArray(newQuads);
+      equalsQuadArray(foundQuads, newQuads);
     });
 
   });
@@ -95,10 +96,10 @@ module.exports = () => {
       );
       await store.put(quadA, { scope });
       const { items: [quadB] } = await store.get({});
-      should(quadB.subject.equals(quadA.subject)).be.true();
-      should(quadB.predicate.equals(quadA.predicate)).be.true();
-      should(quadB.object.equals(quadA.object)).be.false();
-      should(quadB.graph.equals(quadA.graph)).be.true();
+      toBeTrue(quadB.subject.equals(quadA.subject));
+      toBeTrue(quadB.predicate.equals(quadA.predicate));
+      toBeFalse(quadB.object.equals(quadA.object));
+      toBeTrue(quadB.graph.equals(quadA.graph));
     });
 
     it('Should maintain mappings across different invocations', async function () {
@@ -119,9 +120,9 @@ module.exports = () => {
       await store.put(quadA, { scope });
       await store.put(quadB, { scope });
       const { items } = await store.get({});
-      should(items).have.length(2);
-      should(items[1].object.equals(items[0].object));
-      should(items[1].object.equals(quadA.object)).be.false();
+      arrayToHaveLength(items, 2);
+      toBeTrue(items[1].object.equals(items[0].object));
+      toBeFalse(items[1].object.equals(quadA.object));
     });
 
     it('Should persist scope mappings', async function () {
@@ -137,12 +138,12 @@ module.exports = () => {
       const levelOpts = Scope.getLevelIteratorOpts(true, true, scope.id);
       const entries = await streamToArray(new LevelIterator(
         store.db.iterator(levelOpts),
-        (key, value) => value.toString('utf8'),
+        (key: string, value: string) => value,
       ));
-      should(entries).be.an.Array();
-      should(entries).have.length(1);
+      toBeAnArray(entries);
+      arrayToHaveLength(entries, 1);
       const { originalLabel, randomLabel } = JSON.parse(entries[0]);
-      should(originalLabel).equal('bo');
+      toStrictlyEqual(originalLabel, 'bo');
     });
 
   });
@@ -161,11 +162,11 @@ module.exports = () => {
       ];
       await store.multiPut(quadsA, { scope });
       const { items: quadsB } = await store.get({});
-      should(quadsB).have.length(1);
-      should(quadsB[0].subject.equals(quadsA[0].subject)).be.true();
-      should(quadsB[0].predicate.equals(quadsA[0].predicate)).be.true();
-      should(quadsB[0].object.equals(quadsA[0].object)).be.false();
-      should(quadsB[0].graph.equals(quadsA[0].graph)).be.true();
+      arrayToHaveLength(quadsB, 1);
+      toBeTrue(quadsB[0].subject.equals(quadsA[0].subject));
+      toBeTrue(quadsB[0].predicate.equals(quadsA[0].predicate));
+      toBeFalse(quadsB[0].object.equals(quadsA[0].object));
+      toBeTrue(quadsB[0].graph.equals(quadsA[0].graph));
     });
   });
 
@@ -183,11 +184,11 @@ module.exports = () => {
       ];
       await store.putStream(new ArrayIterator(quadsA), { scope });
       const { items: quadsB } = await store.get({});
-      should(quadsB).have.length(1);
-      should(quadsB[0].subject.equals(quadsA[0].subject)).be.true();
-      should(quadsB[0].predicate.equals(quadsA[0].predicate)).be.true();
-      should(quadsB[0].object.equals(quadsA[0].object)).be.false();
-      should(quadsB[0].graph.equals(quadsA[0].graph)).be.true();
+      arrayToHaveLength(quadsB, 1);
+      toBeTrue(quadsB[0].subject.equals(quadsA[0].subject));
+      toBeTrue(quadsB[0].predicate.equals(quadsA[0].predicate));
+      toBeFalse(quadsB[0].object.equals(quadsA[0].object));
+      toBeTrue(quadsB[0].graph.equals(quadsA[0].graph));
     });
   });
 
@@ -210,8 +211,8 @@ module.exports = () => {
     afterEach(async function () {
       const { store, quads } = this;
       const { items } = await store.get({});
-      items.sort((a, b) => a.object.value < b.object.value ? -1 : 1);
-      should(items).be.equalToQuadArray(quads);
+      items.sort((a: Quad, b: Quad) => a.object.value < b.object.value ? -1 : 1);
+      equalsQuadArray(items, quads);
     });
 
     it('batchSize set to 1', async function () {

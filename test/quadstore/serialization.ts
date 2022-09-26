@@ -1,9 +1,11 @@
 
-const xsd = require('../dist/cjs/serialization/xsd');
-const {quadWriter, quadReader} = require('../dist/cjs/serialization');
-const {termReader, termWriter} = require('../dist/cjs/serialization/terms');
+import type {InternalIndex} from '../../dist/esm/types';
 
-module.exports = () => {
+import * as xsd from '../../dist/esm/serialization/xsd';
+import { quadWriter, quadReader } from '../../dist/esm/serialization';
+import { toEqualQuad } from '../utils/expect';
+
+export const runSerializationTests = () => {
 
   describe('Quadstore serialization', function () {
 
@@ -18,10 +20,10 @@ module.exports = () => {
         factory.namedNode('http://ex.com/o'),
         factory.namedNode('http://ex.com/g'),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 
@@ -34,10 +36,10 @@ module.exports = () => {
         factory.namedNode('http://ex.com/o'),
         factory.defaultGraph(),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 
@@ -50,10 +52,10 @@ module.exports = () => {
         factory.literal('someValue', factory.namedNode('http://ex.com/someDatatype')),
         factory.namedNode('http://ex.com/g'),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 
@@ -66,10 +68,10 @@ module.exports = () => {
         factory.literal('Hello, world!', 'en'),
         factory.namedNode('http://ex.com/g'),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 
@@ -82,10 +84,10 @@ module.exports = () => {
         factory.literal('44', factory.namedNode(xsd.decimal)),
         factory.namedNode('http://ex.com/g'),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 
@@ -97,10 +99,10 @@ module.exports = () => {
         factory.literal(''.padStart(2000, 'abab')),
         factory.namedNode('http://ex.com/g'),
       );
-      indexes.forEach((index) => {
+      indexes.forEach((index: InternalIndex) => {
         const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
         const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
-        should(read.equals(quad)).be.true();
+        toEqualQuad(read, quad);
       });
     });
 

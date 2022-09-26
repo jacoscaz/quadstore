@@ -1,17 +1,17 @@
 
-const should = require('should');
-const { IntegerIterator } = require('asynciterator');
-const { delayIterator } = require('./utils');
-const { consumeInBatches } = require('../dist/cjs/utils/consumeinbatches');
+import {AsyncIterator, IntegerIterator} from 'asynciterator';
+import { delayIterator } from '../utils/stuff';
+import { consumeInBatches } from '../../dist/esm/utils/consumeinbatches';
+import { toStrictlyEqual, toBeFalse, toBeLessThanOrEqualTo } from '../utils/expect';
 
 const createSourceIterator = () => new IntegerIterator({ start: 0, step: 1, end: 99 });
 
-module.exports = () => {
+export const runConsumeInBatchesTests = () => {
 
   describe('consumeInBatches()', () => {
 
-    let source;
-    let batchSize;
+    let source: AsyncIterator<any>;
+    let batchSize: number;
 
     const runTests = () => {
 
@@ -44,17 +44,17 @@ module.exports = () => {
       let last = false;
       await consumeInBatches(source, batchSize, async (batch) => {
         await new Promise((resolve) => setTimeout(resolve, 1));
-        should(last).eql(false);
-        should(batch.length).be.lessThanOrEqual(batchSize);
+        toBeFalse(last);
+        toBeLessThanOrEqualTo(batch.length, batchSize);
         last = batch.length < batchSize;
         itemCount += batch.length;
         batchCount += 1;
         for (let i = 0; i < batch.length; i += 1) {
-          should(batch[i]).eql(itemValue++);
+          toStrictlyEqual(batch[i], itemValue++);
         }
       });
-      should(itemCount).eql(100);
-      should(batchCount).eql(Math.ceil(100 / batchSize));
+      toStrictlyEqual(itemCount, 100);
+      toStrictlyEqual(batchCount, Math.ceil(100 / batchSize));
     });
 
     describe('with an IntegerIterator as the source', () => {

@@ -1,6 +1,14 @@
 
 # CHANGELOG
 
+## 11.0.5
+
+- *[internal]* ported test suite to TypeScript and made it run both
+  server-side (`mocha` using the `MemoryLevel` and `ClassicLevel`
+  backends) and browser-side (`mocha` within a webpage loaded via
+  `puppeteer` using the `MemoryLevel` and `BrowserLevel` backends)   
+  (https://github.com/belayeng/quadstore/issues/150)
+
 ## 11.0.3
 
 - *[fix]* fixes breaking serialization of terms that serialize to strings

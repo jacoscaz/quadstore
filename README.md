@@ -729,9 +729,9 @@ CDN:
 
 ```ts
 import { DataFactory } from 'https://cdn.skypack.dev/rdf-data-factory@1.1.1';
-import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0';
+import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.6';
 import { MemoryLevel } from 'https://cdn.skypack.dev/memory-level@1.0.0';
-import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.0';
+import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.7';
 
 const backend = new MemoryLevel();
 const dataFactory = new DataFactory();
@@ -748,28 +748,14 @@ const stream = await engine.queryBindings('SELECT * WHERE { ?s ?p ?o }');
 stream.on('data', (bindings) => console.log(bindings));
 ```
 
-Due to an upstream issue with the SPARQL parser, the following import map must
-be used. This replaces Skypack's own version of `sparqljs@3.5.2` with one that
-is hosted on `gist.github.com` and is identical to the former if not for a fix
-to an unchecked use of `require` that can't be easily merged upstream.
-
-```json 
-{
-  "imports": {
-    "https://cdn.skypack.dev/-/sparqljs@v3.5.2-dsMDqK77bLuGqQk32ifA/dist=es2019,mode=imports/optimized/sparqljs.js": "https://gist.githubusercontent.com/jacoscaz/022c513ca77b0061c5bfee0356ba3b8d/raw/95bb09057fbad4daace3684c80b1164b38725c7c/sparql.js-skypack-require-fix.js"
-  }
-}
-```
-
 Example usage:
 
 ```shell
-deno run --import-map quadstore-import-map.json quadstore-test.ts
+deno run quadstore-test.ts
 ```
 
 [d0]: https://deno.land
 [d1]: https://www.skypack.dev
-[d2]: https://github.com/belayeng/quadstore/issues/139
 
 ## Performance
 

@@ -51,13 +51,12 @@ graphs, RDF/JS interfaces and SPARQL queries.
 ## Example of basic usage
 
 ```typescript
-import {MemoryLevel} from 'memory-level';
-import {DataFactory} from 'rdf-data-factory';
-import {Quadstore} from 'quadstore';
-import {Engine} from 'quadstore-comunica';
+import { MemoryLevel } from 'memory-level';
+import { DataFactory } from 'rdf-data-factory';
+import { Quadstore } from 'quadstore';
+import { Engine } from 'quadstore-comunica';
 
-// Any implementation of AbstractLevelDOWN can be used.
-// For server-side persistence, use `leveldown` or `rocksdb`.
+// Any implementation of AbstractLevel can be used.
 const backend = new MemoryLevel();
 
 // Implementation of the RDF/JS DataFactory interface
@@ -66,6 +65,9 @@ const df = new DataFactory();
 // Store and query engine are separate modules
 const store = new Quadstore({backend, dataFactory: df});
 const engine = new Engine(store);
+
+// Open the store
+await store.open();
 
 // Put a single quad into the store using Quadstore's API
 store.put(df.quad(                      
@@ -80,10 +82,11 @@ const { items } = await store.get({});
 
 // Retrieves all quads using RDF/JS Stream interfaces
 const quadsStream = store.match(undefined, undefined, undefined, undefined);
+quadsStream.on('data', quad => console.log(quad));
 
 // Queries the store via RDF/JS Query interfaces
-const query = await engine.query('SELECT * {?s ?p ?o}');
-const bindingsStream = await query.execute();
+const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
+bindingsStream.on('data', binding => console.log(binding));
 ```
 
 ## Status
@@ -688,18 +691,19 @@ that will optimize query performance by pushing some matching and ordering
 operations down to quadstore itself. 
 
 ```typescript
-import {MemoryLevel} from 'memory-level';
-import {DataFactory} from 'rdf-data-factory';
-import {Quadstore} from 'quadstore';
-import {Engine} from 'quadstore-comunica';
+import { MemoryLevel } from 'memory-level';
+import { DataFactory } from 'rdf-data-factory';
+import { Quadstore } from 'quadstore';
+import { Engine } from 'quadstore-comunica';
 
 const backend = new MemoryLevel();
 const df = new DataFactory();
 const store = new Quadstore({backend, dataFactory: df});
 const engine = new Engine(store);
 
-const query = await engine.query('SELECT * {?s ?p ?o}');
-const bindingsStream = await query.execute();
+await store.open();
+
+const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
 ```
 
 More information on [quadstore-comunica][c2]'s repository.

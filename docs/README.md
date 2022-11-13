@@ -51,13 +51,12 @@ graphs, RDF/JS interfaces and SPARQL queries.
 ## Example of basic usage
 
 ```typescript
-import {MemoryLevel} from 'memory-level';
-import {DataFactory} from 'rdf-data-factory';
-import {Quadstore} from 'quadstore';
-import {Engine} from 'quadstore-comunica';
+import { MemoryLevel } from 'memory-level';
+import { DataFactory } from 'rdf-data-factory';
+import { Quadstore } from 'quadstore';
+import { Engine } from 'quadstore-comunica';
 
-// Any implementation of AbstractLevelDOWN can be used.
-// For server-side persistence, use `leveldown` or `rocksdb`.
+// Any implementation of AbstractLevel can be used.
 const backend = new MemoryLevel();
 
 // Implementation of the RDF/JS DataFactory interface
@@ -66,6 +65,9 @@ const df = new DataFactory();
 // Store and query engine are separate modules
 const store = new Quadstore({backend, dataFactory: df});
 const engine = new Engine(store);
+
+// Open the store
+await store.open();
 
 // Put a single quad into the store using Quadstore's API
 store.put(df.quad(                      
@@ -80,10 +82,11 @@ const { items } = await store.get({});
 
 // Retrieves all quads using RDF/JS Stream interfaces
 const quadsStream = store.match(undefined, undefined, undefined, undefined);
+quadsStream.on('data', quad => console.log(quad));
 
 // Queries the store via RDF/JS Query interfaces
-const query = await engine.query('SELECT * {?s ?p ?o}');
-const bindingsStream = await query.execute();
+const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
+bindingsStream.on('data', binding => console.log(binding));
 ```
 
 ## Status
@@ -688,18 +691,19 @@ that will optimize query performance by pushing some matching and ordering
 operations down to quadstore itself. 
 
 ```typescript
-import {MemoryLevel} from 'memory-level';
-import {DataFactory} from 'rdf-data-factory';
-import {Quadstore} from 'quadstore';
-import {Engine} from 'quadstore-comunica';
+import { MemoryLevel } from 'memory-level';
+import { DataFactory } from 'rdf-data-factory';
+import { Quadstore } from 'quadstore';
+import { Engine } from 'quadstore-comunica';
 
 const backend = new MemoryLevel();
 const df = new DataFactory();
 const store = new Quadstore({backend, dataFactory: df});
 const engine = new Engine(store);
 
-const query = await engine.query('SELECT * {?s ?p ?o}');
-const bindingsStream = await query.execute();
+await store.open();
+
+const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
 ```
 
 More information on [quadstore-comunica][c2]'s repository.
@@ -729,9 +733,9 @@ CDN:
 
 ```ts
 import { DataFactory } from 'https://cdn.skypack.dev/rdf-data-factory@1.1.1';
-import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.0';
+import { Quadstore } from 'https://cdn.skypack.dev/quadstore@11.0.6';
 import { MemoryLevel } from 'https://cdn.skypack.dev/memory-level@1.0.0';
-import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.0';
+import { Engine } from 'https://cdn.skypack.dev/quadstore-comunica@3.0.7';
 
 const backend = new MemoryLevel();
 const dataFactory = new DataFactory();
@@ -748,28 +752,14 @@ const stream = await engine.queryBindings('SELECT * WHERE { ?s ?p ?o }');
 stream.on('data', (bindings) => console.log(bindings));
 ```
 
-Due to an upstream issue with the SPARQL parser, the following import map must
-be used. This replaces Skypack's own version of `sparqljs@3.5.2` with one that
-is hosted on `gist.github.com` and is identical to the former if not for a fix
-to an unchecked use of `require` that can't be easily merged upstream.
-
-```json 
-{
-  "imports": {
-    "https://cdn.skypack.dev/-/sparqljs@v3.5.2-dsMDqK77bLuGqQk32ifA/dist=es2019,mode=imports/optimized/sparqljs.js": "https://gist.githubusercontent.com/jacoscaz/022c513ca77b0061c5bfee0356ba3b8d/raw/95bb09057fbad4daace3684c80b1164b38725c7c/sparql.js-skypack-require-fix.js"
-  }
-}
-```
-
 Example usage:
 
 ```shell
-deno run --import-map quadstore-import-map.json quadstore-test.ts
+deno run quadstore-test.ts
 ```
 
 [d0]: https://deno.land
 [d1]: https://www.skypack.dev
-[d2]: https://github.com/belayeng/quadstore/issues/139
 
 ## Performance
 

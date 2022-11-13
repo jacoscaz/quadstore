@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 11.0.7
+
+- *[internal]* updated dependencies to latest versions
+
 ## 11.0.5
 
 - *[internal]* ported test suite to TypeScript and made it run both

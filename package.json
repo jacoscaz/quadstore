@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "11.0.6",
+  "version": "11.0.7",
   "description": "A LevelDB-backed graph database for Node.js and the browser. Supports quads, RDF/JS interfaces and SPARQL queries.",
   "keywords": [
     "node",
@@ -50,28 +50,28 @@
     "url": "https://github.com/belayeng/quadstore.git"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.3",
+    "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.0",
     "@types/n3": "^1.10.4",
     "@types/node-static": "^0.7.7",
     "browser-level": "^1.0.1",
-    "chai": "^4.3.6",
+    "chai": "^4.3.7",
     "classic-level": "^1.2.0",
     "expect.js": "^0.3.1",
     "memory-level": "^1.0.0",
     "mocha": "^10.1.0",
-    "n3": "^1.16.2",
+    "n3": "^1.16.3",
     "node-static": "^0.7.11",
     "puppeteer": "^19.2.2",
     "rdf-data-factory": "^1.1.1",
     "typescript": "^4.8.4",
-    "webpack": "^5.74.0",
+    "webpack": "^5.75.0",
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
     "@types/rdf-js": "^4.0.1",
     "abstract-level": "^1.0.3",
-    "asynciterator": "^3.7.1",
+    "asynciterator": "^3.8.0",
     "js-sorted-set": "^0.7.0"
   },
   "author": "Jacopo Scazzosi <jacopo@scazzosi.com>",

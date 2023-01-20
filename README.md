@@ -70,7 +70,7 @@ const engine = new Engine(store);
 await store.open();
 
 // Put a single quad into the store using Quadstore's API
-store.put(df.quad(                      
+await store.put(df.quad(                      
   df.namedNode('http://example.com/subject'),
   df.namedNode('http://example.com/predicate'),
   df.namedNode('http://example.com/object'),

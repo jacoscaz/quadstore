@@ -19,9 +19,7 @@ let exitCode = 0;
 
 httpServer.once('listening', () => {
   (async () => {
-    const browser = await puppeteer.launch({
-      product: 'firefox',
-    });
+    const browser = await puppeteer.launch({});
     const page = await browser.newPage();
     page.on('console', async (msg) => {
       for (let arg of msg.args()) {

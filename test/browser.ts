@@ -21,10 +21,9 @@ httpServer.once('listening', () => {
   (async () => {
     const browser = await puppeteer.launch({});
     const page = await browser.newPage();
-    page.on('console', async (msg) => {
-      for (let arg of msg.args()) {
-        process.stdout.write(`${await arg.jsonValue()}\n`);
-      }
+    page.on('console', async (evt) => {
+      const [msg, ...args] = await Promise.all(evt.args().map(arg => arg.jsonValue()));
+      console.log(msg, ...args);
     });
     await page.goto('http://127.0.0.1:8080/index.html');
     await page.waitForFunction('window.__TEST_RESULTS__');

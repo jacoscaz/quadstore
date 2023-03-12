@@ -1,6 +1,6 @@
 
 import type { Literal } from 'rdf-js';
-import type { InternalIndex, Pattern, Prefixes, IndexQuery } from '../types';
+import type {InternalIndex, Pattern, Prefixes, IndexQuery, SerializedTerm} from '../types';
 
 import * as xsd from './xsd';
 import { encode } from './fpstring';
@@ -8,16 +8,23 @@ import { separator, boundary } from '../utils/constants';
 import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLiteralWriter, namedNodeWriter,
          numericLiteralWriter, stringLiteralWriter } from './terms';
 
+const serialized: SerializedTerm = {
+  type: '',
+  value: '',
+  lengths: '',
+};
 
 const patternLiteralWriter = {
-  write(term: Literal) {
+  write(term: Literal, prefixes: Prefixes) {
     if (term.language) {
-      return langStringLiteralWriter.write(undefined, 0, term, separator);
+      langStringLiteralWriter.write(term, serialized, prefixes);
+      return;
     }
     if (term.datatype) {
       switch (term.datatype.value) {
         case xsd.string:
-          return stringLiteralWriter.write(undefined, 0, term);
+          stringLiteralWriter.write(term, serialized, prefixes);
+          return;
         case xsd.integer:
         case xsd.double:
         case xsd.decimal:
@@ -33,14 +40,18 @@ const patternLiteralWriter = {
         case xsd.unsignedShort:
         case xsd.unsignedByte:
         case xsd.positiveInteger:
-          return numericLiteralWriter.write(undefined, 0, term, separator, encode(term.value), true);
+          numericLiteralWriter.write(term, serialized, prefixes, true, encode(term.value));
+          return;
         case xsd.dateTime:
-          return numericLiteralWriter.write(undefined, 0, term, separator, encode(new Date(term.value).valueOf()), true);
+          numericLiteralWriter.write(term, serialized, prefixes, true, encode(new Date(term.value).valueOf()));
+          return;
         default:
-          return genericLiteralWriter.write(undefined, 0, term, separator);
+          genericLiteralWriter.write(term, serialized, prefixes);
+          return;
       }
     }
-    return stringLiteralWriter.write(undefined, 0, term);
+    stringLiteralWriter.write(term, serialized, prefixes);
+    return;
   }
 };
 
@@ -69,43 +80,55 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
       case 'Range':
         didRange = true;
         if (term.gt) {
-          gt += patternLiteralWriter.write(term.gt);
+          patternLiteralWriter.write(term.gt, prefixes);
+          gt += serialized.value;
           gte = false;
         } else if (term.gte) {
-          gt += patternLiteralWriter.write(term.gte);
+          patternLiteralWriter.write(term.gte, prefixes);
+          gt += serialized.value;
           gte = true;
         }
         if (term.lt) {
-          lt += patternLiteralWriter.write(term.lt);
+          patternLiteralWriter.write(term.lt, prefixes);
+          lt += serialized.value;
           lte = false;
         } else if (term.lte) {
-          lt += patternLiteralWriter.write(term.lte);
+          patternLiteralWriter.write(term.lte, prefixes);
+          lt += serialized.value;
           lte = true;
         }
         break;
       case 'Literal':
         didLiteral = true;
-        gt += patternLiteralWriter.write(term);
+        patternLiteralWriter.write(term, prefixes);
+        gt += serialized.value;
         gte = true;
-        lt += patternLiteralWriter.write(term);
+        patternLiteralWriter.write(term, prefixes);
+        lt += serialized.value;
         lte = true;
         break;
       case 'NamedNode':
-        gt += namedNodeWriter.write(undefined, 0, term, prefixes);
+        namedNodeWriter.write(term, serialized, prefixes);
+        gt += serialized.value;
         gte = true;
-        lt += namedNodeWriter.write(undefined, 0, term, prefixes);
+        namedNodeWriter.write(term, serialized, prefixes);
+        lt += serialized.value;
         lte = true;
         break;
       case 'BlankNode':
-        gt += blankNodeWriter.write(undefined, 0, term);
+        blankNodeWriter.write(term, serialized, prefixes);
+        gt += serialized.value;
         gte = true;
-        lt += blankNodeWriter.write(undefined, 0, term);
+        blankNodeWriter.write(term, serialized, prefixes);
+        lt += serialized.value;
         lte = true;
         break;
       case 'DefaultGraph':
-        gt += defaultGraphWriter.write(undefined, 0, term);
+        defaultGraphWriter.write(term, serialized, prefixes);
+        gt += serialized.value;
         gte = true;
-        lt += defaultGraphWriter.write(undefined, 0, term);
+        defaultGraphWriter.write(term, serialized, prefixes);
+        lt += serialized.value;
         lte = true;
         break;
     }

@@ -31,3 +31,5 @@ export const levelPutOpts: AbstractChainedBatchPutOptions<any, any, any> = {
 export const levelDelOpts: AbstractChainedBatchDelOptions<any, any> = {
   keyEncoding: 'utf8',
 };
+
+export const emptyValue = new Uint8Array(0);

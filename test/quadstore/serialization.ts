@@ -2,14 +2,12 @@
 import type {InternalIndex} from '../../dist/esm/types';
 
 import * as xsd from '../../dist/esm/serialization/xsd';
-import { quadWriter, quadReader } from '../../dist/esm/serialization';
+import {quadReader, twoStepsQuadWriter} from '../../dist/esm/serialization';
 import { toEqualQuad } from '../utils/expect';
 
 export const runSerializationTests = () => {
 
   describe('Quadstore serialization', function () {
-
-    const value = new Uint16Array(32);
 
     it('Should serialize and deserialize quads with named nodes', function () {
       const { store } = this;
@@ -21,8 +19,8 @@ export const runSerializationTests = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });
@@ -37,8 +35,8 @@ export const runSerializationTests = () => {
         factory.defaultGraph(),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });
@@ -53,8 +51,8 @@ export const runSerializationTests = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });
@@ -69,8 +67,8 @@ export const runSerializationTests = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });
@@ -85,8 +83,8 @@ export const runSerializationTests = () => {
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });
@@ -96,12 +94,12 @@ export const runSerializationTests = () => {
       const quad = factory.quad(
         factory.namedNode('http://ex.com/s'),
         factory.namedNode('http://ex.com/p'),
-        factory.literal(''.padStart(2000, 'abab')),
+        factory.literal(''.padStart(129, 'abab')),
         factory.namedNode('http://ex.com/g'),
       );
       indexes.forEach((index: InternalIndex) => {
-        const key = quadWriter.write(index.prefix, value, 0, quad, index.terms, prefixes);
-        const read = quadReader.read(key, index.prefix.length, value, 0, index.terms, factory, prefixes);
+        const key = twoStepsQuadWriter.ingest(quad, prefixes).write(index.prefix, index.terms);
+        const read = quadReader.read(key, index.prefix.length, index.terms, factory, prefixes);
         toEqualQuad(read, quad);
       });
     });

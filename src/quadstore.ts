@@ -48,15 +48,16 @@ import {
   defaultIndexes,
   separator,
   levelPutOpts,
-  levelDelOpts,
+  levelDelOpts, emptyValue,
 } from './utils/constants';
 import { consumeOneByOne } from './utils/consumeonebyone';
 import { consumeInBatches } from './utils/consumeinbatches';
 import { uid } from './utils/uid';
 import { getApproximateSize, getStream } from './get';
 import { Scope } from './scope';
-import { quadWriter } from './serialization/quads';
-import { viewUint16ArrayAsUint8Array } from './serialization/utils';
+import {twoStepsQuadWriter} from './serialization/quads';
+import {Util} from 'n3';
+import prefixes = Util.prefixes;
 
 export class Quadstore implements Store {
 
@@ -183,13 +184,13 @@ export class Quadstore implements Store {
     return await getApproximateSize(this, pattern, opts);
   }
 
-  private _batchPut(quad: Quad, value: Uint16Array, baseValueOffset: number, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
-    const { indexes } = this;
-    for (let i = 0, il = indexes.length, index, valueOffset; i < il; i += 1) {
-      valueOffset = baseValueOffset + i * 16;
+  private _batchPut(quad: Quad, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
+    const { indexes, prefixes } = this;
+    twoStepsQuadWriter.ingest(quad, prefixes);
+    for (let i = 0, il = indexes.length, index; i < il; i += 1) {
       index = indexes[i];
-      const key = quadWriter.write(index.prefix, value, valueOffset, quad, index.terms, this.prefixes);
-      batch = batch.put(key, viewUint16ArrayAsUint8Array(value, valueOffset, 16), levelPutOpts);
+      const key = twoStepsQuadWriter.write(index.prefix, index.terms);
+      batch = batch.put(key, emptyValue, levelPutOpts);
     }
     return batch;
   }
@@ -201,8 +202,7 @@ export class Quadstore implements Store {
     if (opts.scope) {
       quad = opts.scope.parseQuad(quad, batch);
     }
-    const value = new Uint16Array(16 * indexes.length);
-    this._batchPut(quad, value, 0, batch);
+    this._batchPut(quad, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
@@ -210,26 +210,24 @@ export class Quadstore implements Store {
   async multiPut(quads: Quad[], opts: PutOpts = emptyObject): Promise<VoidResult> {
     this.ensureReady();
     const { indexes, db } = this;
-    const value = new Uint16Array(16 * indexes.length * quads.length);
-    let valueOffset = 0;
     let batch = db.batch();
     for (let q = 0, ql = quads.length, quad; q < ql; q += 1) {
       quad = quads[q];
-      valueOffset = q * indexes.length * 16;
       if (opts.scope) {
         quad = opts.scope.parseQuad(quad, batch);
       }
-      this._batchPut(quad, value, valueOffset, batch);
+      this._batchPut(quad, batch);
     }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
 
   private _batchDel(quad: Quad, batch: AbstractChainedBatch<any, any, any>): AbstractChainedBatch<any, any, any> {
-    const { indexes } = this;
+    const { indexes, prefixes } = this;
+    twoStepsQuadWriter.ingest(quad, prefixes);
     for (let i = 0, il = indexes.length, index; i < il; i += 1) {
       index = indexes[i];
-      const key = quadWriter.write(index.prefix, undefined, 0, quad, index.terms, this.prefixes);
+      const key = twoStepsQuadWriter.write(index.prefix, index.terms);
       batch = batch.del(key, levelDelOpts);
     }
     return batch;
@@ -259,8 +257,7 @@ export class Quadstore implements Store {
     const { indexes, db } = this;
     const batch = db.batch();
     this._batchDel(oldQuad, batch);
-    const value = new Uint16Array(16 * indexes.length);
-    this._batchPut(newQuad, value, 0, batch);
+    this._batchPut(newQuad, batch);
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };
   }
@@ -273,12 +270,9 @@ export class Quadstore implements Store {
       oldQuad = oldQuads[oq];
       this._batchDel(oldQuad, batch);
     }
-    const value = new Uint16Array(16 * indexes.length * newQuads.length);
-    let valueOffset = 0;
     for (let nq = 0, nql = newQuads.length, newQuad; nq < nql; nq += 1) {
-      valueOffset = nq * indexes.length * 16;
       newQuad = newQuads[nq];
-      this._batchPut(newQuad, value, valueOffset, batch);
+      this._batchPut(newQuad, batch);
     }
     await this.writeBatch(batch, opts);
     return { type: ResultType.VOID };

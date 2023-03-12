@@ -17,10 +17,9 @@ import { ResultType, LevelQuery } from '../types';
 import { arrStartsWith } from '../utils/stuff';
 import { emptyObject, separator } from '../utils/constants';
 import { LevelIterator } from './leveliterator';
-import { quadReader, quadWriter, writePattern } from '../serialization';
+import {quadReader, twoStepsQuadWriter, writePattern} from '../serialization';
 import { SortingIterator } from './sortingiterator';
 import { AbstractLevel } from 'abstract-level';
-import { viewUint8ArrayAsUint16Array } from '../serialization/utils';
 
 const SORTING_KEY = Symbol();
 
@@ -47,9 +46,8 @@ const getLevelQueryForIndex = (pattern: Pattern, index: InternalIndex, prefixes:
     [indexQuery.gte ? 'gte' : 'gt']: indexQuery.gt,
     [indexQuery.lte ? 'lte' : 'lt']: indexQuery.lt,
     keys: true,
-    values: true,
+    values: false,
     keyEncoding: 'utf8',
-    valueEncoding: 'view',
   };
   if (typeof opts.limit === 'number') {
     levelOpts.limit = opts.limit;
@@ -78,8 +76,8 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
 
   if (levelQueryFull !== null) {
     const { index, level, order } = levelQueryFull;
-    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Uint8Array) => {
-      return quadReader.read(key, index.prefix.length, viewUint8ArrayAsUint16Array(value), 0, index.terms, dataFactory, prefixes);
+    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string) => {
+      return quadReader.read(key, index.prefix.length, index.terms, dataFactory, prefixes);
     });
     return { type: ResultType.QUADS, order, iterator, index: index.terms, resorted: false };
   }
@@ -88,12 +86,12 @@ export const getStream = async (store: Quadstore, pattern: Pattern, opts: GetOpt
 
   if (levelQueryNoOpts !== null) {
     const { index, level, order } = levelQueryNoOpts;
-    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string, value: Uint8Array) => {
-      return quadReader.read(key, index.prefix.length, viewUint8ArrayAsUint16Array(value), 0, index.terms, dataFactory, prefixes);
+    let iterator: AsyncIterator<Quad> = new LevelIterator(store.db.iterator(level), (key: string) => {
+      return quadReader.read(key, index.prefix.length, index.terms, dataFactory, prefixes);
     });
     if (typeof opts.order !== 'undefined' && !arrStartsWith(opts.order, order)) {
       const digest = (item: Quad): SortableQuad => {
-        (item as SortableQuad)[SORTING_KEY] = quadWriter.write('', undefined, 0, item, <TermName[]>opts.order, prefixes) + separator;
+        (item as SortableQuad)[SORTING_KEY] = twoStepsQuadWriter.ingest(item, prefixes).write('', <TermName[]>opts.order) + separator;
         return (item as SortableQuad);
       };
       const compare = opts.reverse === true ? compareSortableQuadsReverse : compareSortableQuads;

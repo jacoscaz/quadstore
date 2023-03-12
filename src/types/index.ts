@@ -2,7 +2,7 @@
 import type { Readable } from 'stream';
 import type { AbstractChainedBatch, AbstractLevel } from 'abstract-level'
 import type { AsyncIterator } from 'asynciterator';
-import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad } from 'rdf-js';
+import type { Literal, DataFactory, Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph, Quad, Term } from 'rdf-js';
 import type { Scope } from '../scope';
 import type { AbstractIteratorOptions } from 'abstract-level';
 
@@ -15,6 +15,7 @@ export interface BatchOpts {
 }
 
 export interface DelOpts extends BatchOpts {
+  scope?: Scope,
 }
 
 export interface PutOpts extends BatchOpts {
@@ -129,3 +130,23 @@ export interface LevelQuery<LK, LV> {
   order: TermName[];
   index: InternalIndex;
 }
+
+export interface SerializedTerm {
+  value: string;
+  type: string;
+  lengths: string;
+}
+
+export interface ReadingState {
+  keyOffset: number;
+  lengthsOffset: number;
+}
+
+export interface TermReader<T extends Term> {
+  read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): T;
+}
+
+export type TermWriter<T extends Term, E extends 'T' | 'F'> = E extends 'T'
+  ? { write(node: T, serialized: SerializedTerm, prefixes: Prefixes, rangeMode: boolean, encodedValue: string): void }
+  : { write(node: T, serialized: SerializedTerm, prefixes: Prefixes): void }
+  ;

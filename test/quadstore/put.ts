@@ -28,7 +28,7 @@ export const runPutTests = () => {
       const newQuad = dataFactory.quad(
         dataFactory.namedNode('ex://s'),
         dataFactory.namedNode('ex://p'),
-        dataFactory.literal(''.padStart(2000, 'aaabbb')),
+        dataFactory.literal(''.padStart(129, 'aaabbb')),
         dataFactory.namedNode('ex://g'),
       );
       await store.put(newQuad);

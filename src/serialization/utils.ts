@@ -3,10 +3,10 @@ export const sliceString = (source: string, offset: number, length: number): str
   return source.slice(offset, offset + length);
 };
 
-export const viewUint8ArrayAsUint16Array = (source: Uint8Array): Uint16Array => {
-  return new Uint16Array(source.buffer, source.byteOffset, source.byteLength / 2);
-};
-
-export const viewUint16ArrayAsUint8Array = (source: Uint16Array, offset: number, length: number): Uint8Array => {
-  return new Uint8Array(source.buffer, source.byteOffset + offset * 2, length * 2);
+export const padNumStart = (val: number) => {
+  if (val < 10) return '000' + val;
+  if (val < 100) return '00' + val;
+  if (val < 1000) return '0' + val;
+  if (val < 10000) return '' + val;
+  throw new Error('too long: ' + val);
 };

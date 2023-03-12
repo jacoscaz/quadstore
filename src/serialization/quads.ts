@@ -1,39 +1,65 @@
 
-import type { DataFactory, Term } from 'rdf-js';
-import type { Prefixes, Quad, TermName } from '../types';
+import type {DataFactory, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term} from 'rdf-js';
+import type {Prefixes, Quad, SerializedTerm, TermName} from '../types';
 
 import { separator } from '../utils/constants';
 import { termReader, termWriter } from './terms';
+import {padNumStart} from './utils';
 
-export const quadWriter = {
-  writtenValueLength: 0,
-  write(prefix: string, value: Uint16Array|undefined, baseValueOffset: number, quad: Quad, termNames: TermName[], prefixes: Prefixes) {
-    let ret = prefix;
-    let valueOffset = baseValueOffset;
+type TwoStepsQuadWriter = Record<TermName, SerializedTerm> & {
+  ingest(quad: Quad, prefixes: Prefixes): TwoStepsQuadWriter;
+  write(prefix: string, termNames: TermName[]): string;
+};
+
+export const twoStepsQuadWriter: TwoStepsQuadWriter = {
+  subject: { type: '', value: '', lengths: '' },
+  predicate: { type: '', value: '', lengths: '' },
+  object: { type: '', value: '', lengths: '' },
+  graph: { type: '', value: '', lengths: '' },
+  ingest(quad: Quad, prefixes: Prefixes) {
+    termWriter.write(quad.subject, this.subject, prefixes);
+    termWriter.write(quad.predicate, this.predicate, prefixes);
+    termWriter.write(quad.object, this.object, prefixes);
+    termWriter.write(quad.graph, this.graph, prefixes);
+    return this;
+  },
+  write(prefix: string, termNames: TermName[]) {
+    let key = prefix;
+    let lengths = '';
     for (let t = 0, term; t < termNames.length; t += 1) {
-      term = quad[termNames[t]];
-      ret += termWriter.write(value, valueOffset, term, prefixes) + separator;
-      valueOffset += termWriter.writtenValueLength;
+      term = this[termNames[t]];
+      key += term.value + separator;
+      lengths += term.type + term.lengths;
     }
-    this.writtenValueLength = valueOffset - baseValueOffset;
-    return ret;
+    return key + lengths + padNumStart(lengths.length);
   },
 };
 
-export const quadReader = {
+type QuadReader = Record<TermName, Term | null>
+  & { keyOffset: number; lengthsOffset: number; }
+  & { read(key: string, keyOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad; }
+  ;
+
+export const quadReader: QuadReader = {
   subject: null,
   predicate: null,
   object: null,
   graph: null,
-  read(key: string, keyOffset: number, value: Uint16Array, valueOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
+  keyOffset: 0,
+  lengthsOffset: 0,
+  read(key: string, keyOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
+    this.lengthsOffset = key.length - parseInt(key.slice(-4)) - 4;
+    this.keyOffset = keyOffset;
     for (let t = 0, termName; t < termNames.length; t += 1) {
       termName = termNames[t];
-      // @ts-ignore
-      this[termName] = termReader.read(key, keyOffset, value, valueOffset, factory, prefixes);
-      keyOffset += termReader.readKeyChars + separator.length;
-      valueOffset += termReader.readValueLength;
+      this[termName] = termReader.read(key, this, factory, prefixes);
+      this.keyOffset += separator.length;
     }
-    // @ts-ignore
-    return factory.quad(this.subject, this.predicate, this.object, this.graph);
+    return factory.quad(
+      this.subject! as Quad_Subject,
+      this.predicate! as Quad_Predicate,
+      this.object! as Quad_Object,
+      this.graph! as Quad_Graph,
+    );
   },
 };

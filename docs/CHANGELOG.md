@@ -1,6 +1,15 @@
 
 # CHANGELOG
 
+## 12.0.0
+
+- **[breaking]** uses a simpler and faster (de)serialization technique
+  that operates solely on keys, with no need for values   
+  (https://github.com/belayeng/quadstore/issues/157)
+- *[internal]* avoids repeated serializations of the same term   
+  (https://github.com/belayeng/quadstore/issues/156)
+- *[internal]* updated dependencies to latest versions
+
 ## 11.0.7
 
 - *[internal]* updated dependencies to latest versions

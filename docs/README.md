@@ -3,9 +3,18 @@
 
 # QUADSTORE
 
-Quadstore is a LevelDB-backed RDF graph database for JS runtimes (browsers,
-Node.js, Deno, ...) with native support for quads and querying across named
-graphs, RDF/JS interfaces and SPARQL queries.
+Quadstore is a LevelDB-backed RDF graph database / triplestore for JavaScript
+runtimes (browsers, Node.js, Deno, Bun, ...) written in TypeScript.
+
+- Implements the `Sink`, `Source` and `Store` [RDF/JS interfaces][z0]
+  for maximum interoperability with other RDF libraries
+- Supports SPARQL queries via [quadstore-comunica][z2], a tailored
+  configuration and distribution of the [Comunica querying framework][z1]
+- Natively capable of querying across named graphs
+
+[z0]: https://rdf.js.org
+[z1]: https://comunica.dev
+[z2]: https://www.npmjs.com/package/quadstore-comunica
 
 ## Table of contents
 

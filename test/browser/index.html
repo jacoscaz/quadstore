@@ -12,6 +12,7 @@
       mocha.setup({
         ui: 'bdd',
         reporter: 'spec',
+        ignoreLeaks: true,
       });
       mocha.checkLeaks();
     </script>

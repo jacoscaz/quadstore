@@ -19,7 +19,7 @@ export const namedNodeWriter: TermWriter<NamedNode, 'F'> = {
 export const namedNodeReader: TermReader<NamedNode> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): NamedNode {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
     state.lengthsOffset += 4;
     state.keyOffset += valueLen;
     return factory.namedNode(prefixes.expandTerm(sliceString(key, keyOffset, valueLen)));
@@ -36,7 +36,7 @@ export const blankNodeWriter: TermWriter<BlankNode, 'F'> = {
 export const blankNodeReader: TermReader<BlankNode> = {
   read(key: string, state: ReadingState, factory: DataFactory): BlankNode {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
     state.lengthsOffset += 4;
     state.keyOffset += valueLen;
     return factory.blankNode(sliceString(key, keyOffset, valueLen));
@@ -53,8 +53,8 @@ export const genericLiteralWriter: TermWriter<Literal, 'F'> = {
 export const genericLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
-    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
+    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
     state.lengthsOffset += 8;
     state.keyOffset += valueLen + datatypeValueLen + separator.length;
     return factory.literal(
@@ -74,7 +74,7 @@ export const stringLiteralWriter: TermWriter<Literal, 'F'> = {
 export const stringLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
     state.lengthsOffset += 4;
     state.keyOffset += valueLen;
     return factory.literal(sliceString(key, keyOffset, valueLen));
@@ -91,8 +91,8 @@ export const langStringLiteralWriter: TermWriter<Literal, 'F'> = {
 export const langStringLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
-    const langCodeLen = parseInt(sliceString(key, lengthsOffset + 4, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
+    const langCodeLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
     state.lengthsOffset += 8;
     state.keyOffset += valueLen + langCodeLen + separator.length;
     return factory.literal(
@@ -116,9 +116,9 @@ export const numericLiteralWriter: TermWriter<Literal, 'T'> = {
 export const numericLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4));
-    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4));
-    const numericValueLen = parseInt(sliceString(key, lengthsOffset + 8, 4));
+    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
+    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
+    const numericValueLen = parseInt(sliceString(key, lengthsOffset + 8, 4), 36);
     state.lengthsOffset += 12;
     state.keyOffset += numericValueLen + datatypeValueLen + valueLen + (separator.length * 2);
     return factory.literal(

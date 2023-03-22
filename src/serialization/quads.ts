@@ -48,7 +48,7 @@ export const quadReader: QuadReader = {
   keyOffset: 0,
   lengthsOffset: 0,
   read(key: string, keyOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
-    this.lengthsOffset = key.length - parseInt(key.slice(-4)) - 4;
+    this.lengthsOffset = key.length - parseInt(key.slice(-4), 36) - 4;
     this.keyOffset = keyOffset;
     for (let t = 0, termName; t < termNames.length; t += 1) {
       termName = termNames[t];

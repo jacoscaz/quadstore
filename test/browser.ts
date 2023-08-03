@@ -19,7 +19,7 @@ let exitCode = 0;
 
 httpServer.once('listening', () => {
   (async () => {
-    const browser = await puppeteer.launch({});
+    const browser = await puppeteer.launch({ headless: 'new' });
     const page = await browser.newPage();
     page.on('console', async (evt) => {
       const [msg, ...args] = await Promise.all(evt.args().map(arg => arg.jsonValue()));

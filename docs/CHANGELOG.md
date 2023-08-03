@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 12.0.2
+
+- *[internal]* updated dependencies to latest versions
+
 ## 12.0.0
 
 - **[breaking]** uses a simpler and faster (de)serialization technique

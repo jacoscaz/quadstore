@@ -124,8 +124,6 @@ We're also evaluating the following features for future developments:
 
 - uses [Semantic Versioning](https://semver.org), pre-releases are tagged
   accordingly;
-- the `production` branch mirrors what is available under the `latest` tag on NPM;
-- the `master` branch is the active, development branch;
 - requires Node.js >= 14.0.0.
 
 ## Usage

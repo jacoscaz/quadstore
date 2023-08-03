@@ -124,7 +124,7 @@ We're also evaluating the following features for future developments:
 
 - uses [Semantic Versioning](https://semver.org), pre-releases are tagged
   accordingly;
-- requires Node.js >= 14.0.0.
+- requires Node.js >= 16.0.0.
 
 ## Usage
 

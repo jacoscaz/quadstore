@@ -139,7 +139,7 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
     }
   }
   if (lte) {
-    if (didRange || didLiteral) {
+    if (didRange) {
       lt += boundary;
     } else {
       lt += separator + boundary;

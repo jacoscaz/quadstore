@@ -131,6 +131,8 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
         lt += serialized.value;
         lte = true;
         break;
+      default:
+        throw new Error(`Unsupported term type ${term.termType}`);
     }
     remaining -= 1;
     if (remaining > 0 && t < index.terms.length - 1) {

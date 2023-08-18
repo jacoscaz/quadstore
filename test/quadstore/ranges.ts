@@ -3,7 +3,7 @@ import { equalsQuadArray } from '../utils/expect';
 
 export const runRangeTests = () => {
 
-  describe.only('Operations with ranges', () => {
+  describe('Operations with ranges', () => {
 
     describe('String literals', () => {
 

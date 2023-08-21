@@ -12,6 +12,7 @@ import { runPatchTests } from './patch';
 import { runMatchTests } from './match';
 import { runScopeTests } from './scope';
 import { runPutTests } from './put';
+import { runRangeTests } from './ranges';
 
 const runTests = () => {
   runGetTests();
@@ -20,6 +21,7 @@ const runTests = () => {
   runScopeTests();
   runPatchTests();
   runMatchTests();
+  runRangeTests();
   runImportTests();
   runRemoveTests();
   runRemoveMatchesTests();

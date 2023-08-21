@@ -33,7 +33,7 @@ export const runMatchTests = () => {
 
         equalsQuadArray(matchedQuads, [quads[1]]);
       });
-
+      
       it('should match quads by predicate',  async function () {
         const { dataFactory, store } = this;
         const quads = [
@@ -76,10 +76,10 @@ export const runMatchTests = () => {
         ];
         const source = new ArrayIterator(quads);
         await waitForEvent(store.import(source), 'end', true);
-        const object = dataFactory.literal('o2', 'en-gb');
+        const object = dataFactory.literal('o', 'en-gb');
         const matchedQuads = await streamToArray(store.match(null, null, object));
 
-        equalsQuadArray(matchedQuads, [quads[1]]);
+        equalsQuadArray(matchedQuads, [quads[0]]);
       });
 
       it('should match quads by graph',  async function () {

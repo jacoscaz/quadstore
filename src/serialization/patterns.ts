@@ -131,6 +131,8 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
         lt += serialized.value;
         lte = true;
         break;
+      default:
+        throw new Error(`Unsupported term type ${term.termType}`);
     }
     remaining -= 1;
     if (remaining > 0 && t < index.terms.length - 1) {
@@ -139,7 +141,7 @@ export const writePattern = (pattern: Pattern, index: InternalIndex, prefixes: P
     }
   }
   if (lte) {
-    if (didRange || didLiteral) {
+    if (didRange) {
       lt += boundary;
     } else {
       lt += separator + boundary;

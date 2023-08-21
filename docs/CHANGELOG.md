@@ -1,6 +1,13 @@
 
 # CHANGELOG
 
+## 12.1.0
+
+- *[fix]* fixes broken literal equality and matching   
+  (https://github.com/belayeng/quadstore/pull/161)   
+  (https://github.com/belayeng/quadstore/issues/160)   
+  Thanks [@Peeja](https://github.com/Peeja)!
+
 ## 12.0.2
 
 - *[internal]* updated dependencies to latest versions

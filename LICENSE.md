@@ -1,7 +1,8 @@
 
 # MIT License
 
-Copyright (c) 2017 - 2022 Belay Engineering s.r.l.
+Copyright &copy; 2017 - 2023 Jacopo Scazzosi <jacopo@scazzosi.com>
+Copyright &copy; 2017 - 2023 Matteo Murgida <matteo.murgida@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

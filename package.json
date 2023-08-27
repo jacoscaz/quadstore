@@ -50,7 +50,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/belayeng/quadstore.git"
+    "url": "https://github.com/jacoscaz/quadstore.git"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
@@ -79,6 +79,7 @@
   },
   "author": "Jacopo Scazzosi <jacopo@scazzosi.com>",
   "contributors": [
+    "Jacopo Scazzosi <jacopo@scazzosi.com>",
     "Matteo Murgida <teomurgi@gmail.com>"
   ],
   "engineStrict": true,
@@ -86,6 +87,6 @@
     "node": ">=16.0.0"
   },
   "license": "MIT",
-  "homepage": "https://github.com/belayeng/quadstore",
-  "bugs": "https://github.com/belayeng/quadstore/issues"
+  "homepage": "https://github.com/jacoscaz/quadstore",
+  "bugs": "https://github.com/jacoscaz/quadstore/issues"
 }

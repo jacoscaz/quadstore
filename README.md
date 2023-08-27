@@ -1,5 +1,5 @@
 
-![Logo](https://github.com/belayeng/quadstore/blob/master/logo.png?raw=true)
+![Logo](https://github.com/jacoscaz/quadstore/blob/master/logo.png?raw=true)
 
 # QUADSTORE
 
@@ -716,7 +716,7 @@ const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
 More information on [quadstore-comunica][c2]'s repository.
 
 [c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/belayeng/quadstore-comunica
+[c2]: https://github.com/jacoscaz/quadstore-comunica
 [c3]: https://github.com/comunica/comunica/graphs/contributors
 [c4]: https://rdf.js.org/query-spec/
 
@@ -730,7 +730,7 @@ version 5.x. The reference [quadstore-browser][b0] is meant to help in getting
 to a working Webpack configuration and also hosts a pre-built bundle with everything
 that is required to use `quadstore` in browsers.
  
-[b0]: https://github.com/belayeng/quadstore-browser
+[b0]: https://github.com/jacoscaz/quadstore-browser
 [b1]: https://github.com/Level/browser-level
 
 ## Deno usage
@@ -770,17 +770,10 @@ deno run quadstore-test.ts
 
 ## Performance
 
-Performance is evaluated at tracked at [https://github.com/belayeng/quadstore-perf][perf]
+Performance is evaluated at tracked at [https://github.com/jacoscaz/quadstore-perf][perf]
 
-[perf]: https://github.com/belayeng/quadstore-perf
+[perf]: https://github.com/jacoscaz/quadstore-perf
 
 ## LICENSE
 
 MIT. See [LICENSE.md](./LICENSE.md).
-
-## Authors
-
-Quadstore's development is supported by [Belay Engineering][i5]. <br>
-[<img src="https://belayeng.com/assets/images/logo/logo-positivo-rgb.svg" alt="Belay Engineerin's logo, the letter B made out of a continuous line" height="70">][i5]
-
-[i5]: https://belayeng.com/en

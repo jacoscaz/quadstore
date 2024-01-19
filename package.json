@@ -1,6 +1,6 @@
 {
   "name": "quadstore",
-  "version": "12.3.0",
+  "version": "12.4.0",
   "description": "Quadstore is a LevelDB-backed RDF graph database / triplestore for JavaScript runtimes (browsers, Node.js, Deno, Bun, ...) that implements the RDF/JS interfaces and supports SPARQL queries and querying across named graphs.",
   "keywords": [
     "node",

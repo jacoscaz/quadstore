@@ -140,6 +140,8 @@ Our test suite focuses on the following backends:
 - [`memory-level`][db3] for volatile in-memory storage using red-black trees
 - ~~[`rocksdb`][db4] for persistent storage using [RocksDB][db5]~~
   - waiting for the `rocks-level` package to be published
+- [`@nxtedition/rocks-level`][db7] for persistent storage using [RocksDB][db5]
+  - waiting for the `rocks-level` package to be published
 
 [db0]: http://leveldb.org
 [db1]: https://github.com/Level/abstract-level
@@ -148,6 +150,7 @@ Our test suite focuses on the following backends:
 [db4]: https://github.com/level/rocksdb
 [db5]: https://rocksdb.org
 [db6]: https://github.com/level/awesome#stores
+[db7]: https://github.com/nxtedition/rocks-level
 
 ### Data model and return values
 

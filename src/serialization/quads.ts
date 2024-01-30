@@ -4,7 +4,7 @@ import type {Prefixes, Quad, SerializedTerm, TermName} from '../types';
 
 import { separator } from '../utils/constants';
 import { termReader, termWriter } from './terms';
-import {padNumStart} from './utils';
+import { encodeQuadLength, decodeQuadLength, LENGTH_OF_ENCODED_QUAD_LENGTH } from './utils';
 
 type TwoStepsQuadWriter = Record<TermName, SerializedTerm> & {
   ingest(quad: Quad, prefixes: Prefixes): TwoStepsQuadWriter;
@@ -31,7 +31,7 @@ export const twoStepsQuadWriter: TwoStepsQuadWriter = {
       key += term.value + separator;
       lengths += term.type + term.lengths;
     }
-    return key + lengths + padNumStart(lengths.length);
+    return key + lengths + encodeQuadLength(lengths.length);
   },
 };
 
@@ -48,7 +48,7 @@ export const quadReader: QuadReader = {
   keyOffset: 0,
   lengthsOffset: 0,
   read(key: string, keyOffset: number, termNames: TermName[], factory: DataFactory, prefixes: Prefixes): Quad {
-    this.lengthsOffset = key.length - parseInt(key.slice(-4), 36) - 4;
+    this.lengthsOffset = key.length - decodeQuadLength(key.slice(-LENGTH_OF_ENCODED_QUAD_LENGTH)) - LENGTH_OF_ENCODED_QUAD_LENGTH;
     this.keyOffset = keyOffset;
     for (let t = 0, termName; t < termNames.length; t += 1) {
       termName = termNames[t];

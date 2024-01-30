@@ -3,7 +3,7 @@ import type { Prefixes, ReadingState, SerializedTerm, TermReader, TermWriter } f
 import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'rdf-js';
 
 import * as xsd from './xsd';
-import {padNumStart, sliceString} from './utils';
+import { encodeTermLength, decodeTermLength, LENGTH_OF_ENCODED_TERM_LENGTH, sliceString } from './utils';
 import {Term} from 'rdf-js';
 import {separator} from '../utils/constants';
 import {encode} from './fpstring';
@@ -11,7 +11,7 @@ import {encode} from './fpstring';
 export const namedNodeWriter: TermWriter<NamedNode, 'F'> = {
   write(node: NamedNode, serialized: SerializedTerm, prefixes: Prefixes) {
     const compactedIri = prefixes.compactIri(node.value);
-    serialized.lengths = padNumStart(compactedIri.length);
+    serialized.lengths = encodeTermLength(compactedIri.length);
     serialized.value = compactedIri;
   },
 };
@@ -19,8 +19,8 @@ export const namedNodeWriter: TermWriter<NamedNode, 'F'> = {
 export const namedNodeReader: TermReader<NamedNode> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): NamedNode {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    state.lengthsOffset += 4;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH;
     state.keyOffset += valueLen;
     return factory.namedNode(prefixes.expandTerm(sliceString(key, keyOffset, valueLen)));
   },
@@ -28,7 +28,7 @@ export const namedNodeReader: TermReader<NamedNode> = {
 
 export const blankNodeWriter: TermWriter<BlankNode, 'F'> = {
   write(node: BlankNode, serialized: SerializedTerm) {
-    serialized.lengths = padNumStart(node.value.length);
+    serialized.lengths = encodeTermLength(node.value.length);
     serialized.value = node.value;
   },
 };
@@ -36,8 +36,8 @@ export const blankNodeWriter: TermWriter<BlankNode, 'F'> = {
 export const blankNodeReader: TermReader<BlankNode> = {
   read(key: string, state: ReadingState, factory: DataFactory): BlankNode {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    state.lengthsOffset += 4;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH;
     state.keyOffset += valueLen;
     return factory.blankNode(sliceString(key, keyOffset, valueLen));
   },
@@ -45,7 +45,7 @@ export const blankNodeReader: TermReader<BlankNode> = {
 
 export const genericLiteralWriter: TermWriter<Literal, 'F'> = {
   write(node: Literal, serialized: SerializedTerm) {
-    serialized.lengths = padNumStart(node.value.length) + padNumStart(node.datatype.value.length);
+    serialized.lengths = encodeTermLength(node.value.length) + encodeTermLength(node.datatype.value.length);
     serialized.value = node.datatype.value + separator + node.value;
   },
 };
@@ -53,9 +53,9 @@ export const genericLiteralWriter: TermWriter<Literal, 'F'> = {
 export const genericLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
-    state.lengthsOffset += 8;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    const datatypeValueLen = decodeTermLength(sliceString(key, lengthsOffset + LENGTH_OF_ENCODED_TERM_LENGTH, LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH * 2;
     state.keyOffset += valueLen + datatypeValueLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + datatypeValueLen + separator.length, valueLen),
@@ -66,7 +66,7 @@ export const genericLiteralReader: TermReader<Literal> = {
 
 export const stringLiteralWriter: TermWriter<Literal, 'F'> = {
   write(node: Literal, serialized: SerializedTerm) {
-    serialized.lengths = padNumStart(node.value.length);
+    serialized.lengths = encodeTermLength(node.value.length);
     serialized.value = node.value;
   },
 };
@@ -74,8 +74,8 @@ export const stringLiteralWriter: TermWriter<Literal, 'F'> = {
 export const stringLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    state.lengthsOffset += 4;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH;
     state.keyOffset += valueLen;
     return factory.literal(sliceString(key, keyOffset, valueLen));
   },
@@ -83,7 +83,7 @@ export const stringLiteralReader: TermReader<Literal> = {
 
 export const langStringLiteralWriter: TermWriter<Literal, 'F'> = {
   write(node: Literal, serialized: SerializedTerm) {
-    serialized.lengths = padNumStart(node.value.length) + padNumStart(node.language.length);
+    serialized.lengths = encodeTermLength(node.value.length) + encodeTermLength(node.language.length);
     serialized.value = node.language + separator + node.value;
   },
 };
@@ -91,9 +91,9 @@ export const langStringLiteralWriter: TermWriter<Literal, 'F'> = {
 export const langStringLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    const langCodeLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
-    state.lengthsOffset += 8;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    const langCodeLen = decodeTermLength(sliceString(key, lengthsOffset + LENGTH_OF_ENCODED_TERM_LENGTH, LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH * 2;
     state.keyOffset += valueLen + langCodeLen + separator.length;
     return factory.literal(
       sliceString(key, keyOffset + langCodeLen + separator.length, valueLen),
@@ -104,7 +104,7 @@ export const langStringLiteralReader: TermReader<Literal> = {
 
 export const numericLiteralWriter: TermWriter<Literal, 'T'> = {
   write(node: Literal, serialized: SerializedTerm, prefixes: Prefixes, rangeMode: boolean, encodedValue: string) {
-    serialized.lengths = padNumStart(node.value.length) + padNumStart(node.datatype.value.length) + padNumStart(encodedValue.length);
+    serialized.lengths = encodeTermLength(node.value.length) + encodeTermLength(node.datatype.value.length) + encodeTermLength(encodedValue.length);
     if (!rangeMode) {
       serialized.value = encodedValue + separator + node.datatype.value + separator + node.value;
     } else {
@@ -116,10 +116,10 @@ export const numericLiteralWriter: TermWriter<Literal, 'T'> = {
 export const numericLiteralReader: TermReader<Literal> = {
   read(key: string, state: ReadingState, factory: DataFactory, prefixes: Prefixes): Literal {
     const { keyOffset, lengthsOffset } = state;
-    const valueLen = parseInt(sliceString(key, lengthsOffset, 4), 36);
-    const datatypeValueLen = parseInt(sliceString(key, lengthsOffset + 4, 4), 36);
-    const numericValueLen = parseInt(sliceString(key, lengthsOffset + 8, 4), 36);
-    state.lengthsOffset += 12;
+    const valueLen = decodeTermLength(sliceString(key, lengthsOffset, LENGTH_OF_ENCODED_TERM_LENGTH));
+    const datatypeValueLen = decodeTermLength(sliceString(key, lengthsOffset + LENGTH_OF_ENCODED_TERM_LENGTH, LENGTH_OF_ENCODED_TERM_LENGTH));
+    const numericValueLen = decodeTermLength(sliceString(key, lengthsOffset + (LENGTH_OF_ENCODED_TERM_LENGTH * 2), LENGTH_OF_ENCODED_TERM_LENGTH));
+    state.lengthsOffset += LENGTH_OF_ENCODED_TERM_LENGTH * 3;
     state.keyOffset += numericValueLen + datatypeValueLen + valueLen + (separator.length * 2);
     return factory.literal(
       sliceString(key, keyOffset + numericValueLen + separator.length + datatypeValueLen + separator.length, valueLen),

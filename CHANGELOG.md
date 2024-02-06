@@ -1,6 +1,16 @@
 
 # CHANGELOG
 
+## 13.0.0
+
+- **[breaking]** switches to using radix 36 rather than radix 10 to encode
+  the lengths of terms and quads in support of much longer literal terms.   
+  (https://github.com/jacoscaz/quadstore/pull/166)   
+  (https://github.com/jacoscaz/quadstore/issues/158)  
+- *[internal]* adds [`@nxtedition/rocksdb`](https://www.npmjs.com/package/@nxtedition/rocksdb)
+  to the list of backends covered by the test suite   
+  (https://github.com/jacoscaz/quadstore/issues/164)
+
 ## 12.1.0
 
 - *[fix]* fixes broken literal equality and matching   

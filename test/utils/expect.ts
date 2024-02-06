@@ -1,5 +1,5 @@
 
-import type { Quad, Term } from 'rdf-js';
+import type { Quad, Term } from '@rdfjs/types';
 
 import { expect } from 'chai';
 import { termNames } from '../../dist/esm/utils/constants';

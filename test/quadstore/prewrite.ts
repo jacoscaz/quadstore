@@ -1,5 +1,5 @@
 
-import type { Quad } from 'rdf-js';
+import type { Quad } from '@rdfjs/types';
 import type { AbstractChainedBatch } from 'abstract-level';
 
 import { toEqualUint8Array } from '../utils/expect';

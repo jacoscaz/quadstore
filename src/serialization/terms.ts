@@ -1,10 +1,10 @@
 
 import type { Prefixes, ReadingState, SerializedTerm, TermReader, TermWriter } from '../types';
-import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from 'rdf-js';
+import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from '@rdfjs/types';
 
 import * as xsd from './xsd';
 import { encodeTermLength, decodeTermLength, LENGTH_OF_ENCODED_TERM_LENGTH, sliceString } from './utils';
-import {Term} from 'rdf-js';
+import {Term} from '@rdfjs/types';
 import {separator} from '../utils/constants';
 import {encode} from './fpstring';
 

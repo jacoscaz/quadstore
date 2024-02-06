@@ -1,5 +1,5 @@
 
-import type {DataFactory, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term} from 'rdf-js';
+import type {DataFactory, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term} from '@rdfjs/types';
 import type {Prefixes, Quad, SerializedTerm, TermName} from '../types';
 
 import { separator } from '../utils/constants';

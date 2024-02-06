@@ -1,5 +1,5 @@
 
-import type { DataFactory, Quad, BlankNode, Quad_Subject, Quad_Object, Quad_Graph } from 'rdf-js';
+import type { DataFactory, Quad, BlankNode, Quad_Subject, Quad_Object, Quad_Graph } from '@rdfjs/types';
 import type { AbstractChainedBatch } from 'abstract-level';
 import type { Quadstore } from '../quadstore';
 

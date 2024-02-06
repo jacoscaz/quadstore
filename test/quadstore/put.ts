@@ -1,5 +1,5 @@
 
-import type {Quad, Term} from 'rdf-js';
+import type {Quad, Term} from '@rdfjs/types';
 import { ArrayIterator } from 'asynciterator';
 import { streamToArray } from '../../dist/esm/utils/stuff';
 import { Scope } from '../../dist/esm/scope';

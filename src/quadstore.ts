@@ -10,7 +10,7 @@ import type {
   Quad_Subject,
   Store,
   Stream,
-} from 'rdf-js';
+} from '@rdfjs/types';
 import type {
   DelStreamOpts,
   BatchOpts,

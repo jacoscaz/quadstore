@@ -1,5 +1,5 @@
 
-import type { Quad, Term } from 'rdf-js';
+import type { Quad, Term } from '@rdfjs/types';
 import type { TermName } from '../types';
 import { termNames } from './constants';
 

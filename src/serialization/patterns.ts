@@ -1,5 +1,5 @@
 
-import type { Literal } from 'rdf-js';
+import type { Literal } from '@rdfjs/types';
 import type {InternalIndex, Pattern, Prefixes, IndexQuery, SerializedTerm} from '../types';
 
 import * as xsd from './xsd';

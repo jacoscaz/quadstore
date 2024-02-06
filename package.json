@@ -73,7 +73,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@types/rdf-js": "^4.0.1",
+    "@rdfjs/types": "^1.1.0",
     "abstract-level": "^1.0.3",
     "asynciterator": "^3.8.1",
     "js-sorted-set": "^0.7.0"

@@ -56,8 +56,6 @@ import { uid } from './utils/uid';
 import { getApproximateSize, getStream } from './get';
 import { Scope } from './scope';
 import {twoStepsQuadWriter} from './serialization/quads';
-import {Util} from 'n3';
-import prefixes = Util.prefixes;
 
 export class Quadstore implements Store {
 

@@ -136,9 +136,9 @@ We're also evaluating the following features for future developments:
 relevant [RDF/JS interfaces][r0], such as [n3][r1] and [@rdfjs/formats][r2].
 See [https://rdf.js.org][r0] for an open list of such libraries.
 
-For example, here is how to use [n3][r1] in order to parse a Turtle file into
-an instance of `Quadstore` in a streaming fashion, with backpressure handling, 
-using `classic-level` as the backend:
+For example, here is how to use [n3][r1] in order to parse a [Turtle][r3] file
+into an instance of `Quadstore` in a streaming fashion, with full backpressure
+handling, using `classic-level` as the backend:
 
 ```typescript
 import { Quadstore } from 'quadstore';
@@ -163,6 +163,7 @@ exceedingly high bundle sizes.
 [r0]: https://rdf.js.org
 [r1]: https://www.npmjs.com/package/n3
 [r2]: https://www.npmjs.com/package/@rdfjs/formats
+[r3]: https://www.w3.org/TR/turtle/ 
 
 ### Storage backends
 

@@ -144,6 +144,9 @@ Our test suite focuses on the following backends:
   - this is an alternative backend for RocksDB that tends to be 20% - 30%
     faster then `classic-level` but is maintained outside of the [Level][db8]
     community and set of _official_ packages
+- [`browser-level`][db9] for browser-side persistent storage using
+  [IndexedDB][db10]. For more information about browser-side usage, see the
+  [Browser usage section](#browser-usage)
 
 [db0]: http://leveldb.org
 [db1]: https://github.com/level/abstract-level
@@ -154,6 +157,8 @@ Our test suite focuses on the following backends:
 [db6]: https://github.com/level/awesome#stores
 [db7]: https://github.com/nxtedition/rocks-level
 [db8]: https://github.com/level
+[db9]: https://github.com/Level/browser-level
+[db10]: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
 ### Data model and return values
 
@@ -729,7 +734,7 @@ More information on [quadstore-comunica][c2]'s repository.
 ## Browser usage
 
 The [`browser-level`][b1] backend for levelDB offers support for browser-side
-persistent storage. 
+persistent storage via [IndexedDB][b2]. 
 
 `quadstore` can be bundled for browser-side usage via Webpack, preferably using
 version 5.x. The reference [quadstore-browser][b0] is meant to help in getting 
@@ -738,6 +743,7 @@ that is required to use `quadstore` in browsers.
  
 [b0]: https://github.com/jacoscaz/quadstore-browser
 [b1]: https://github.com/Level/browser-level
+[b2]: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
 ## Deno usage
 

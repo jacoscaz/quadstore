@@ -24,6 +24,7 @@ runtimes (browsers, Node.js, Deno, Bun, ...) written in TypeScript.
     - [Changelog](#changelog)
     - [Notes](#notes)
 - [Usage](#usage)
+    - [Parsing and serializing RDF](#parsing-and-serializing-rdf)
     - [Storage](#storage-backends)
     - [Data model and return Values](#data-model-and-return-values)
     - [Quadstore class](#quadstore-class)
@@ -129,6 +130,40 @@ We're also evaluating the following features for future developments:
 
 ## Usage
 
+### Parsing and serializing RDF
+
+`quadstore` is compatible with all parsers and serializers implementing the
+relevant [RDF/JS interfaces][r0], such as [n3][r1] and [@rdfjs/formats][r2].
+See [https://rdf.js.org][r0] for an open list of such libraries.
+
+For example, here is how to use [n3][r1] in order to parse a Turtle file into
+an instance of `Quadstore` in a streaming fashion, with backpressure handling, 
+using `classic-level` as the backend:
+
+```typescript
+import { Quadstore } from 'quadstore';
+import { ClassicLevel } from 'classic-level';
+import { DataFactory, StreamParser } from 'n3';
+const store = new Quadstore({
+  backend: new ClassicLevel('/path/to/db'),
+  dataFactory: DataFactory,
+});
+await store.open();
+const reader = fs.createReadStream('/path/to/file.ttl');
+const parser = new StreamParser({ format: 'text/turtle' });
+await store.putStream(reader.pipe(parser), { batchSize: 100 });
+await store.close();
+```
+
+`quadstore` does not include any RDF parsing and/or serialization capability
+by choice as no subset of formats would meet the requirements of every use 
+case and shipping support for all mainstream RDF formats would result in 
+exceedingly high bundle sizes.
+
+[r0]: https://rdf.js.org
+[r1]: https://www.npmjs.com/package/n3
+[r2]: https://www.npmjs.com/package/@rdfjs/formats
+
 ### Storage backends
 
 `quadstore` can work with any storage backend that implements the 
@@ -137,12 +172,13 @@ is available at [level/awesome#stores][db6].
 
 Our test suite focuses on the following backends:
 
-- [`classic-level`][db2] for persistent storage using [LevelDB][db0]
+- [`classic-level`][db2] for persistent, on-disk storage using [LevelDB][db0]
 - [`memory-level`][db3] for volatile in-memory storage using red-black trees
 - ~~[`rocksdb`][db4] for persistent storage using [RocksDB][db5]~~
   - waiting for the `rocks-level` package to be published
-- [`@nxtedition/rocks-level`][db7] for persistent storage using [RocksDB][db5]
-  - this is an alternative backend for RocksDB that tends to be 20% - 30%
+- [`@nxtedition/rocks-level`][db7] for persistent, on-disk storage using
+  [RocksDB][db5]
+  - this is an alternative backend for RocksDB that tends to be 5% - 15%
     faster then `classic-level` but is maintained outside of the [Level][db8]
     community and set of _official_ packages
 - [`browser-level`][db9] for browser-side persistent storage using

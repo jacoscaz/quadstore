@@ -28,6 +28,7 @@ runtimes (browsers, Node.js, Deno, Bun, ...) written in TypeScript.
     - [Data model and return Values](#data-model-and-return-values)
     - [Quadstore class](#quadstore-class)
     - [Custom indexes](#custom-indexes)
+    - [Access to the backend](#access-to-the-backend)
     - [Quadstore.prototype.open](#quadstoreprototypeopen)
     - [Quadstore.prototype.close](#quadstoreprototypeclose)
     - [Quadstore.prototype.get](#quadstoreprototypeget)
@@ -199,22 +200,6 @@ are expected to be maps of term names to instances of the
 [dm-3]: https://github.com/rdfjs-base/data-model
 [dm-4]: https://github.com/RubenVerborgh/AsyncIterator#readme
 
-### Access to the backend
-
-The backend of a `quadstore` can be accessed with the `db` property, to perform
-additional storage operations independently of quads.
-
-In order to perform write operations atomically with quad storage, the `put`,
-`multiPut`, `del`, `multiDel`, `patch` and `multiPatch` methods accept a
-`preWrite` option which defines a procedure to augment the batch, as in the
-following example:
-
-```js
-await store.put(dataFactory.quad(/* ... */), {
-  preWrite: batch => batch.put('my.key', Buffer.from('my.value'))
-});
-```
-
 ### Quadstore class
 
 ```js
@@ -283,6 +268,22 @@ opts.prefixes = {
 ```
 
 This will replace the IRI `http://example.com/a` with `ex:a` in storage.
+
+### Access to the backend
+
+The backend of a `quadstore` can be accessed with the `db` property, to perform
+additional storage operations independently of quads.
+
+In order to perform write operations atomically with quad storage, the `put`,
+`multiPut`, `del`, `multiDel`, `patch` and `multiPatch` methods accept a
+`preWrite` option which defines a procedure to augment the batch, as in the
+following example:
+
+```js
+await store.put(dataFactory.quad(/* ... */), {
+  preWrite: batch => batch.put('my.key', Buffer.from('my.value'))
+});
+```
 
 ### Quadstore.prototype.open()
 

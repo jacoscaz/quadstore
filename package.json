@@ -55,7 +55,7 @@
   "devDependencies": {
     "@nxtedition/rocksdb": "^10.0.14",
     "@types/chai": "^4.3.16",
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "^10.0.7",
     "@types/n3": "^1.16.4",
     "@types/node-static": "^0.7.11",
     "browser-level": "^1.0.1",
@@ -63,13 +63,13 @@
     "classic-level": "^1.4.1",
     "expect.js": "^0.3.1",
     "memory-level": "^1.0.0",
-    "mocha": "^10.4.0",
-    "n3": "^1.17.3",
+    "mocha": "^10.5.2",
+    "n3": "^1.17.4",
     "node-static": "^0.7.11",
-    "puppeteer": "^22.8.0",
+    "puppeteer": "^22.12.1",
     "rdf-data-factory": "^1.1.2",
-    "typescript": "^5.4.5",
-    "webpack": "^5.91.0",
+    "typescript": "^5.5.3",
+    "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {

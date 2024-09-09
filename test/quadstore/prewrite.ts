@@ -2,7 +2,7 @@
 import type { Quad } from '@rdfjs/types';
 import type { AbstractChainedBatch } from 'abstract-level';
 
-import { toEqualUint8Array } from '../utils/expect';
+import { toEqualUint8Array } from '../utils/expect.js';
 
 const encoder = new TextEncoder();
 

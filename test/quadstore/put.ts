@@ -1,10 +1,10 @@
 
 import type {Quad, Term} from '@rdfjs/types';
 import { ArrayIterator } from 'asynciterator';
-import { streamToArray } from '../../dist/esm/utils/stuff';
-import { Scope } from '../../dist/esm/scope';
-import { LevelIterator } from '../../dist/esm/get/leveliterator';
-import { arrayToHaveLength, equalsQuadArray, toBeAnArray, toBeFalse, toStrictlyEqual, toBeTrue } from '../utils/expect';
+import { streamToArray } from '../../dist/esm/utils/stuff.js';
+import { Scope } from '../../dist/esm/scope/index.js';
+import { LevelIterator } from '../../dist/esm/get/leveliterator.js';
+import { arrayToHaveLength, equalsQuadArray, toBeAnArray, toBeFalse, toStrictlyEqual, toBeTrue } from '../utils/expect.js';
 
 export const runPutTests = () => {
 

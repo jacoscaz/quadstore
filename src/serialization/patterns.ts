@@ -1,12 +1,12 @@
 
 import type { Literal } from '@rdfjs/types';
-import type {InternalIndex, Pattern, Prefixes, IndexQuery, SerializedTerm} from '../types';
+import type {InternalIndex, Pattern, Prefixes, IndexQuery, SerializedTerm} from '../types/index.js';
 
-import * as xsd from './xsd';
-import { encode } from './fpstring';
-import { separator, boundary } from '../utils/constants';
+import * as xsd from './xsd.js';
+import { encode } from './fpstring.js';
+import { separator, boundary } from '../utils/constants.js';
 import { blankNodeWriter, defaultGraphWriter, genericLiteralWriter, langStringLiteralWriter, namedNodeWriter,
-         numericLiteralWriter, stringLiteralWriter } from './terms';
+         numericLiteralWriter, stringLiteralWriter } from './terms.js';
 
 const serialized: SerializedTerm = {
   type: '',

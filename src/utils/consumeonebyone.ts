@@ -1,5 +1,5 @@
 
-import { TSReadable } from '../types';
+import { TSReadable } from '../types/index.js';
 
 export const consumeOneByOne = async <T>(iterator: TSReadable<T>, onEachItem: (item: T) => any) => {
   return new Promise<void>((resolve, reject) => {

@@ -1,18 +1,18 @@
 
-import type { Prefixes } from '../../dist/esm/types';
-import { Quadstore } from '../../dist/esm/quadstore';
-import { runSerializationTests } from './serialization';
-import { runPrewriteTests } from './prewrite';
-import { runGetTests } from './get';
-import { runDelTests } from './del';
-import { runRemoveTests } from './remove';
-import { runImportTests } from './import';
-import { runRemoveMatchesTests } from './removematches';
-import { runPatchTests } from './patch';
-import { runMatchTests } from './match';
-import { runScopeTests } from './scope';
-import { runPutTests } from './put';
-import { runRangeTests } from './ranges';
+import type { Prefixes } from '../../dist/esm/types/index';
+import { Quadstore } from '../../dist/esm/quadstore.js';
+import { runSerializationTests } from './serialization.js';
+import { runPrewriteTests } from './prewrite.js';
+import { runGetTests } from './get.js';
+import { runDelTests } from './del.js';
+import { runRemoveTests } from './remove.js';
+import { runImportTests } from './import.js';
+import { runRemoveMatchesTests } from './removematches.js';
+import { runPatchTests } from './patch.js';
+import { runMatchTests } from './match.js';
+import { runScopeTests } from './scope.js';
+import { runPutTests } from './put.js';
+import { runRangeTests } from './ranges.js';
 
 const runTests = () => {
   runGetTests();

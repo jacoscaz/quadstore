@@ -1,5 +1,5 @@
 
-import type { TermName } from '../types';
+import type { TermName } from '../types/index.js';
 import type { AbstractChainedBatchPutOptions, AbstractChainedBatchDelOptions } from 'abstract-level';
 
 export const emptyObject: { [key: string]: any } = {};

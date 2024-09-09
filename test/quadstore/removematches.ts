@@ -1,6 +1,6 @@
 
 import { ArrayIterator } from 'asynciterator';
-import { streamToArray, waitForEvent } from '../../dist/esm/utils/stuff';
+import { streamToArray, waitForEvent } from '../../dist/esm/utils/stuff.js';
 import { arrayToHaveLength } from '../utils/expect.js';
 
 export const runRemoveMatchesTests = () => {

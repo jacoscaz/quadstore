@@ -3,8 +3,8 @@ import os from 'os';
 import fs from 'fs/promises';
 import path from 'path';
 import { DataFactory } from 'rdf-data-factory';
-import { runQuadstoreTests } from '../quadstore/quadstore';
-import { uid } from '../../dist/esm/utils/uid';
+import { runQuadstoreTests } from '../quadstore/quadstore.js';
+import { uid } from '../../dist/esm/utils/uid.js';
 
 export const runRocksLevelNXTEditionTests = () => {
 

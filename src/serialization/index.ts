@@ -1,3 +1,3 @@
 
-export { twoStepsQuadWriter, quadReader } from './quads';
-export { writePattern } from './patterns';
+export { twoStepsQuadWriter, quadReader } from './quads.js';
+export { writePattern } from './patterns.js';

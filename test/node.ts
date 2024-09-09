@@ -1,8 +1,8 @@
 
-import { runMemoryLevelTests } from './backends/memorylevel';
-import { runClassicLevelTests } from './backends/classiclevel';
-import { runRocksLevelNXTEditionTests } from './backends/rockslevel-nxtedition';
-import { runOtherTests } from './others/others';
+import { runMemoryLevelTests } from './backends/memorylevel.js';
+import { runClassicLevelTests } from './backends/classiclevel.js';
+import { runRocksLevelNXTEditionTests } from './backends/rockslevel-nxtedition.js';
+import { runOtherTests } from './others/others.js';
 
 runOtherTests();
 runMemoryLevelTests();

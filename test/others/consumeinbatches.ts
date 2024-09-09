@@ -1,8 +1,8 @@
 
 import {AsyncIterator, IntegerIterator} from 'asynciterator';
-import { delayIterator } from '../utils/stuff';
-import { consumeInBatches } from '../../dist/esm/utils/consumeinbatches';
-import { toStrictlyEqual, toBeFalse, toBeLessThanOrEqualTo } from '../utils/expect';
+import { delayIterator } from '../utils/stuff.js';
+import { consumeInBatches } from '../../dist/esm/utils/consumeinbatches.js';
+import { toStrictlyEqual, toBeFalse, toBeLessThanOrEqualTo } from '../utils/expect.js';
 
 const createSourceIterator = () => new IntegerIterator({ start: 0, step: 1, end: 99 });
 

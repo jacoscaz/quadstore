@@ -1,12 +1,12 @@
 
 import type { DataFactory, Quad, BlankNode, Quad_Subject, Quad_Object, Quad_Graph } from '@rdfjs/types';
 import type { AbstractChainedBatch } from 'abstract-level';
-import type { Quadstore } from '../quadstore';
+import type { Quadstore } from '../quadstore.js';
 
-import { LevelIterator } from '../get/leveliterator';
-import { consumeOneByOne } from '../utils/consumeonebyone';
-import { uid } from '../utils/uid';
-import { separator, boundary } from '../utils/constants';
+import { LevelIterator } from '../get/leveliterator.js';
+import { consumeOneByOne } from '../utils/consumeonebyone.js';
+import { uid } from '../utils/uid.js';
+import { separator, boundary } from '../utils/constants.js';
 
 export class Scope {
 

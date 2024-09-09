@@ -1,10 +1,10 @@
 
 import type {DataFactory, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Term} from '@rdfjs/types';
-import type {Prefixes, Quad, SerializedTerm, TermName} from '../types';
+import type {Prefixes, Quad, SerializedTerm, TermName} from '../types/index.js';
 
-import { separator } from '../utils/constants';
-import { termReader, termWriter } from './terms';
-import { encodeQuadLength, decodeQuadLength, LENGTH_OF_ENCODED_QUAD_LENGTH } from './utils';
+import { separator } from '../utils/constants.js';
+import { termReader, termWriter } from './terms.js';
+import { encodeQuadLength, decodeQuadLength, LENGTH_OF_ENCODED_QUAD_LENGTH } from './utils.js';
 
 type TwoStepsQuadWriter = Record<TermName, SerializedTerm> & {
   ingest(quad: Quad, prefixes: Prefixes): TwoStepsQuadWriter;

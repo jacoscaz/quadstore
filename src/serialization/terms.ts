@@ -1,12 +1,12 @@
 
-import type { Prefixes, ReadingState, SerializedTerm, TermReader, TermWriter } from '../types';
+import type { Prefixes, ReadingState, SerializedTerm, TermReader, TermWriter } from '../types/index.js';
 import type { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode } from '@rdfjs/types';
 
-import * as xsd from './xsd';
-import { encodeTermLength, decodeTermLength, LENGTH_OF_ENCODED_TERM_LENGTH, sliceString } from './utils';
+import * as xsd from './xsd.js';
+import { encodeTermLength, decodeTermLength, LENGTH_OF_ENCODED_TERM_LENGTH, sliceString } from './utils.js';
 import {Term} from '@rdfjs/types';
-import {separator} from '../utils/constants';
-import {encode} from './fpstring';
+import {separator} from '../utils/constants.js';
+import {encode} from './fpstring.js';
 
 export const namedNodeWriter: TermWriter<NamedNode, 'F'> = {
   write(node: NamedNode, serialized: SerializedTerm, prefixes: Prefixes) {

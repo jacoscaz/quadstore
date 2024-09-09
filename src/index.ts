@@ -1,4 +1,4 @@
 
-export * from './types';
-export { Quadstore } from './quadstore';
-export { getTermComparator, getQuadComparator } from './utils/comparators';
+export * from './types/index.js';
+export { Quadstore } from './quadstore.js';
+export { getTermComparator, getQuadComparator } from './utils/comparators.js';

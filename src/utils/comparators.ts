@@ -1,7 +1,7 @@
 
 import type { Quad, Term } from '@rdfjs/types';
-import type { TermName } from '../types';
-import { termNames } from './constants';
+import type { TermName } from '../types/index.js';
+import { termNames } from './constants.js';
 
 export const getTermComparator = (): (a: Term, b: Term) => (-1 | 0 | 1) => {
   return (a: Term, b: Term): -1|0|1 => {

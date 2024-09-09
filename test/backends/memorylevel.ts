@@ -1,7 +1,7 @@
 
 import { MemoryLevel } from 'memory-level';
 import { DataFactory } from 'rdf-data-factory';
-import { runQuadstoreTests } from '../quadstore/quadstore';
+import { runQuadstoreTests } from '../quadstore/quadstore.js';
 
 export const runMemoryLevelTests = () => {
 

@@ -1,7 +1,7 @@
 
-import { runMemoryLevelTests } from '../backends/memorylevel';
-import { runBrowserLevelTests } from '../backends/browserlevel';
-import { runOtherTests } from '../others/others';
+import { runMemoryLevelTests } from '../backends/memorylevel.js';
+import { runBrowserLevelTests } from '../backends/browserlevel.js';
+import { runOtherTests } from '../others/others.js';
 
 runOtherTests();
 runMemoryLevelTests();

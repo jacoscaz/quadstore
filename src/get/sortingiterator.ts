@@ -1,6 +1,6 @@
 
 import { AsyncIterator } from 'asynciterator';
-import { RESOLVED } from '../utils/stuff';
+import { RESOLVED } from '../utils/stuff.js';
 
 let sortedSetImportErr: Error;
 

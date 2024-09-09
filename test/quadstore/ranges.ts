@@ -1,5 +1,5 @@
 
-import { equalsQuadArray } from '../utils/expect';
+import { equalsQuadArray } from '../utils/expect.js';
 
 export const runRangeTests = () => {
 

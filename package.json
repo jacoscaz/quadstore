@@ -52,10 +52,10 @@
     "url": "https://github.com/jacoscaz/quadstore.git"
   },
   "devDependencies": {
-    "@nxtedition/rocksdb": "^10.3.8",
-    "@types/chai": "^4.3.19",
-    "@types/mocha": "^10.0.7",
-    "@types/n3": "^1.16.5",
+    "@nxtedition/rocksdb": "^12.0.13",
+    "@types/chai": "^5.0.0",
+    "@types/mocha": "^10.0.8",
+    "@types/n3": "^1.21.1",
     "@types/node-static": "^0.7.11",
     "browser-level": "^1.0.1",
     "chai": "^5.1.1",
@@ -63,16 +63,16 @@
     "expect.js": "^0.3.1",
     "memory-level": "^1.0.0",
     "mocha": "^10.7.3",
-    "n3": "^1.21.0",
+    "n3": "^1.22.3",
     "node-static": "^0.7.11",
-    "puppeteer": "^23.2.2",
+    "puppeteer": "^23.5.0",
     "rdf-data-factory": "^1.1.2",
-    "typescript": "^5.5.4",
-    "webpack": "^5.94.0",
+    "typescript": "^5.6.2",
+    "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@rdfjs/types": "^1.1.0",
+    "@rdfjs/types": "^1.1.2",
     "abstract-level": "^1.0.3",
     "asynciterator": "^3.9.0",
     "js-sorted-set": "^0.7.0"

@@ -1,5 +1,5 @@
 
-![Logo](https://github.com/jacoscaz/quadstore/blob/master/logo.png?raw=true)
+![Logo](https://github.com/quadstorejs/quadstore/blob/master/logo.png?raw=true)
 
 # QUADSTORE
 
@@ -18,46 +18,50 @@ runtimes (browsers, Node.js, Deno, Bun, ...) written in TypeScript.
 
 ## Table of contents
 
-- [Example of basic usage](#example-of-basic-usage)
-- [Status](#status)
-    - [Roadmap](#roadmap)
+- [QUADSTORE](#quadstore)
+  - [Table of contents](#table-of-contents)
+  - [Example of basic usage](#example-of-basic-usage)
+  - [Status](#status)
     - [Changelog](#changelog)
+    - [Roadmap](#roadmap)
     - [Notes](#notes)
-- [Usage](#usage)
+  - [Usage](#usage)
     - [Parsing and serializing RDF](#parsing-and-serializing-rdf)
-    - [Storage](#storage-backends)
-    - [Data model and return Values](#data-model-and-return-values)
+    - [Storage backends](#storage-backends)
+    - [Data model and return values](#data-model-and-return-values)
     - [Quadstore class](#quadstore-class)
-    - [Custom indexes](#custom-indexes)
+        - [opts.backend](#optsbackend)
+        - [opts.dataFactory](#optsdatafactory)
+        - [opts.indexes](#optsindexes)
+        - [opts.prefixes](#optsprefixes)
     - [Access to the backend](#access-to-the-backend)
-    - [Quadstore.prototype.open](#quadstoreprototypeopen)
-    - [Quadstore.prototype.close](#quadstoreprototypeclose)
-    - [Quadstore.prototype.get](#quadstoreprototypeget)
+    - [Quadstore.prototype.open()](#quadstoreprototypeopen)
+    - [Quadstore.prototype.close()](#quadstoreprototypeclose)
+    - [Quadstore.prototype.get()](#quadstoreprototypeget)
     - [Range matching](#range-matching)
-    - [Quadstore.prototype.put](#quadstoreprototypeput)
-    - [Quadstore.prototype.multiPut](#quadstoreprototypemultiput)
-    - [Quadstore.prototype.del](#quadstoreprototypedel)
-    - [Quadstore.prototype.multiDel](#quadstoreprototypemultidel)
-    - [Quadstore.prototype.patch](#quadstoreprototypepatch)
-    - [Quadstore.prototype.multiPatch](#quadstoreprototypemultipatch)
-    - [Quadstore.prototype.getStream](#quadstoreprototypegetstream)
-    - [Quadstore.prototype.putStream](#quadstoreprototypeputstream)
-    - [Quadstore.prototype.delStream](#quadstoreprototypedelstream)
-    - [Quadstore.prototype.match](#quadstoreprototypematch)
-    - [Quadstore.prototype.import](#quadstoreprototypeimport)
-    - [Quadstore.prototype.remove](#quadstoreprototyperemove)
-    - [Quadstore.prototype.removeMatches](#quadstoreprototyperemovematches)
-    - [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping)
-        - [Quadstore.prototype.initScope](#quadstoreprototypeinitscope)
-        - [Quadstore.prototype.loadScope](#quadstoreprototypeloadscope)
-        - [Quadstore.prototype.deleteScope](#quadstoreprototypedeletescope)
-        - [Quadstore.prototype.deleteAllScopes](#quadstoreprototypedeleteallscopes)
-- [SPARQL](#sparql)
-- [Browser usage](#browser-usage)
-- [Deno usage](#deno-usage)
-- [Performance](#performance)
-- [License](#license)
-- [Authors](#authors)
+    - [Quadstore.prototype.put()](#quadstoreprototypeput)
+    - [Quadstore.prototype.multiPut()](#quadstoreprototypemultiput)
+    - [Quadstore.prototype.del()](#quadstoreprototypedel)
+    - [Quadstore.prototype.multiDel()](#quadstoreprototypemultidel)
+    - [Quadstore.prototype.patch()](#quadstoreprototypepatch)
+    - [Quadstore.prototype.multiPatch()](#quadstoreprototypemultipatch)
+    - [Quadstore.prototype.getStream()](#quadstoreprototypegetstream)
+    - [Quadstore.prototype.putStream()](#quadstoreprototypeputstream)
+    - [Quadstore.prototype.delStream()](#quadstoreprototypedelstream)
+    - [Quadstore.prototype.match()](#quadstoreprototypematch)
+    - [Quadstore.prototype.import()](#quadstoreprototypeimport)
+    - [Quadstore.prototype.remove()](#quadstoreprototyperemove)
+    - [Quadstore.prototype.removeMatches()](#quadstoreprototyperemovematches)
+  - [Blank nodes and quad scoping](#blank-nodes-and-quad-scoping)
+    - [Quadstore.prototype.initScope()](#quadstoreprototypeinitscope)
+    - [Quadstore.prototype.loadScope()](#quadstoreprototypeloadscope)
+    - [Quadstore.prototype.deleteScope()](#quadstoreprototypedeletescope)
+    - [Quadstore.prototype.deleteAllScopes()](#quadstoreprototypedeleteallscopes)
+  - [SPARQL](#sparql)
+  - [Browser usage](#browser-usage)
+  - [Deno usage](#deno-usage)
+  - [Performance](#performance)
+  - [LICENSE](#license)
 
 ## Example of basic usage
 
@@ -765,7 +769,7 @@ const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
 More information on [quadstore-comunica][c2]'s repository.
 
 [c1]: https://github.com/comunica/comunica
-[c2]: https://github.com/jacoscaz/quadstore-comunica
+[c2]: https://github.com/quadstorejs/quadstore-comunica
 [c3]: https://github.com/comunica/comunica/graphs/contributors
 [c4]: https://rdf.js.org/query-spec/
 
@@ -779,7 +783,7 @@ version 5.x. The reference [quadstore-browser][b0] is meant to help in getting
 to a working Webpack configuration and also hosts a pre-built bundle with everything
 that is required to use `quadstore` in browsers.
  
-[b0]: https://github.com/jacoscaz/quadstore-browser
+[b0]: https://github.com/quadstorejs/quadstore-browser
 [b1]: https://github.com/Level/browser-level
 [b2]: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
@@ -820,9 +824,9 @@ deno run quadstore-test.ts
 
 ## Performance
 
-Performance is evaluated at tracked at [https://github.com/jacoscaz/quadstore-perf][perf]
+Performance is evaluated at tracked at [https://github.com/quadstorejs/quadstore-perf][perf]
 
-[perf]: https://github.com/jacoscaz/quadstore-perf
+[perf]: https://github.com/quadstorejs/quadstore-perf
 
 ## LICENSE
 
